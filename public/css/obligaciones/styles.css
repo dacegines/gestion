@@ -1,0 +1,1210 @@
+/* Estilos generales */
+body {
+    font-size: .875rem;
+}
+
+
+.divider {
+    border: 1px solid #28a745; /* Color verde para la línea de división */
+    margin: 20px 0;
+}
+
+
+.main {
+    padding: 20px;
+}
+
+.card {
+    margin-top: 20px;
+    border-radius: 10px;
+}
+
+.card-header {
+    background-color: #28a745; /* Verde */
+    color: white;
+    border-radius: 10px 10px 0 0;
+    padding: 10px;
+}
+
+.card-header h1 {
+    margin: 0; /* Asegura que no haya margen alrededor del título */
+}
+
+.card-title {
+    margin-bottom: 20px;
+}
+
+
+
+
+/* Estilos de las tarjetas de opción */
+.option-card .card-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+    overflow: hidden;
+    transition: background-color 2s, transform 0.2s, width 0.2s, height 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+
+.option-card h6 {
+     /* Ajusta el tamaño de la fuente según sea necesario */
+    word-wrap: break-word;
+}
+
+.option-card {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.option-card:hover {
+    background-color: #e2f7e2; /* Verde más claro */
+    transform: translateY(-2px);
+    width: calc(100% + 2px); /* Incrementa el tamaño en 1px por lado */
+    height: calc(100% + 2px); /* Incrementa el tamaño en 1px por lado */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Sombra más oscura */
+    border-color: #ccc; /* Borde más oscuro */
+}
+
+.option-card:hover .card-body {
+    background-color: #e2f7e2; /* Verde más claro */
+}
+/* Fin de estilos de las tarjetas de opción */
+
+/* Estilos de las tarjetas de derivación */
+.derivation-card {
+    margin-top: 10px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.ml-3 {
+    margin-left: 1rem !important;
+}
+
+.ml-5 {
+    margin-left: 2rem !important;
+}
+/* Fin de estilos de las tarjetas de derivación */
+
+/* Estilos de los botones */
+.btn-primary {
+    background-color: #28a745; /* Cambiado a verde */
+    border-color: #28a745;
+}
+
+.btn-primary:hover {
+    background-color: #218838;
+    border-color: #218838;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    border-color: #218838;
+}
+/* Fin de estilos de los botones */
+
+/* Estilos del modal */
+.modal-xl {
+    max-width: 90%;
+}
+
+.modal-header {
+    background-color: #28a745; /* Verde */
+    color: white;
+    border-radius: 10px 10px 0 0;
+    padding: 10px;
+    border-bottom: 1px solid #28a745; /* Añadir borde */
+}
+
+.modal-header .modal-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.modal-content {
+    border-radius: 0.7rem !important;
+}
+
+.modal-header .close {
+    font-size: 1.8rem;
+    color: red; /* Cambiar color a rojo */
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-footer {
+    border-top: none;
+    padding: 10px 20px;
+}
+/* Fin de estilos del modal */
+
+/* Estilos del formulario en el modal */
+.form-section {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 3px; /* Añadir margen inferior */
+}
+
+.form-section h5 {
+    color: #28a745;
+}
+
+.form-section .form-group {
+    margin-bottom: 15px;
+}
+
+.form-section .form-control {
+    border: 1px solid #28a745;
+    border-radius: 4px;
+}
+
+.form-section .form-control:focus {
+    box-shadow: none;
+    border-color: #218838;
+}
+
+.form-section .btn {
+    background-color: #28a745;
+    border: none;
+    color: white;
+}
+
+.form-section .btn:hover {
+    background-color: #218838;
+}
+/* Fin de estilos del formulario en el modal */
+
+/* Estilos buscar */
+.search-container {
+    display: flex;
+    align-items: center;
+}
+
+.search-input {
+    border: 1px solid #ddd;
+    border-radius: 4px 0 0 4px;
+    padding: 10px;
+    width: 200px;
+    height: 40px;
+    outline: none;
+}
+
+.search-button {
+    background-color: #28a745;
+    border: none;
+    border-radius: 0 4px 4px 0;
+    padding: 0 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    height: 40px;
+}
+
+.search-button svg {
+    fill: white;
+    width: 25px;
+    height: 20px;
+}
+
+.search-button:hover {
+    background-color: #218838;
+}
+
+.search-input::placeholder {
+    color: #999;
+}
+/* Fin de estilos buscar */
+
+/* Colores de fondo para las prioridades en card-body */
+.bg-danger {
+    background-color: #f8d7da !important; /* Rojo suave */
+    color: #721c24 !important;
+}
+
+.bg-warning {
+    background-color: #fff3cd !important; /* Amarillo suave */
+    color: #856404 !important;
+}
+
+.bg-success {
+    background-color: #28a745 !important; /* Verde suave */
+    color: white !important;
+}
+/* Fin de colores de fondo para las prioridades en card-body */
+
+/* Estilos de los íconos de editar y eliminar */
+.card-icons {
+    position: relative; /* Posición relativa para estar dentro del contenedor */
+    bottom: 0;
+}
+
+.fas.fa-edit, .fas.fa-trash-alt {
+    cursor: pointer;
+    transition: color 0.2s;
+    color: black; /* Color negro para los iconos */
+    font-size: 1.5rem; /* Aumentar tamaño del icono */
+}
+
+.fas.fa-edit:hover {
+    color: #007bff; /* Azul al pasar el ratón */
+}
+
+.fas.fa-trash-alt:hover {
+    color: #c82333; /* Rojo oscuro al pasar el ratón */
+}
+/* Fin de estilos de los íconos de editar y eliminar */
+
+/* Estilos de las tarjetas de derivación */
+.derivation-card {
+    margin-top: 10px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative; /* Asegurar que el contenedor de iconos se posicione correctamente */
+}
+/* Fin de estilos de las tarjetas de derivación */
+
+
+img{
+    width: 28%;
+    
+}
+
+/* Estilo para la nueva caja en el modal FAP */
+#modalFAP .details-card {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    background-color: #f8f9fa;
+    margin-top: 20px;
+}
+
+/* Estilo para la nueva caja en el modal FAP */
+#modalFAP .details-card {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    background-color: #f8f9fa;
+    margin-top: 20px;
+}
+
+/* Estilo para la nueva caja en el modal FAP */
+#modalFAP .details-card {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    background-color: #f8f9fa;
+    margin-top: 20px;
+}
+/* Estilos para details-card */
+.details-card {
+    position: relative;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column; /* Para mantener la dirección de los elementos en columna */
+}
+
+
+
+.header {
+    background: linear-gradient(to right, #d3d3d3, #ffffff); /* Desvanecido en gris */
+    color: #333; /* Cambiado a gris oscuro para mejor contraste */
+    border-radius: 10px 10px 0 0;
+    text-align: center;
+    padding: 10px;
+    font-weight: bold;
+}
+
+.logo-container {
+    position: absolute;
+    top: 20px; /* Ajustar para que se alinee correctamente con el contenido */
+    right: 20px; /* Ajustar para que se alinee correctamente con el contenido */
+}
+
+.logo {
+    width: auto;
+    height: auto;
+    max-width: 100px;
+    max-height: 100px;
+    border-radius: 10px; /* Borde redondeado */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra ligera */
+}
+
+.info-section .section-header {
+    background-color: #f0f0f0; /* Color gris claro */
+    color: #555;
+    border-radius: 5px;
+    font-weight: bold;
+    width: 82%;
+}
+
+.info-section .row p {
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #212529;
+}
+
+.info-section .row p strong {
+    color: #000;
+}
+
+.bg-grey-gradient {
+    background: linear-gradient(to right, #d3d3d3, #ffffff); /* Desvanecido en gris */
+}
+
+.bg-light-grey {
+    background-color: #f0f0f0 !important;
+}
+
+.table-bordered th,
+.table-bordered td {
+    border: 1px solid #000 !important; /* Bordes en negro */
+    font-weight: bold; /* Fuente en negritas */
+}
+
+.table thead th {
+    vertical-align: bottom;
+    border-bottom: 2px solid #dee2e6;
+}
+
+/* Estilos para la tabla */
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px; /* Tamaño de letra reducido */
+    font-family: Arial, sans-serif;
+    margin: 20px 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra ligera */
+    border-radius: 10px; /* Bordes redondeados */
+    overflow: hidden; /* Asegura que los bordes redondeados funcionen correctamente */
+}
+
+.styled-table thead tr {
+    background-color: #343a40;
+    color: #ffffff;
+    text-align: left;
+}
+
+.styled-table th, .styled-table td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.styled-table tbody tr {
+    border-bottom: 1px solid #ddd;
+}
+
+.styled-table tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}
+
+.styled-table tbody tr:last-of-type {
+    border-bottom: 2px solid #343a40;
+}
+
+.styled-table th {
+    background-color: #343a40;
+    color: white;
+}
+
+.styled-table td.green {
+    background-color: #3E8E41;
+    color: white;
+}
+
+.styled-table td.yellow {
+    background-color: #eff238;
+    color: black;
+}
+
+.styled-table td.orange {
+    background-color: #FFA500; /* Color anaranjado */
+    color: black;
+}
+
+.styled-table td.red {
+    background-color: #D9534F;
+    color: white;
+}
+
+.styled-table th, .styled-table td {
+    border: 1px solid #000;
+    font-weight: bold;
+}
+
+/* Estilos para el nuevo recuadro de subir archivo */
+.upload-card {
+    position: relative;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px; /* Margen superior para separarlo de la tarjeta anterior */
+}
+
+.upload-card .section-header {
+    background-color: #f0f0f0;
+    color: #555;
+    border-radius: 5px;
+    font-weight: bold;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 10px;
+}
+
+.upload-card .section-header i {
+    margin-right: 10px;
+}
+
+.upload-card .form-group {
+    margin-bottom: 15px;
+}
+
+.upload-card .btn {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: white;
+}
+
+.upload-card .btn:hover {
+    background-color: #218838;
+    border-color: #218838;
+}
+
+
+/* Estilos para la tabla */
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px; /* Tamaño de letra reducido */
+    font-family: Arial, sans-serif;
+    margin: 20px 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra ligera */
+    border-radius: 10px; /* Bordes redondeados */
+    overflow: hidden; /* Asegura que los bordes redondeados funcionen correctamente */
+}
+
+.styled-table thead tr {
+    background-color: #343a40;
+    color: #ffffff;
+    text-align: left;
+}
+
+.styled-table th, .styled-table td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.styled-table tbody tr {
+    border-bottom: 1px solid #ddd;
+}
+
+.styled-table tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}
+
+.styled-table tbody tr:last-of-type {
+    border-bottom: 2px solid #343a40;
+}
+
+.styled-table th {
+    background-color: #343a40;
+    color: white;
+}
+
+.styled-table td.green {
+    background-color: #3E8E41;
+    color: white;
+}
+
+.styled-table td.yellow {
+    background-color: #eff238;
+    color: black;
+}
+
+.styled-table td.orange {
+    background-color: #FFA500; /* Color anaranjado */
+    color: black;
+}
+
+.styled-table td.red {
+    background-color: #D9534F;
+    color: white;
+}
+
+.styled-table th, .styled-table td {
+    border: 1px solid #000;
+    font-weight: bold;
+}
+
+/* Estilos para el nuevo recuadro de subir archivo */
+.upload-card {
+    position: relative;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px; /* Margen superior para separarlo de la tarjeta anterior */
+}
+
+.upload-card .section-header {
+    background-color: #f0f0f0;
+    color: #555;
+    border-radius: 5px;
+    font-weight: bold;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 10px;
+}
+
+.upload-card .section-header i {
+    margin-right: 10px;
+}
+
+.upload-card .form-group {
+    margin-bottom: 15px;
+}
+
+.upload-card .btn {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: white;
+}
+
+.upload-card .btn:hover {
+    background-color: #218838;
+    border-color: #218838;
+}
+
+
+/* Estilos para la tabla */
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px; /* Tamaño de letra reducido */
+    font-family: Arial, sans-serif;
+    margin: 20px 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra ligera */
+    border-radius: 10px; /* Bordes redondeados */
+    overflow: hidden; /* Asegura que los bordes redondeados funcionen correctamente */
+}
+
+.styled-table thead tr {
+    background-color: #343a40;
+    color: #ffffff;
+    text-align: left;
+}
+
+.styled-table th, .styled-table td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.styled-table tbody tr {
+    border-bottom: 1px solid #ddd;
+}
+
+.styled-table tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}
+
+.styled-table tbody tr:last-of-type {
+    border-bottom: 2px solid #343a40;
+}
+
+.styled-table th {
+    background-color: #343a40;
+    color: white;
+}
+
+.styled-table td.green {
+    background-color: #3E8E41;
+    color: white;
+}
+
+.styled-table td.yellow {
+    background-color: #eff238;
+    color: black;
+}
+
+.styled-table td.orange {
+    background-color: #FFA500; /* Color anaranjado */
+    color: black;
+}
+
+.styled-table td.red {
+    background-color: #D9534F;
+    color: white;
+}
+
+.styled-table th, .styled-table td {
+    border: 1px solid #000;
+    font-weight: bold;
+}
+
+
+/* Estilos para la tabla */
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px; /* Tamaño de letra reducido */
+    font-family: Arial, sans-serif;
+    margin: 20px 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra ligera */
+    border-radius: 10px; /* Bordes redondeados */
+    overflow: hidden; /* Asegura que los bordes redondeados funcionen correctamente */
+}
+
+.styled-table thead tr {
+    background-color: #343a40;
+    color: #ffffff;
+    text-align: left;
+}
+
+.styled-table th, .styled-table td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.styled-table tbody tr {
+    border-bottom: 1px solid #ddd;
+}
+
+.styled-table tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}
+
+.styled-table tbody tr:last-of-type {
+    border-bottom: 2px solid #343a40;
+}
+
+.styled-table th {
+    background-color: #343a40;
+    color: white;
+}
+
+.styled-table td.green {
+    background-color: #3E8E41;
+    color: white;
+}
+
+.styled-table td.yellow {
+    background-color: #eff238;
+    color: black;
+}
+
+.styled-table td.orange {
+    background-color: #FFA500; /* Color anaranjado */
+    color: black;
+}
+
+.styled-table td.red {
+    background-color: #D9534F;
+    color: white;
+}
+
+.styled-table th, .styled-table td {
+    border: 1px solid #000;
+    font-weight: bold;
+}
+
+
+/* Estilos para la tabla */
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px; /* Tamaño de letra reducido */
+    font-family: Arial, sans-serif;
+    margin: 20px 0;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+.styled-table thead tr {
+    background-color: #343a40;
+    color: #ffffff;
+    text-align: left;
+}
+
+.styled-table th, .styled-table td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.styled-table tbody tr {
+    border-bottom: 1px solid #ddd;
+}
+
+.styled-table tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}
+
+.styled-table tbody tr:last-of-type {
+    border-bottom: 2px solid #343a40;
+}
+
+.styled-table th {
+    background-color: #343a40;
+    color: white;
+}
+
+.styled-table td.green {
+    background-color: #3E8E41;
+    color: white;
+}
+
+.styled-table td.yellow {
+    background-color: #eff238;
+    color: black;
+}
+
+.styled-table td.orange {
+    background-color: #FFA500; /* Color anaranjado */
+    color: black;
+    
+}
+
+.styled-table td.red {
+    background-color: #D9534F;
+    color: white;
+}
+
+.styled-table th, .styled-table td {
+    border: 1px solid #000;
+    font-weight: bold;
+}
+
+
+
+/* Estilos para la tabla */
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px; /* Tamaño de letra reducido */
+    font-family: Arial, sans-serif;
+    margin: 20px 0;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+    overflow-x: auto; /* Agrega el desbordamiento horizontal */
+}
+
+.styled-table thead tr {
+    background-color: #343a40;
+    color: #ffffff;
+    text-align: left;
+}
+
+.styled-table th, .styled-table td {
+    padding: 12px 15px;
+    text-align: center;
+    white-space: nowrap; /* Evita el salto de línea */
+    overflow: hidden; /* Oculta el desbordamiento */
+    text-overflow: ellipsis; /* Añade puntos suspensivos si el texto es demasiado largo */
+}
+
+.styled-table tbody tr {
+    border-bottom: 1px solid #ddd;
+}
+
+.styled-table tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}
+
+.styled-table tbody tr:last-of-type {
+    border-bottom: 2px solid #343a40;
+}
+
+.styled-table th {
+    background-color: #343a40;
+    color: white;
+    border: 1px solid #000;
+    font-weight: bold;
+}
+
+.styled-table td.green {
+    background-color: #3E8E41;
+    color: white;
+}
+
+.styled-table td.yellow {
+    background-color: #eff238;
+    color: black;
+}
+
+.styled-table td.orange {
+    background-color: #FFA500; /* Color anaranjado */
+    color: black;
+}
+
+.styled-table td.red {
+    background-color: #D9534F;
+    color: white;
+}
+
+/* Aplicar borde solo a celdas no vacías */
+.styled-table td:not(:empty) {
+    border: 1px solid #000;
+    font-weight: bold;
+}
+
+
+/* Efecto de cambio de color al pasar el mouse */
+#obligacion1 {
+    transition: background-color 0.5s, border 0.1s;
+}
+
+#obligacion1:hover {
+    background-color: #d3d3d3; /* Gris */
+}
+
+/* Clase para mantener el color gris y borde dashed al hacer clic */
+.clicked {
+    background-color: #d3d3d3; /* Gris claro */
+    border: 2px solid #000;  /* Borde de estilo dashed */
+}
+
+
+
+/* Estilos para la transición de desvanecido */
+
+.fade-transition {
+    transition: opacity 0.5s ease-in-out; 
+}
+
+.show {
+    opacity: 1; 
+}
+
+.hide {
+    opacity: 0; 
+}
+
+/* Estilos para el gráfico de anillo */
+#myDoughnutChart {
+    max-width: 400px;
+    max-height: 400px;
+    width: 100%;
+    height: auto;
+    margin: 0 auto; /* Centrando el canvas horizontalmente */
+}
+
+    .icon-box {
+        display: inline-block;
+        padding: 10px;
+        border: 1px solid #007bff;
+        border-radius: 5px;
+        background-color: #007bff;
+        transition: background-color 0.3s;
+    }
+
+    .icon-box:hover {
+        background-color: #0056b3;
+    }
+
+    .icon-box i {
+        color: #fff;
+    }
+
+
+/* Ocultar la tabla inicialmente */
+#detalle_archivos {
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 1s ease, transform 1s ease;
+}
+
+/* Mostrar la tabla con la transición */
+#detalle_archivos.show {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Estilos para el ícono */
+.icon-box {
+    display: inline-block;
+    background-color: #007bff; /* Fondo azul */
+    padding: 5px;
+    border-radius: 5px; /* Bordes redondeados */
+    text-align: center;
+    transition: background-color 0.3s ease;
+}
+
+.icon-box i {
+    color: #fff; /* Ícono blanco */
+}
+
+/* Cambio de color al pasar el ratón */
+.icon-box:hover {
+    background-color: #0056b3;
+}
+
+.custom-card {
+    width: 50%; /* Ancho del contenedor */
+    border: 1px solid #ced4da; /* Borde gris claro */
+    border-radius: 10px; /* Esquinas redondeadas */
+    padding: 10px; /* Espaciado interno */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra ligera */
+    background-color: #fff; /* Fondo blanco */
+    margin: 15px auto; /* Centra el contenedor horizontalmente y añade margen superior e inferior */
+    
+    /* Centrado del contenido */
+    display: flex;
+    align-items: center; /* Centra verticalmente */
+    justify-content: center; /* Centra horizontalmente */
+    text-align: center; /* Asegura que el texto esté centrado */
+    
+    height: 60px; /* Altura del contenedor para un centrado vertical perfecto */
+}
+
+
+
+/* Estilos para las tarjetas */
+.obligation-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+    background-color: #fff;
+}
+
+.obligation-card:hover {
+    transform: scale(1.05);
+}
+
+.obligation-image {
+    height: 115px;
+    background-size: contain; /* Mostrar la imagen completa */
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    border-bottom: 0.5px solid rgb(203, 203, 203);
+    margin-left: 10px;
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.obligation-image span {
+    width: 90px;
+    height: 82px;
+    line-height: 74px;
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 14px;
+    z-index: 2;
+}
+
+.status-indicator {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 13px;
+    z-index: 2;
+}
+
+.card-body {
+    padding: 15px;
+}
+
+.card-title {
+    font-size: 15px;
+    font-weight: bold;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center; /* Centrar el título */
+}
+
+.card-status {
+    font-size: 12px;
+    margin-top: 5px;
+    text-align: center; /* Centrar el estado */
+}
+
+.card-icons {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center; /* Centrar los íconos */
+    gap: 20px; /* Espaciado entre íconos */
+}
+
+.card-icons i {
+    font-size: 18px;
+    color: #666;
+    cursor: pointer;
+}
+
+.card-icons i:hover {
+    color: #007bff;
+}
+
+/* Estatus obligacion */
+
+.avance-obligacion.avance-rojo {
+    background-color: rgb(221, 19, 19);
+    color: white;
+}
+
+.avance-obligacion.avance-naranja {
+    background-color: rgb(241, 160, 11);
+    color: white;
+}
+
+.avance-obligacion.avance-amarillo {
+    background-color: rgb(214, 214, 31);
+    color: black;
+}
+
+.avance-obligacion.avance-verde {
+    background-color: green;
+    color: white;
+}
+
+.avance-obligacion {
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 16px;
+    display: inline-block;
+    text-align: center;
+}
+
+
+.selected-card {
+    border: 2px solid #28a745; /* Verde */
+    background-color: #e9f5e9; /* Un verde suave */
+}
+
+
+
+.table td {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.table th, .table td {
+    vertical-align: middle;
+    text-align: center;
+}
+
+table.table {
+    font-size: 0.875rem; /* Reducir el tamaño de la fuente */
+}
+
+table.table th, table.table td {
+    padding: 0.5rem; /* Reducir el padding para hacer las celdas más compactas */
+    vertical-align: middle; /* Asegura que el contenido esté centrado verticalmente */
+}
+
+.btn {
+    padding: 0.25rem 0.5rem; /* Reducir el tamaño de los botones */
+    font-size: 0.875rem; /* Reducir el tamaño de la fuente en los botones */
+}
+
+.btn i {
+    font-size: 0.775rem; /* Reducir el tamaño de los iconos */
+}
+
+.btn-sm {
+    padding: 0.2rem 0.4rem; /* Hacer los botones pequeños más compactos */
+}
+
+thead th {
+    background-color: #343a40;
+    color: #ffffff;
+    text-align: center;
+}
+
+.table tbody tr:hover {
+    background-color: #f1f1f1; /* Cambia el color al pasar el mouse sobre una fila */
+}
+
+.table tbody td {
+    text-align: center; /* Centrar el contenido de las celdas */
+    font-size: 0.8rem;
+}
+
+.table thead th {
+    border-bottom: 2px solid #dee2e6;
+    font-size: 0.85rem; /* Ajusta según sea necesario */
+    font-weight: bold; /* Mantener el texto en negrita para el encabezado */
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+.btn-info {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+}
+
+.btn-info:hover {
+    background-color: #117a8b;
+    border-color: #117a8b;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-danger:hover {
+    background-color: #bd2130;
+    border-color: #bd2130;
+}
+
+.btn-danger i.fas.fa-trash-alt {
+    color: #ffffff; /* Icono de basura en blanco */
+    font-size: 0.775rem;
+}
+

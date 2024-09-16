@@ -1,0 +1,25 @@
+
+button[type="submit"], button[type="button"]{
+    border-radius: 3px !important;
+    background-color: #218838 !important; /* Verde más oscuro en hover */
+    font-size: 13px !important;
+   
+}
+
+/* Estilo para campos de entrada (input) */
+#name, #email, #current_password, #password, #password_confirmation{
+    width: 50% !important;
+    border-radius: 5px !important; /* Esquinas redondeadas */
+    border: px solid black !important; /* Borde fino */
+   
+    font-size: 15px !important; /* Tamaño de la fuente */
+    color: #495057 !important; /* Color del texto */
+    background-color: #ffffff !important; /* Fondo blanco */
+    box-shadow: none !important; /* Sin sombra */
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important; /* Transición suave */
+}
+
+#name:focus, #email:focus {
+    border-color: #80bdff !important; /* Color del borde al enfocar */
+
+}
