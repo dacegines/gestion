@@ -301,7 +301,7 @@ return [
         [
             'type' => 'navbar-search',
             'text' => 'search',
-            'topnav_right' => true,
+            'topnav_right' => false,
         ],
         [
             'type' => 'fullscreen-widget',
@@ -309,10 +309,10 @@ return [
         ],
 
         // Sidebar items:
-        [
+        /*[
             'type' => 'sidebar-menu-search',
             'text' => 'search',
-        ],
+        ],*/
         [
             'text' => 'blog',
             'url' => 'admin/blog',
@@ -323,23 +323,13 @@ return [
             'route' => 'dashboard',
             
         ],
-        
+
         [
             'text' => 'Obligaciones',
+            'url' => 'obligaciones', 
             'icon' => 'fas fa-fw fa-clipboard',
-            'submenu' => [
-                [
-                    'text' => 'Ver Obligaciones',
-                    'url' => 'obligaciones', 
-                    'icon' => 'fas fa-fw fa-eye',
-                ],
-                [
-                    'text' => 'Agregar una Obligación',
-                    'url' => 'AddObligaciones', 
-                    'icon' => 'fas fa-fw fa-plus',
-                ],
-            ],
-        ],
+            
+        ],        
         
 
         [
@@ -348,12 +338,12 @@ return [
             'icon' => 'fas fa-fw fa-file-invoice',
             
         ],
-        [
+        /*[
             'text' => 'Resumen',
             'route' => 'resumen',
             'icon' => 'fas fa-fw fa-circle',
             
-        ],
+        ],*/
          /*
         [
             'text' => 'pages',

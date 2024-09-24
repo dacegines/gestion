@@ -3,7 +3,7 @@
 @section('title', 'Resumen')
 
 @section('content')
-<br>
+<hr>
 <div class="card" id="card-resumen">
     <div class="card-header bg-success text-white text-center">
         <h3 class="">Resumen</h3>

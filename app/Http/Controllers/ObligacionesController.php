@@ -29,50 +29,55 @@ class ObligacionesController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function index()
-    {
-        // Obtener el usuario autenticado
-        $user = Auth::user();
-    
-        // Verificar si el usuario tiene un puesto definido
-        if (!$user || !$user->puesto) {
-            return redirect()->back()->withErrors(['error' => 'No se encontró el puesto del usuario autenticado']);
-        }
-    
-        // Definir los puestos que pueden ver todos los registros
-        $puestosPermitidos = [
-            'Director Jurídico',
-            'Directora General',
-            'Jefa de Cumplimiento',
-            'Director de Finanzas',
-            'Gerente Jurídico',
-            'Gerente de Atención a Usuarios',
-            'Gerente de Operación',
-            'Director de Operación',
-        ];
-    
-        // Comprobar si el puesto del usuario está en la lista de puestos permitidos
-        if (in_array($user->puesto, $puestosPermitidos)) {
-            // Si el usuario tiene un puesto permitido, obtener todos los requisitos
-            $requisitos = Requisito::all();
-        } else {
-            // Si no, filtrar los requisitos donde el responsable coincida con el puesto del usuario
-            $requisitos = Requisito::where('responsable', $user->puesto)->get();
-        }
-    
-        // Filtrar los requisitos para omitir los que no tienen un responsable asignado
-        $requisitos = $requisitos->filter(function ($requisito) {
-            return !empty($requisito->responsable);
-        });
-    
-        // Calcular el total de avance para cada requisito
-        foreach ($requisitos as $requisito) {
-            $requisito->total_avance = $this->getTotalAvance($requisito->numero_requisito);
-        }
-    
-        // Pasar los requisitos y el puesto del usuario a la vista
-        return view('gestion_cumplimiento.obligaciones.index', compact('requisitos', 'user'));
+public function index()
+{
+    // Obtener el usuario autenticado
+    $user = Auth::user();
+
+    // Verificar si el usuario tiene un puesto definido
+    if (!$user || !$user->puesto) {
+        return redirect()->back()->withErrors(['error' => 'No se encontró el puesto del usuario autenticado']);
     }
+
+    // Obtener el año actual
+    $currentYear = Carbon::now()->year;
+
+    // Definir los puestos que pueden ver todos los registros
+    $puestosPermitidos = [
+        'Director Jurídico',
+        'Directora General',
+        'Jefa de Cumplimiento',
+        'Director de Finanzas',
+        'Gerente Jurídico',
+        'Gerente de Atención a Usuarios',
+        'Gerente de Operación',
+        'Director de Operación',
+    ];
+
+    // Comprobar si el puesto del usuario está en la lista de puestos permitidos
+    if (in_array($user->puesto, $puestosPermitidos)) {
+        // Si el usuario tiene un puesto permitido, obtener todos los requisitos filtrados por el año actual
+        $requisitos = Requisito::whereYear('fecha_limite_cumplimiento', $currentYear)->get();
+    } else {
+        // Si no, filtrar los requisitos donde el responsable coincida con el puesto del usuario y por el año actual
+        $requisitos = Requisito::where('responsable', $user->puesto)
+            ->whereYear('fecha_limite_cumplimiento', $currentYear)
+            ->get();
+    }
+
+    // Filtrar los requisitos para omitir los que no tienen un responsable asignado
+    $requisitos = $requisitos->filter(function ($requisito) {
+        return !empty($requisito->responsable);
+    });
+
+    // Calcular el total de avance para cada requisito
+    foreach ($requisitos as $requisito) {
+        $requisito->total_avance = $this->getTotalAvance($requisito->numero_requisito);
+    }
+
+    // Pasar los requisitos, el puesto del usuario, y el año actual a la vista
+    return view('gestion_cumplimiento.obligaciones.index', compact('requisitos', 'user', 'currentYear'));
+}
     
     
 
@@ -276,15 +281,6 @@ class ObligacionesController extends Controller
     
         return response()->json(['success' => true, 'approved' => $requisito->approved]);
     }
-    
-
-public function store()
-{
-
-
-    return view('gestion_cumplimiento.obligaciones.create');
-}
-
 
 public function obtenerRequisitoDetalles(Request $request)
 {
@@ -528,7 +524,57 @@ public function validarArchivos(Request $request)
 
     }
     
-
+    public function filtrarObligaciones(Request $request)
+    {
+        // Recibimos el año seleccionado del formulario
+        $year = $request->input('year');
+    
+        // Obtener el usuario autenticado
+        $user = Auth::user();
+    
+        // Verificar si el usuario tiene un puesto definido
+        if (!$user || !$user->puesto) {
+            return redirect()->back()->withErrors(['error' => 'No se encontró el puesto del usuario autenticado']);
+        }
+    
+        // Definir los puestos que pueden ver todos los registros
+        $puestosPermitidos = [
+            'Director Jurídico',
+            'Directora General',
+            'Jefa de Cumplimiento',
+            'Director de Finanzas',
+            'Gerente Jurídico',
+            'Gerente de Atención a Usuarios',
+            'Gerente de Operación',
+            'Director de Operación',
+        ];
+    
+        // Comprobar si el puesto del usuario está en la lista de puestos permitidos
+        if (in_array($user->puesto, $puestosPermitidos)) {
+            // Si el usuario tiene un puesto permitido, obtener todos los requisitos filtrados por año
+            $requisitos = Requisito::whereYear('fecha_limite_cumplimiento', $year)
+                ->get();
+        } else {
+            // Si no, filtrar los requisitos donde el responsable coincida con el puesto del usuario
+            $requisitos = Requisito::where('responsable', $user->puesto)
+                ->whereYear('fecha_limite_cumplimiento', $year)
+                ->get();
+        }
+    
+        // Filtrar los requisitos para omitir los que no tienen un responsable asignado
+        $requisitos = $requisitos->filter(function ($requisito) {
+            return !empty($requisito->responsable);
+        });
+    
+        // Calcular el total de avance para cada requisito
+        foreach ($requisitos as $requisito) {
+            $requisito->total_avance = $this->getTotalAvance($requisito->numero_requisito);
+        }
+    
+        // Retornar la vista con los requisitos filtrados y el año seleccionado
+        return view('gestion_cumplimiento.obligaciones.index', compact('requisitos', 'user', 'year'));
+    }
+    
 
 
 

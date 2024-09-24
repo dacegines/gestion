@@ -4,72 +4,65 @@ namespace App\Http\Controllers;
 
 use App\Models\Requisito;
 use Illuminate\Http\Request;
-
 use App\Exports\RequisitosExport;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Auth; // Importante para manejar la autenticación
 
 class DetallesController extends Controller
 {
-public function index()
-{
-    $query = Requisito::query();
-
-    $requisitos = $query->get();
-
-
-
-    return view('gestion_cumplimiento.detalles.index', compact('requisitos'));
-}
-
-    public function detalleFiltro(Request $request) {
-
-        $query = Requisito::query();
-
-        if ($request->filled('startDate')) {
-            $query->where('fecha_limite_cumplimiento', '>=', $request->startDate);
-        }
     
-        if ($request->filled('endDate')) {
-            $query->where('fecha_limite_cumplimiento', '<=', $request->endDate);
-        }
-    
-        if ($request->filled('sortOrder')) {
-            switch ($request->sortOrder) {
-                case 'numReqAsc':
-                    $query->orderBy('numero_requisito', 'asc');
-                    break;
-                case 'numReqDesc':
-                    $query->orderBy('numero_requisito', 'desc');
-                    break;
-                case 'fechaAsc':
-                    $query->orderBy('fecha_limite_cumplimiento', 'asc');
-                    break;
-                case 'fechaDesc':
-                    $query->orderBy('fecha_limite_cumplimiento', 'desc');
-                    break;
-                case 'vencido':
-                    $query->where('fecha_limite_cumplimiento', '<', now());
-                    break;
-                case 'activo':
-                    $query->where('fecha_limite_cumplimiento', '>=', now());
-                    break;
-                case 'proximoVencer':
-                    $query->whereBetween('fecha_limite_cumplimiento', [now(), now()->addDays(30)]);
-                    break;
-            }
-        } else {
-            $query->orderBy('fecha_limite_cumplimiento', 'asc');
+    public function index(Request $request)
+    {
+        // Verificar si el usuario está autenticado
+        if (!Auth::check()) {
+            return redirect()->route('login'); // Redirigir al login si no está autenticado
         }
 
-        if ($request->ajax()) {
-            return view('gestion_cumplimiento.detalles.partials.table', compact('requisitos'))->render();
-        }
+        $hoy = \Carbon\Carbon::now();
+        $year = $hoy->year; // Establece el año actual
+
+        // Redirigir al método filtrarDetalles con el año actual
+        return $this->filtrarDetalles(new Request(['year' => $year]));
     }
 
-    public function export() 
-{
-    return Excel::download(new RequisitosExport, 'requisitos.xlsx');
-}
+    public function filtrarDetalles(Request $request)
+    {
+        // Validar la entrada del año
+        $validatedData = $request->validate([
+            'year' => 'required|integer|min:2024|max:2040', // Asegura que el año sea válido
+        ]);
 
+        $year = $validatedData['year'];
 
+        // Filtrar los requisitos cuyo año de fecha_limite_cumplimiento coincida con el año seleccionado
+        $requisitos = Requisito::whereYear('fecha_limite_cumplimiento', $year)
+            ->orderBy('fecha_limite_cumplimiento', 'asc')
+            ->get();
+
+        // Retornar la vista principal con los requisitos filtrados y el año seleccionado
+        return view('gestion_cumplimiento.detalles.index', compact('requisitos', 'year'));
+    }
+
+    public function export(Request $request)
+    {
+        // Verificar si el usuario está autenticado
+        if (!Auth::check()) {
+            return redirect()->route('login'); // Redirigir al login si no está autenticado
+        }
+
+        // Validar la entrada del año
+        $validatedData = $request->validate([
+            'year' => 'required|integer|min:2024|max:2040', // Validar año entre 2024 y 2040
+        ]);
+
+        $year = $validatedData['year'];
+
+        // Filtrar los requisitos por el año seleccionado
+        $requisitos = Requisito::whereYear('fecha_limite_cumplimiento', $year)
+            ->orderBy('fecha_limite_cumplimiento', 'asc')
+            ->get();
+
+        // Pasar los requisitos filtrados al exportador
+        return Excel::download(new RequisitosExport($requisitos), 'requisitos.xlsx');
+    }
 }

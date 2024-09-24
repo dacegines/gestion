@@ -30,11 +30,25 @@ body {
     margin: 0; /* Asegura que no haya margen alrededor del título */
 }
 
+.card-header-title{
+    height: 30px;
+}
+
+.card-title-description{
+    line-height: 10px;
+}
+
 .card-title {
     margin-bottom: 20px;
 }
 
+#start-date, #end-date, #filter-date-btn{
+    height: 20px;
+}
 
+#filter-date-btn{
+    line-height: 6px;
+}
 
 
 /* Estilos de las tarjetas de opción */
@@ -291,6 +305,7 @@ img{
     padding: 20px;
     background-color: #f8f9fa;
     margin-top: 20px;
+    
 }
 
 /* Estilo para la nueva caja en el modal FAP */
@@ -322,8 +337,18 @@ img{
     background-color: #fff;
     display: flex;
     flex-direction: column; /* Para mantener la dirección de los elementos en columna */
+   
 }
 
+#modalDetalleContent .modal-dialog-scrollable {
+    max-height: calc(100vh - 1rem);
+    overflow-y: auto;
+}
+
+#modalDetalleContent .modal-content {
+    overflow-y: auto;
+    max-height: calc(100vh - 3.5rem);
+}
 
 
 .header {

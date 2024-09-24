@@ -12,6 +12,8 @@ use App\Http\Controllers\DetallesController;
 
 use App\Http\Controllers\ResumenController;
 
+use App\Http\Controllers\DashboardController;
+
 
 
 Route::get('/', function () {
@@ -77,6 +79,7 @@ Route::post('/obtener-requisito-detalles', [ObligacionesController::class, 'obte
 
 Route::post('/obtener-responsables', [ObligacionesController::class, 'obtenerResponsables'])->name('obtener.responsables');
 
+Route::post('/filtrar-obligaciones', [ObligacionesController::class, 'filtrarObligaciones'])->name('filtrar.obligaciones');
 
 
 
@@ -91,9 +94,10 @@ Route::match(['get', 'post'], '/detalles', [DetallesController::class, 'index'])
 
 Route::post('/detalles', [DetallesController::class, 'index'])->name('filtrosDetalles');
 
-Route::get('/export-requisitos', [DetallesController::class, 'export'])->name('requisitos.export');
+Route::post('/export-detalles', [DetallesController::class, 'export'])->name('export-detalles');
 
 
+Route::post('/filtrar-detalle', [DetallesController::class, 'filtrarDetalles'])->name('filtrar-detalle');
 
 
 
@@ -148,4 +152,25 @@ Route::post('/obtener-archivos', [ObligacionesController::class, 'obtenerArchivo
 
 
 
+
+
+Route::middleware([
+    'auth:sanctum',
+    config('jetstream.auth_session'),
+    'verified',
+])->group(function () {
+    // Rutas de Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // API para obtener el resumen de obligaciones
+    Route::post('/api/resumen-obligaciones', [DashboardController::class, 'obtenerDatosGrafico']);
+
+    // API para obtener el avance total
+    Route::post('/api/obtener-avance-total', [DashboardController::class, 'obtenerAvanceTotal'])->name('api.obtenerAvanceTotal');
+
+    // API para obtener el avance por periodicidad
+    Route::post('/api/obtener-avance-periodicidad', [DashboardController::class, 'obtenerResumenPorPeriodicidad']);
+
+    Route::post('/filtrar-requisitos', [DashboardController::class, 'filtrarRequisitos'])->name('filtrar-requisitos');
+});
 
