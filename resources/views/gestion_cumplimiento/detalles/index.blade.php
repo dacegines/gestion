@@ -33,13 +33,14 @@
             <table id="detallesTable" class="table table-striped table-bordered text-center">
                 <thead class="thead-dark">
                     <tr>
-                        <th># Registros</th>
-                        <th>Número de requisito</th>
+                        <th>#Num</th>
+                        <th>#Requisito</th>
+                        <th>Cláusula</th>
                         <th>Obligación</th>
                         <th>Periodicidad</th>
-                        <th>Número de evidencia</th>
+                        <th>#Obligación</th>
                         <th>Avance</th>
-                        <th>Fecha límite de cumplimiento</th>
+                        <th>Fecha límite</th>
                         <th>Responsable</th>
                         <th>Estatus</th>
                     </tr>
@@ -50,6 +51,7 @@
                         <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ htmlspecialchars($requisito->numero_requisito, ENT_QUOTES, 'UTF-8') }}</td>
+                            <td>{{ htmlspecialchars($requisito->clausula_condicionante_articulo, ENT_QUOTES, 'UTF-8') }}</td>
                             <td>{{ htmlspecialchars($requisito->evidencia, ENT_QUOTES, 'UTF-8') }}</td>
                             <td>{{ htmlspecialchars($requisito->periodicidad, ENT_QUOTES, 'UTF-8') }}</td>
                             <td>{{ htmlspecialchars($requisito->numero_evidencia, ENT_QUOTES, 'UTF-8') }}</td>
