@@ -36,6 +36,7 @@ class ObligacionesController extends Controller
                 'Jefa de Cumplimiento',
                 'Director de Finanzas',
                 'Director de Operación'
+                
             ];
     
             return view('gestion_cumplimiento.obligaciones.index', compact('requisitos', 'user', 'currentYear', 'puestosExcluidos'));
@@ -99,6 +100,7 @@ class ObligacionesController extends Controller
                     'origen_obligacion' => $detalle->origen_obligacion,
                     'clausula_condicionante_articulo' => $detalle->clausula_condicionante_articulo,
                     'id_notificacion' => $detalle->id_notificacion,
+                    'condicion' => $detalle->condicion,
                 ]);
             } else {
                 $this->logWarning('No se encontró la evidencia', ['evidencia_id' => $evidenciaId]);
@@ -261,47 +263,68 @@ class ObligacionesController extends Controller
     }
 
     public function enviarCorreoDatosEvidencia(Request $request)
-    {
-        try {
-            $request->validate([
-                'evidencia' => 'required|string'
-            ]);
+{
+    try {
+        // Validar que se haya recibido la evidencia
+        $request->validate([
+            'evidencia' => 'required|string'
+        ]);
 
-            $datos = $request->all();
-            $requisito = Requisito::where('evidencia', $datos['evidencia'])->first();
+        // Obtener todos los datos del request
+        $datos = $request->all();
 
-            if (!$requisito) {
-                $this->logWarning('No se encontró el requisito asociado a la evidencia', ['evidencia' => $datos['evidencia']]);
-                return response()->json(['error' => 'No se encontró el requisito asociado a la evidencia'], 404);
-            }
+        // Buscar el requisito por la evidencia
+        $requisito = Requisito::where('evidencia', $datos['evidencia'])->first();
 
-            if (!$requisito->email) {
-                $this->logWarning('Correo del responsable no encontrado', ['requisito_id' => $requisito->id]);
-                return response()->json(['error' => 'No se encontró el correo del responsable'], 400);
-            }
-
-            $datos['nombre'] = $requisito->nombre;
-            $destinatarioResponsable = $requisito->email;
-            $otrosCorreos = DB::table('responsables')
-                ->distinct()
-                ->whereIn('puesto', ['Gerente Jurídico', 'Director Jurídico', 'Jefa de Cumplimiento'])
-                ->pluck('email')
-                ->toArray();
-
-            $destinatarios = array_merge([$destinatarioResponsable], $otrosCorreos);
-            Mail::to($destinatarios)->send(new DatosEvidenciaMail($datos));
-
-            $this->logInfo('Correo enviado correctamente', ['destinatarios' => $destinatarios, 'evidencia' => $datos['evidencia']]);
-            return response()->json(['success' => true, 'message' => 'Correo enviado correctamente']);
-
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            $this->logWarning('Error de validación al enviar correo de datos de evidencia', ['errors' => $e->errors()]);
-            return response()->json(['error' => 'Datos no válidos', 'details' => $e->errors()], 422);
-        } catch (\Exception $e) {
-            $this->logError('Error inesperado al enviar correo de datos de evidencia', ['error' => $e->getMessage()]);
-            return response()->json(['error' => 'Ocurrió un error al enviar el correo'], 500);
+        // Si no se encuentra el requisito, retornar error
+        if (!$requisito) {
+            $this->logWarning('No se encontró el requisito asociado a la evidencia', ['evidencia' => $datos['evidencia']]);
+            return response()->json(['error' => 'No se encontró el requisito asociado a la evidencia'], 404);
         }
+
+        // Si no se encuentra el email del responsable, retornar error
+        if (!$requisito->email) {
+            $this->logWarning('Correo del responsable no encontrado', ['requisito_id' => $requisito->id]);
+            return response()->json(['error' => 'No se encontró el correo del responsable'], 400);
+        }
+
+        // Obtener los destinatarios
+        $destinatarioResponsable = $requisito->email;
+        $otrosCorreos = DB::table('responsables')
+            ->distinct()
+            ->whereIn('puesto', ['Gerente Jurídico', 'Director Jurídico', 'Jefa de Cumplimiento'])
+            ->pluck('email')
+            ->toArray();
+
+        // Fusionar correos
+        $destinatarios = array_merge([$destinatarioResponsable], $otrosCorreos);
+
+        // Enviar el correo usando el Mailable DatosEvidenciaMail, pasando cada parámetro individualmente
+        Mail::to($destinatarios)->send(new DatosEvidenciaMail(
+            $requisito->nombre,  // Nombre del requisito
+            $requisito->evidencia,  // Evidencia
+            $requisito->periodicidad,  // Periodicidad
+            $requisito->responsable,  // Responsable
+            $requisito->fecha_limite_cumplimiento,  // Fecha límite de cumplimiento
+            $requisito->origen_obligacion,  // Origen de la obligación
+            $requisito->clausula_condicionante_articulo  // Cláusula, condicionante, o artículo
+        ));
+
+        // Log de éxito en el envío de correo
+        $this->logInfo('Correo enviado correctamente', ['destinatarios' => $destinatarios, 'evidencia' => $datos['evidencia']]);
+        return response()->json(['success' => true, 'message' => 'Correo enviado correctamente']);
+
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        // Log de error de validación
+        $this->logWarning('Error de validación al enviar correo de datos de evidencia', ['errors' => $e->errors()]);
+        return response()->json(['error' => 'Datos no válidos', 'details' => $e->errors()], 422);
+    } catch (\Exception $e) {
+        // Log de error inesperado
+        $this->logError('Error inesperado al enviar correo de datos de evidencia', ['error' => $e->getMessage()]);
+        return response()->json(['error' => 'Ocurrió un error al enviar el correo'], 500);
     }
+}
+
 
     public function actualizarPorcentaje(Request $request)
     {
@@ -513,6 +536,7 @@ class ObligacionesController extends Controller
             'origen_obligacion' => $detalle->origen_obligacion,
             'clausula_condicionante_articulo' => $detalle->clausula_condicionante_articulo,
             'nombre_archivo' => $archivo ? $archivo->nombre_archivo : null,
+            'condicion' => $detalle->condicion,
         ]);
 
     } catch (\Exception $e) {

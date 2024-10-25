@@ -9,18 +9,38 @@
         <h4 class="card-title-description">Resumen</h4>
     </div>
     <div class="card-body">
-        <form id="filter-form" action="{{ route('filtrar-requisitos') }}" method="POST" class="form-inline d-flex align-items-center justify-content-center">
-            @csrf
-            <label for="year-select" class="mr-2">Año:</label>
-            <select id="year-select" name="year" class="form-control form-control-sm">
-                @for ($yearOption = 2024; $yearOption <= 2040; $yearOption++)
-                <option value="{{ $yearOption }}" {{ isset($year) && $year == $yearOption ? 'selected' : '' }}>
-                    {{ $yearOption }}
-                </option>
-                @endfor
-            </select>
-            <button type="submit" class="btn btn-success btn-sm ml-2">Ver</button>
-        </form>
+        <div class="row justify-content-center">
+            <form id="filter-form" action="{{ route('filtrar-requisitos') }}" method="POST" class="form-inline d-flex align-items-center justify-content-center">
+                @csrf
+                <label for="year-select" class="mr-2">Año:</label>
+                <select id="year-select" name="year" class="form-control form-control-sm">
+                    @if (Auth::user()->hasRole('invitado'))
+                        <!-- Solo mostrar 2024 si el usuario es 'invitado' -->
+                        <option value="2024" selected>2024</option>
+                    @else
+                        <!-- Mostrar todos los años si no es 'invitado' -->
+                        @for ($yearOption = 2024; $yearOption <= 2040; $yearOption++)
+                            <option value="{{ $yearOption }}" {{ isset($year) && $year == $yearOption ? 'selected' : '' }}>
+                                {{ $yearOption }}
+                            </option>
+                        @endfor
+                    @endif
+                </select>
+            
+                <!-- Botón Ver, deshabilitado si el usuario es invitado -->
+                <button type="submit" class="btn btn-success btn-sm ml-2"
+                        @if (Auth::user()->hasRole('invitado')) disabled @endif>Ver</button>
+            </form>            
+
+        </div>
+
+        <div class="container-fluit text-center">
+            <!-- Mostrar el mensaje si el usuario es 'invitado' y centrar el texto -->
+            @if (Auth::user()->hasRole('invitado'))
+                <p class="text-danger mt-2"><b>Actualmente eres un usuario invitado y solo tienes acceso a esta información.</b></p>
+            @endif
+        </div>       
+     
         <hr class="divider">
         <div class="row text-center justify-content-center">
             @foreach ([
@@ -111,17 +131,39 @@
                             </tr>
                         </thead>
                         <tbody id="modalContent">
-                            @foreach($modal['requisitos'] as $index => $requisito)
-                            <tr>
-                                <td>{{ $loop->iteration }}</td>
-                                <td>{{ e($requisito->evidencia) }}</td>
-                                <td>{{ e($requisito->responsable) }}</td>
-                                <td>{{ e($requisito->periodicidad) }}</td>
-                                <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                    {{ \Carbon\Carbon::parse($requisito->fecha_limite_cumplimiento)->format('d-m-Y') }}
-                                </td>
-                            </tr>
-                            @endforeach
+                            @if(Auth::user()->hasRole('invitado'))
+                                <!-- Mostrar solo 3 registros si es invitado -->
+                                @foreach($modal['requisitos']->take(3) as $index => $requisito)
+                                <tr>
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td>{{ e($requisito->evidencia) }}</td>
+                                    <td>{{ e($requisito->responsable) }}</td>
+                                    <td>{{ e($requisito->periodicidad) }}</td>
+                                    <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                        {{ \Carbon\Carbon::parse($requisito->fecha_limite_cumplimiento)->format('d-m-Y') }}
+                                    </td>
+                                </tr>
+                                @endforeach
+                                <!-- Mensaje para el usuario invitado -->
+                                <tr>
+                                    <td colspan="5" class="text-danger">
+                                        Actualmente eres un usuario invitado y no tienes acceso a toda la información.
+                                    </td>
+                                </tr>
+                            @else
+                                <!-- Mostrar todos los registros si no es invitado -->
+                                @foreach($modal['requisitos'] as $index => $requisito)
+                                <tr>
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td>{{ e($requisito->evidencia) }}</td>
+                                    <td>{{ e($requisito->responsable) }}</td>
+                                    <td>{{ e($requisito->periodicidad) }}</td>
+                                    <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                        {{ \Carbon\Carbon::parse($requisito->fecha_limite_cumplimiento)->format('d-m-Y') }}
+                                    </td>
+                                </tr>
+                                @endforeach
+                            @endif
                         </tbody>
                     </table>
                 </div>
@@ -133,6 +175,7 @@
     </div>
 </div>
 @endforeach
+
 @endsection
 
 @section('css')

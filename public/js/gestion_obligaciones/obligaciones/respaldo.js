@@ -99,52 +99,62 @@ document.addEventListener('DOMContentLoaded', function() {
 function obtenerDetallesEvidencia(evidenciaId, requisitoId) {
     axios.post(obtenerDetallesEvidenciaUrl, { evidencia_id: evidenciaId })
     .then(function(response) {
-        // Crear un string con todas las fechas
-        let fechasLimiteHtml = '';
+        // Crear un único <ul> para todas las fechas
+        let fechasLimiteHtml = '<ul style="list-style-type: disc; padding-left: 20px;">';
         if (response.data.fechas_limite_cumplimiento && response.data.fechas_limite_cumplimiento.length > 0) {
             response.data.fechas_limite_cumplimiento.forEach(function(fecha) {
-                fechasLimiteHtml += `<p><b>${fecha}</b></p>`;
+                fechasLimiteHtml += `<li><b>${sanitizeInput(fecha)}</b></li>`;
             });
         } else {
             fechasLimiteHtml = '<p>No hay fechas límite de cumplimiento</p>';
         }
+        fechasLimiteHtml += '</ul>'; // Cierra el único <ul> para todas las fechas
 
         // Insertar los detalles de la evidencia en el contenedor correspondiente
         document.getElementById("detail-info-" + requisitoId).innerHTML = `
             <div class="header">
-                <h5>${sanitizeInput(response.data.evidencia)}</h5>
+                <h5><b>${sanitizeInput(response.data.condicion)}</b></h5>
             </div>
-            <br>
-            <div class="details-card">
+            
+            <div class="details-card mt-2">
                 <div class="info-section">
-                    <div class="logo-container" style="text-align: right;">
-                        <img src="../img/logo_svp.jpeg" alt="Logo" class="logo" style="width: 70px; height: auto;">
-                    </div>
+                    <div class="logo-container" style="text-align: right;"></div>
+                    
                     <div class="section-header bg-light-grey">
                         <i class="fas fa-calendar"></i>
                         <span>Periodicidad:</span>
                     </div>
-                    <p><b>${sanitizeInput(response.data.periodicidad)}</b></p>
+                    <ul style="list-style-type: disc; padding-left: 20px;">
+                        <li><b>${sanitizeInput(response.data.periodicidad)}</b></li>
+                    </ul>
+                    
                     <div class="section-header bg-light-grey">
                         <i class="fas fa-user"></i>
                         <span>Responsable:</span>
                     </div>
-                    <p><b>${sanitizeInput(response.data.responsable)}</b></p>
+                    <ul style="list-style-type: disc; padding-left: 20px;">
+                        <li><b>${sanitizeInput(response.data.responsable)}</b></li>
+                    </ul>
+                    
                     <div class="section-header bg-light-grey">
                         <i class="fas fa-calendar-alt"></i>
                         <span>Fechas límite de cumplimiento:</span>
                     </div>
-                    ${fechasLimiteHtml}<!-- Aquí se muestran todas las fechas -->
+                    ${fechasLimiteHtml} <!-- Muestra la lista completa de fechas -->
+                    
                     <div class="section-header bg-light-grey">
                         <i class="fas fa-file-alt"></i>
                         <span>Origen de la obligación:</span>
                     </div>
-                    <p><b>${sanitizeInput(response.data.origen_obligacion)}</b></p>
+                    <ul style="list-style-type: disc; padding-left: 20px;">
+                        <li><b>${sanitizeInput(response.data.origen_obligacion)}</b></li>
+                    </ul>
+                    
                     <div class="section-header bg-light-grey">
                         <i class="fas fa-book"></i>
                         <span>Cláusula, condicionante, o artículo:</span>
                     </div>
-                    <p><b>${sanitizeInput(response.data.clausula_condicionante_articulo)}</b></p>
+                    <p style="text-align: justify;"><b>${sanitizeInput(response.data.clausula_condicionante_articulo)}</b></p>
                 </div>
             </div>
         `;
@@ -153,6 +163,7 @@ function obtenerDetallesEvidencia(evidenciaId, requisitoId) {
         console.error('Error al obtener los detalles:', error);
     });
 }
+
 
 function obtenerNotificaciones(idNotificaciones, requisitoId) {
     axios.post(obtenerNotificacionesUrl, { id_notificaciones: idNotificaciones })
@@ -164,23 +175,25 @@ function obtenerNotificaciones(idNotificaciones, requisitoId) {
                         <i class="fas fa-bell"></i>
                         <span>Notificación:</span>
                     </div>
+                    <ul style="list-style-type: disc; padding-left: 20px;"> <!-- Lista con viñetas -->
         `;
         
         if (response.data.length > 0) {
             response.data.forEach(function(nombre) {
-                notificacionesHtml += `<p><b>${sanitizeInput(nombre)}</b></p>`;
+                notificacionesHtml += `<li><b>${sanitizeInput(nombre)}</b></li>`;
             });
         } else {
-            notificacionesHtml += '<p>No hay notificaciones</p>';
+            notificacionesHtml += '<li>No hay notificaciones</li>';
         }
 
-        notificacionesHtml += '</div></div>';
+        notificacionesHtml += '</ul></div></div>';
         document.getElementById("notificaciones-info-" + requisitoId).innerHTML = notificacionesHtml;
     })
     .catch(function(error) {
         console.error('Error al obtener las notificaciones:', error);
     });
 }
+
 
 function obtenerTablaNotificaciones(idNotificaciones, requisitoId) {
     axios.post(obtenerTablaNotificacionesUrl, { id_notificaciones: idNotificaciones })
@@ -265,13 +278,13 @@ function obtenerTablaNotificaciones(idNotificaciones, requisitoId) {
                 if (infoSection) {
                     infoSection.innerHTML = `
                         <div class="header">
-                            <h5>${sanitizeInput(response.data.evidencia)}</h5>
+                            <h5><b>${sanitizeInput(response.data.condicion)}</b></h5>
                         </div>
-                        <br>                    
-                        <div class="details-card">
+                                           
+                        <div class="details-card mt-2">
                             <div id="modal-detalles-obligacion" class="info-section">
                                 <div class="logo-container" style="text-align: right;">
-                                    <img src="/img/logo_svp.jpeg" alt="Logo" class="logo" style="width: 70px; height: auto;">
+                                    
                                 </div>
                                 <p style="display: none;"><b>${sanitizeInput(response.data.evidencia)}</b></p> 
                                 <p style="display: none;"><b>${sanitizeInput(response.data.nombre)}</b></p>                         
@@ -279,32 +292,43 @@ function obtenerTablaNotificaciones(idNotificaciones, requisitoId) {
                                     <i class="fas fa-calendar"></i>
                                     <span>Periodicidad:</span>
                                 </div>
-                                <p><b>${sanitizeInput(response.data.periodicidad)}</b></p>
+                                <ul style="list-style-type: disc; padding-left: 20px;">
+                                    <li><b>${sanitizeInput(response.data.periodicidad)}</b></li>
+                                </ul>
                                 <div class="section-header bg-light-grey">
                                     <i class="fas fa-user"></i>
                                     <span>Responsable:</span>
                                 </div>
-                                <p><b>${sanitizeInput(response.data.responsable)}</b></p>
+                                <ul style="list-style-type: disc; padding-left: 20px;">
+                                    <li><b>${sanitizeInput(response.data.responsable)}</b></li>
+                                </ul>    
                                 <div class="section-header bg-light-grey">
                                     <i class="fas fa-calendar-alt"></i>
                                     <span>Fechas límite de cumplimiento:</span>
                                 </div>
-                                <p><b>${sanitizeInput(response.data.fecha_limite_cumplimiento)}</b></p>
+                                <ul style="list-style-type: disc; padding-left: 20px;">
+                                    <li><b>${sanitizeInput(response.data.fecha_limite_cumplimiento)}</b></li>
+                                </ul>
                                 <div class="section-header bg-light-grey">
                                     <i class="fas fa-file-alt"></i>
                                     <span>Origen de la obligación:</span>
                                 </div>
-                                <p><b>${sanitizeInput(response.data.origen_obligacion)}</b></p>
+                                <ul style="list-style-type: disc; padding-left: 20px;">
+                                    <li><b>${sanitizeInput(response.data.origen_obligacion)}</b></li>
+                                </ul>
                                 <div class="section-header bg-light-grey">
                                     <i class="fas fa-book"></i>
                                     <span>Cláusula, condicionante, o artículo:</span>
                                 </div>
-                                <p><b>${sanitizeInput(response.data.clausula_condicionante_articulo)}</b></p>
+                                <p style="text-align: justify;"><b>${sanitizeInput(response.data.clausula_condicionante_articulo)}</b></p>
                             </div>
                         </div>
                         <br>
+                        
                         <button class="btn btn-secondary btnMarcarCumplido" id="btnMarcarCumplido" data-requisito-id="${sanitizeInput(response.data.id)}" data-responsable="${sanitizeInput(response.data.responsable)}">
-                            <i class=""></i> Cambiar estado de evidencia
+                            
+                                <i class=""></i> Cambiar estado de evidencia
+                            
                         </button>
                     `;
     

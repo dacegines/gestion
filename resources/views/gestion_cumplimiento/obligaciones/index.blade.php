@@ -19,7 +19,9 @@
 
 <div class="card-header-title card-header bg-success text-white text-center">
     <h4 class="card-title-description">
-        @if(in_array($user->puesto, $puestosExcluidos))
+        @if (Auth::user()->hasRole('invitado'))
+            Obligaciones - Acceso Limitado
+        @elseif(in_array($user->puesto, $puestosExcluidos))
             Obligaciones
         @else
             Obligaciones - {{ $user->puesto }}
@@ -35,46 +37,77 @@
                 <div class="form-group mr-2">
                     <label for="year-select" class="mr-2">Año:</label>
                     <select id="year-select" name="year" class="form-control form-control-sm">
-                        @for ($yearOption = 2024; $yearOption <= 2040; $yearOption++)
-                            <option value="{{ $yearOption }}" {{ (isset($year) && $year == $yearOption) ? 'selected' : '' }}>
-                                {{ $yearOption }}
-                            </option>
-                        @endfor
+                        @if (Auth::user()->hasRole('invitado'))
+                            <!-- Solo mostrar 2024 si el usuario es 'invitado' -->
+                            @for ($yearOption = 2024; $yearOption <= 2040; $yearOption++)
+                                <option value="{{ $yearOption }}" {{ (isset($year) && $year == $yearOption) ? 'selected' : '' }}>
+                                    {{ $yearOption }}
+                                </option>
+                            @endfor
+                        @else
+                            <!-- Mostrar todos los años si no es 'invitado' -->
+                            @for ($yearOption = 2024; $yearOption <= 2040; $yearOption++)
+                                <option value="{{ $yearOption }}" {{ (isset($year) && $year == $yearOption) ? 'selected' : '' }}>
+                                    {{ $yearOption }}
+                                </option>
+                            @endfor
+                        @endif
                     </select>
                 </div>
-                <button type="submit" class="btn btn-success btn-sm">Ver</button>
+        
+                <!-- Botón Ver, deshabilitado si el usuario es invitado -->
+                <button type="submit" class="btn btn-success btn-sm" 
+                        @if (Auth::user()->hasRole('invitado')) disabled @endif>Ver</button>
             </form>
-        </div>              
+        </div>
+        
+        <div class="container-fluit text-center">
+            <!-- Mostrar el mensaje si el usuario es 'invitado' y centrar el texto -->
+            @if (Auth::user()->hasRole('invitado'))
+                <p class="text-danger mt-2"><b>Actualmente eres un usuario invitado y solo tienes acceso a estas obligaciones.</b></p>
+            @endif
+        </div>
+                
         <div class="divider"></div>
         <button class="btn btn-success" onclick="location.reload();">Actualizar</button>
         <div class="row text-center justify-content-center" id="cajaContainer">
-
-            
-            @foreach($requisitos->unique('nombre') as $requisito)
-                <div class="col-md-3">
-                    <div class="card obligation-card" data-toggle="modal" data-target="#modal{{ $requisito->id }}">
-                        <div class="obligation-image">
-                            
-                            <span class="avance-obligacion" data-avance="{{ $requisito->total_avance }}">{{ $requisito->total_avance }}%</span>
-                            <div class="status-indicator">
-                                {{ $requisito->total_avance == 100 ? 'Completo' : 'Avance: En Progreso' }}
+            @if (Auth::user()->hasRole('invitado'))
+                <!-- Mostrar solo 3 registros si el usuario es 'invitado' -->
+                @foreach($requisitos->unique('nombre')->take(2) as $requisito)
+                    <div class="col-md-3">
+                        <div class="card obligation-card" data-toggle="modal" data-target="#modal{{ $requisito->id }}">
+                            <div class="obligation-image">
+                                <span class="avance-obligacion" data-avance="{{ $requisito->total_avance }}">{{ $requisito->total_avance }}%</span>
+                                <div class="status-indicator">
+                                    {{ $requisito->total_avance == 100 ? 'Completo' : 'Avance: En Progreso' }}
+                                </div>
                             </div>
-                        </div>
-                        <div class="card-body">
-                            <h6 class="card-title container">{{ $requisito->nombre }}</h6>
-                            <!-- 
-                            <br>
-                            <div class="card-status">{{ $requisito->total_avance == 100 ? 'Completado' : 'Abierto' }}</div>
-                            <div class="card-icons">
-                                <i class="fas fa-info-circle"></i>
-                                <i class="far fa-star"></i>
+                            <div class="card-body">
+                                <h6 class="card-title container">{{ $requisito->nombre }}</h6>
                             </div>
-                            -->
                         </div>
                     </div>
-                </div>
-            @endforeach
+                @endforeach
+            @else
+                <!-- Mostrar todos los registros para otros roles -->
+                @foreach($requisitos->unique('nombre') as $requisito)
+                    <div class="col-md-3">
+                        <div class="card obligation-card" data-toggle="modal" data-target="#modal{{ $requisito->id }}">
+                            <div class="obligation-image">
+                                <span class="avance-obligacion" data-avance="{{ $requisito->total_avance }}">{{ $requisito->total_avance }}%</span>
+                                <div class="status-indicator">
+                                    {{ $requisito->total_avance == 100 ? 'Completo' : 'Avance: En Progreso' }}
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h6 class="card-title container">{{ $requisito->nombre }}</h6>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            @endif
         </div>
+        
     </div>
 </div>
 
@@ -196,12 +229,13 @@
                     <div class="row">
                         <!-- Sección 1: Detalles de Evidencia -->
                         <div class="col-md-6">
-                            <h5>Detalles de Obligación</h5>
+                            <h5><b>Detalles de Obligación</b></h5>
                             <div>
                                 <div class="alert status-alert" role="alert"></div>
                                 <div class="details-card">
                                     <div class="info-section">
                                         <!-- Aquí puedes agregar detalles adicionales -->
+                                        
                                     </div>
                                 </div>
                                 <hr>
@@ -225,15 +259,22 @@
                                             <label for="archivo">Seleccione un archivo</label>
                                             <input type="file" name="archivo" class="archivo" id="archivo" required>
                                         </div>
+                                        @if (!Auth::user()->hasRole('invitado'))
+                                        <!-- Mostrar botones para subir archivo y enviar correo si no es invitado -->
                                         <button type="button" class="btn btn-success" onclick="handleFileUpload('#uploadForm')">Subir Archivo</button>
                                         <button type="button" class="btn btn-success" onclick="ejecutarAccionConDatos()">Enviar correo</button>
+                                    @else
+                                        <!-- Mostrar mensaje si el usuario tiene el rol de invitado -->
+                                        <p class="text-danger"><b>Actualmente eres un usuario invitado y no puedes subir evidencias para esta obligación.</b></p>
+                                    @endif
+                                    
                                     </form>
                                 </div>
                             </div>
                         </div>
                         <!-- Sección 2: Archivos adjuntos -->
                         <div class="col-md-6">
-                            <h5>Archivos adjuntos</h5>
+                            <h5><b>Archivos adjuntos</b></h5>
                             <hr>
                             <div style="max-height: 500px; overflow-y: auto;">
                                 <table class="table table-striped table-bordered text-center">
@@ -301,6 +342,9 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const userRole = "{{ Auth::user()->roles->pluck('name')->first() }}";
+    </script>    
 
 <script src="{{ asset('js/gestion_obligaciones/obligaciones/obligaciones.js') }}"></script>    
     

@@ -46,7 +46,7 @@
 <body>
     <div class="container">
         <div class="header">
-            {{ $datos['nombre'] }}
+            {{ $nombre }}
         </div>
         <div class="details-card">
             <div class="info-section">
@@ -56,17 +56,17 @@
                     </div>
                     <hr>
                     <div class="section-header">📝 Obligación:</div>
-                    <p>{{ $datos['evidencia'] }}</p>
+                    <p>{{ $evidencia }}</p>
                     <div class="section-header">🗓 Periodicidad:</div>
-                    <p>{{ $datos['periodicidad'] }}</p>
+                    <p>{{ $periodicidad }}</p>
                     <div class="section-header">👤 Responsable:</div>
-                    <p>{{ $datos['responsable'] }}</p>
+                    <p>{{ $responsable }}</p>
                     <div class="section-header">📅 Fechas límite de cumplimiento:</div>
-                    <p>{{ $datos['fecha_limite_cumplimiento'] }}</p>
+                    <p>{{ $fecha_limite_cumplimiento }}</p>
                     <div class="section-header">📄 Origen de la obligación:</div>
-                    <p>{{ $datos['origen_obligacion'] }}</p>
+                    <p>{{ $origen_obligacion }}</p>
                     <div class="section-header">📜 Cláusula, condicionante, o artículo:</div>
-                    <p>{{ $datos['clausula_condicionante_articulo'] }}</p>
+                    <p style="text-align: justify;">{{ $clausula_condicionante_articulo }}</p>
                 </div>
             </div>
         </div>
@@ -81,4 +81,3 @@
     </div>
 </body>
 </html>
-

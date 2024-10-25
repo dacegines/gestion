@@ -17,31 +17,58 @@ class DetallesController extends Controller
         if (!Auth::check()) {
             return redirect()->route('login'); // Redirigir al login si no está autenticado
         }
-
+    
         $hoy = \Carbon\Carbon::now();
         $year = $hoy->year; // Establece el año actual
-
-        // Redirigir al método filtrarDetalles con el año actual
-        return $this->filtrarDetalles(new Request(['year' => $year]));
-    }
-
-    public function filtrarDetalles(Request $request)
-    {
-        // Validar la entrada del año
-        $validatedData = $request->validate([
-            'year' => 'required|integer|min:2024|max:2040', // Asegura que el año sea válido
-        ]);
-
-        $year = $validatedData['year'];
-
-        // Filtrar los requisitos cuyo año de fecha_limite_cumplimiento coincida con el año seleccionado
-        $requisitos = Requisito::whereYear('fecha_limite_cumplimiento', $year)
-            ->orderBy('fecha_limite_cumplimiento', 'asc')
-            ->get();
-
-        // Retornar la vista principal con los requisitos filtrados y el año seleccionado
+        $user = Auth::user(); // Obtener el usuario autenticado
+    
+        // Definir los puestos excluidos
+        $puestosExcluidos = [
+            'Director Jurídico',
+            'Directora General',
+            'Jefa de Cumplimiento',
+            'Director de Finanzas',
+            'Director de Operación',
+            'Invitado'
+        ];
+    
+        // Filtrar los requisitos dependiendo del puesto del usuario
+        if (in_array($user->puesto, $puestosExcluidos)) {
+            // Si el usuario tiene un puesto en la lista de excluidos, mostrar todos los registros
+            $requisitos = Requisito::with('archivos')
+                ->whereYear('fecha_limite_cumplimiento', $year) // Mostrar todas las obligaciones para el año actual
+                ->orderBy('fecha_limite_cumplimiento', 'asc')
+                ->get();
+        } else {
+            // Si el usuario no está en la lista de excluidos, filtrar solo por su puesto
+            $requisitos = Requisito::with('archivos')
+                ->where('responsable', $user->puesto) // Filtrar por el puesto del usuario
+                ->whereYear('fecha_limite_cumplimiento', $year)
+                ->orderBy('fecha_limite_cumplimiento', 'asc')
+                ->get();
+        }
+    
         return view('gestion_cumplimiento.detalles.index', compact('requisitos', 'year'));
     }
+    
+    
+
+    public function filtrarDetalles(Request $request)
+{
+    $validatedData = $request->validate([
+        'year' => 'required|integer|min:2024|max:2040',
+    ]);
+
+    $year = $validatedData['year'];
+
+    // Asegurarse de cargar los archivos relacionados
+    $requisitos = Requisito::with('archivos')
+        ->whereYear('fecha_limite_cumplimiento', $year)
+        ->orderBy('fecha_limite_cumplimiento', 'asc')
+        ->get();
+
+    return view('gestion_cumplimiento.detalles.index', compact('requisitos', 'year'));
+}
 
     public function export(Request $request)
     {

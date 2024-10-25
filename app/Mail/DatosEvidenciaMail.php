@@ -11,27 +11,40 @@ class DatosEvidenciaMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $datos;
+    public $nombre;
+    public $evidencia;
+    public $periodicidad;
+    public $responsable;
+    public $fecha_limite_cumplimiento;
+    public $origen_obligacion;
+    public $clausula_condicionante_articulo;
 
-    public function __construct($datos)
+    public function __construct($nombre, $evidencia, $periodicidad, $responsable, $fecha_limite_cumplimiento, $origen_obligacion, $clausula_condicionante_articulo)
     {
-        $this->datos = $datos;
+        $this->nombre = $nombre;
+        $this->evidencia = $evidencia;
+        $this->periodicidad = $periodicidad;
+        $this->responsable = $responsable;
+        $this->fecha_limite_cumplimiento = $fecha_limite_cumplimiento;
+        $this->origen_obligacion = $origen_obligacion;
+        $this->clausula_condicionante_articulo = $clausula_condicionante_articulo;
     }
 
     public function build()
     {
         return $this->view('emails.datos_evidencia')
-        ->subject('Nueva evidencia agregada.')
-        ->from('noreply@tu-dominio.com', 'Sistema de Notificaciones TDC')
-        //->replyTo('soporte@tu-dominio.com', 'Soporte Técnico')
-        //->cc('manager@tu-dominio.com', 'Manager')
-        //->bcc('auditor@tu-dominio.com', 'Auditor')
-        ->priority(1)
-        /*->attach(storage_path('app/public/reporte.pdf'), [
-            'as' => 'ReporteAnual.pdf',
-            'mime' => 'application/pdf',
-        ])*/
-                    ->with('datos', $this->datos);
+            ->subject('Nueva evidencia agregada.')
+            ->from('noreply@tu-dominio.com', 'Sistema de Notificaciones TDC')
+            ->priority(1)
+            ->with([
+                'nombre' => $this->nombre,
+                'evidencia' => $this->evidencia,
+                'periodicidad' => $this->periodicidad,
+                'responsable' => $this->responsable,
+                'fecha_limite_cumplimiento' => $this->fecha_limite_cumplimiento,
+                'origen_obligacion' => $this->origen_obligacion,
+                'clausula_condicionante_articulo' => $this->clausula_condicionante_articulo,
+            ]);
     }
 }
 

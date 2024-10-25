@@ -1,3 +1,5 @@
+
+
 // Función para validar que un ID sea un número entero válido
 function isValidId(id) {
     return typeof id === 'string' && id.trim().length > 0;
@@ -113,7 +115,7 @@ function obtenerDetallesEvidencia(evidenciaId, requisitoId) {
         // Insertar los detalles de la evidencia en el contenedor correspondiente
         document.getElementById("detail-info-" + requisitoId).innerHTML = `
             <div class="header">
-                <h5>${sanitizeInput(response.data.evidencia)}</h5>
+                <h5><b>${sanitizeInput(response.data.condicion)}</b></h5>
             </div>
             
             <div class="details-card mt-2">
@@ -154,7 +156,13 @@ function obtenerDetallesEvidencia(evidenciaId, requisitoId) {
                         <i class="fas fa-book"></i>
                         <span>Cláusula, condicionante, o artículo:</span>
                     </div>
-                    <p style="text-align: justify;"><b>${sanitizeInput(response.data.clausula_condicionante_articulo)}</b></p>
+                                                            ${
+                                userRole === 'invitado' ? `
+                                    <p class="text-danger"><b>Actualmente eres un usuario invitado y no puedes acceder a esta información.</b></p>
+                                ` : `
+                                    <p style="text-align: justify;"><b>${sanitizeInput(response.data.clausula_condicionante_articulo)}</b></p>
+                                `
+                            }
                 </div>
             </div>
         `;
@@ -276,16 +284,13 @@ function obtenerTablaNotificaciones(idNotificaciones, requisitoId) {
                 const infoSection = modalElement.querySelector('.modal-body .info-section');
     
                 if (infoSection) {
-                    infoSection.innerHTML = `
+                    let content = `
                         <div class="header">
-                            <h5>${sanitizeInput(response.data.evidencia)}</h5>
+                            <h5><b>${sanitizeInput(response.data.condicion)}</b></h5>
                         </div>
-                                           
                         <div class="details-card mt-2">
                             <div id="modal-detalles-obligacion" class="info-section">
-                                <div class="logo-container" style="text-align: right;">
-                                    
-                                </div>
+                                <div class="logo-container" style="text-align: right;"></div>
                                 <p style="display: none;"><b>${sanitizeInput(response.data.evidencia)}</b></p> 
                                 <p style="display: none;"><b>${sanitizeInput(response.data.nombre)}</b></p>                         
                                 <div class="section-header bg-light-grey">
@@ -320,37 +325,55 @@ function obtenerTablaNotificaciones(idNotificaciones, requisitoId) {
                                     <i class="fas fa-book"></i>
                                     <span>Cláusula, condicionante, o artículo:</span>
                                 </div>
-                                <p style="text-align: justify;"><b>${sanitizeInput(response.data.clausula_condicionante_articulo)}</b></p>
+                                                            ${
+                                userRole === 'invitado' ? `
+                                    <p class="text-danger"><b>Actualmente eres un usuario invitado y no puedes acceder a esta información.</b></p>
+                                ` : `
+                                    <p style="text-align: justify;"><b>${sanitizeInput(response.data.clausula_condicionante_articulo)}</b></p>
+                                `
+                            }
                             </div>
                         </div>
                         <br>
-                        <button class="btn btn-secondary btnMarcarCumplido" id="btnMarcarCumplido" data-requisito-id="${sanitizeInput(response.data.id)}" data-responsable="${sanitizeInput(response.data.responsable)}">
-                            <i class=""></i> Cambiar estado de evidencia
-                        </button>
                     `;
     
+                    // Solo agregar el botón si el rol es 'admin'
+                    if (userRole === 'admin') {
+                        content += `
+                            <button class="btn btn-secondary btnMarcarCumplido w-100" id="btnMarcarCumplido" data-requisito-id="${sanitizeInput(response.data.id)}" data-responsable="${sanitizeInput(response.data.responsable)}">
+                                <i class=""></i> Cambiar estado de evidencia
+                            </button>
+                        `;
+                    }
+    
+                    // Insertar el contenido en la sección de información
+                    infoSection.innerHTML = content;
+    
+                    // Solo si el botón se ha renderizado, añadir la funcionalidad del evento click
                     const btnMarcarCumplido = document.getElementById("btnMarcarCumplido");
-                    btnMarcarCumplido.addEventListener('click', function() {
-                        axios.post(verificarArchivosUrl, {
-                            requisito_id: sanitizeInput(requisitoId),
-                            fecha_limite_cumplimiento: sanitizeInput(response.data.fecha_limite_cumplimiento),
-                            nombre_archivo: sanitizeInput(response.data.nombre_archivo)
-                        })
-                        .then(function (verifyResponse) {
-                            if (verifyResponse.data.conteo === 0) {
-                                Swal.fire({
-                                    title: "¡No hay archivos adjuntos para esta evidencia!",
-                                    text: "Para poder cambiar el estatus de la evidencia se requiere mínimo un archivo adjunto.",
-                                    icon: "error"
-                                });
-                            } else {
-                                actualizarEstado(detalleId, requisitoId, sanitizeInput(response.data.responsable), sanitizeInput(numeroRequisito));
-                            }
-                        })
-                        .catch(function (error) {
-                            console.error('Error al verificar los archivos:', error);
+                    if (btnMarcarCumplido) {
+                        btnMarcarCumplido.addEventListener('click', function() {
+                            axios.post(verificarArchivosUrl, {
+                                requisito_id: sanitizeInput(requisitoId),
+                                fecha_limite_cumplimiento: sanitizeInput(response.data.fecha_limite_cumplimiento),
+                                nombre_archivo: sanitizeInput(response.data.nombre_archivo)
+                            })
+                            .then(function (verifyResponse) {
+                                if (verifyResponse.data.conteo === 0) {
+                                    Swal.fire({
+                                        title: "¡No hay archivos adjuntos para esta evidencia!",
+                                        text: "Para poder cambiar el estatus de la evidencia se requiere mínimo un archivo adjunto.",
+                                        icon: "error"
+                                    });
+                                } else {
+                                    actualizarEstado(detalleId, requisitoId, sanitizeInput(response.data.responsable), sanitizeInput(numeroRequisito));
+                                }
+                            })
+                            .catch(function (error) {
+                                console.error('Error al verificar los archivos:', error);
+                            });
                         });
-                    });
+                    }
                 } else {
                     console.error('No se encontró la sección de información en el modal');
                 }
@@ -362,6 +385,7 @@ function obtenerTablaNotificaciones(idNotificaciones, requisitoId) {
             console.error('Error al obtener los detalles:', error);
         });
     }
+    
 
 // Subir archivo
 document.querySelectorAll('.custom-card').forEach(function(element) {
@@ -518,8 +542,14 @@ function cargarArchivos(requisitoId, evidenciaId, fechaLimite) {
                     <td>${sanitizeInput(archivo.usuario)}</td>
                     <td>${sanitizeInput(archivo.puesto)}</td>
                     <td>${new Date(sanitizeInput(archivo.created_at)).toLocaleString()}</td>
-                    <td><button class="btn btn-sm btn-info btn-ver-archivo" data-url="${storageUploadsUrl}/${sanitizeInput(archivo.nombre_archivo)}"><i class="fas fa-eye"></i></button></td>
-                    <td><button class="btn btn-sm btn-danger btn-eliminar-archivo" onclick="eliminarArchivo(${sanitizeInput(archivo.id)}, '${sanitizeInput(requisitoId)}', '${sanitizeInput(evidenciaId)}', '${sanitizeInput(fechaLimite)}')"><i class="fas fa-trash-alt"></i></button></td>
+                    ${
+                        userRole === 'invitado' ? `
+                            <td colspan="2" class="text-danger"><b>Sin acceso</b></td>
+                        ` : `
+                            <td><button class="btn btn-sm btn-info btn-ver-archivo" data-url="${storageUploadsUrl}/${sanitizeInput(archivo.nombre_archivo)}"><i class="fas fa-eye"></i></button></td>
+                            <td><button class="btn btn-sm btn-danger btn-eliminar-archivo" onclick="eliminarArchivo(${sanitizeInput(archivo.id)}, '${sanitizeInput(requisitoId)}', '${sanitizeInput(evidenciaId)}', '${sanitizeInput(fechaLimite)}')"><i class="fas fa-trash-alt"></i></button></td>
+                        `
+                    }
                 </tr>`).join('')
             : '<tr><td colspan="8">No hay archivos adjuntos</td></tr>';
 

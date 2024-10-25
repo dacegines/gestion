@@ -32,9 +32,10 @@ $(document).ready(function() {
         "buttons": [
             {
                 extend: 'excelHtml5',
-                text: 'Exportar a Excel',
+                text: '<i class="fas fa-file-excel"> Exportar</i>', // Ícono en lugar de texto
                 className: 'btn btn-success'
             }
+            
         ],
         "lengthMenu": [[-1, 10, 25, 50, 100], ['Todo', 10, 25, 50, 100]], // Configurar menú de longitud de página
         "pageLength": -1 // Preseleccionar opción "Todo"
