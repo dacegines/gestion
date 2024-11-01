@@ -14,6 +14,10 @@ use App\Http\Controllers\ResumenController;
 
 use App\Http\Controllers\DashboardController;
 
+use App\Http\Controllers\CustomPasswordResetController;
+
+use App\Http\Controllers\CustomRegisterController;
+
 
 
 Route::get('/', function () {
@@ -173,4 +177,20 @@ Route::middleware([
 
     Route::post('/filtrar-requisitos', [DashboardController::class, 'filtrarRequisitos'])->name('filtrar-requisitos');
 });
+
+
+
+//ruta de recuperacion de contraseña
+Route::get('custom-password-reset', [CustomPasswordResetController::class, 'show'])->name('custom.password.reset');
+Route::post('custom-password-reset', [CustomPasswordResetController::class, 'submitRequest'])->name('custom.password.reset.submit');
+
+//cuenta nueva
+// Rutas para creación de cuenta (nuevo registro)
+Route::get('/register_new', [CustomRegisterController::class, 'show'])->name('custom.register_new'); // Mostrar formulario de registro
+Route::post('/register_new', [CustomRegisterController::class, 'submitRequest'])->name('custom.account.register.submit'); // Enviar formulario de registro
+
+
+
+
+
 

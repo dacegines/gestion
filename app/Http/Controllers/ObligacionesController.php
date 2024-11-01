@@ -25,19 +25,21 @@ class ObligacionesController extends Controller
             }
     
             $currentYear = Carbon::now()->year;
-            $requisitos = $this->obtenerRequisitosConAvance($currentYear, $user);
     
-            $this->logInfo('Requisitos cargados correctamente', ['user_id' => $user->id, 'total_requisitos' => $requisitos->count()]);
-    
-            // Definir los puestos excluidos para pasar a la vista
+            // Definir los puestos excluidos para que vean todas las obligaciones
             $puestosExcluidos = [
                 'Director Jurídico',
                 'Directora General',
                 'Jefa de Cumplimiento',
                 'Director de Finanzas',
-                'Director de Operación'
-                
+                'Director de Operación',
+                'Invitado' // Agregar "Invitado" aquí
             ];
+    
+            // Obtener los requisitos con avance
+            $requisitos = $this->obtenerRequisitosConAvance($currentYear, $user, $puestosExcluidos);
+    
+            $this->logInfo('Requisitos cargados correctamente', ['user_id' => $user->id, 'total_requisitos' => $requisitos->count()]);
     
             return view('gestion_cumplimiento.obligaciones.index', compact('requisitos', 'user', 'currentYear', 'puestosExcluidos'));
     
@@ -48,12 +50,19 @@ class ObligacionesController extends Controller
     }
     
 
-    private function obtenerRequisitosConAvance($year, $user)
+    private function obtenerRequisitosConAvance($year, $user, $puestosExcluidos)
     {
-        return Requisito::with('archivos')
-            ->porAno($year)
-            ->permitirVisualizacion($user)
-            ->get()
+        $query = Requisito::with('archivos')->porAno($year);
+    
+        // Verificar si el puesto del usuario está en la lista de puestos excluidos
+        if (!in_array($user->puesto, $puestosExcluidos)) {
+            $query->permitirVisualizacion($user);
+        }
+    
+        // Log para ver la cantidad de registros antes de aplicar get y el filtro
+       
+    
+        return $query->get()
             ->filter(fn($requisito) => !empty($requisito->responsable))
             ->each(fn($requisito) => $requisito->total_avance = $this->getTotalAvance($requisito->numero_requisito));
     }

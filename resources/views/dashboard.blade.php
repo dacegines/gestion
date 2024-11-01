@@ -37,7 +37,7 @@
         <div class="container-fluit text-center">
             <!-- Mostrar el mensaje si el usuario es 'invitado' y centrar el texto -->
             @if (Auth::user()->hasRole('invitado'))
-                <p class="text-danger mt-2"><b>Actualmente eres un usuario invitado y solo tienes acceso a esta información.</b></p>
+                <p class="text-center text-muted" style="font-size: 1.0rem;"><b>Actualmente eres un usuario invitado y solo tienes acceso a esta información.</b></p>
             @endif
         </div>       
      
@@ -146,7 +146,7 @@
                                 @endforeach
                                 <!-- Mensaje para el usuario invitado -->
                                 <tr>
-                                    <td colspan="5" class="text-danger">
+                                    <td colspan="5" class="text-center text-muted" style="font-size: 1.0rem;">
                                         Actualmente eres un usuario invitado y no tienes acceso a toda la información.
                                     </td>
                                 </tr>

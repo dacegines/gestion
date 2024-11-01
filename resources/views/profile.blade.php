@@ -10,6 +10,7 @@
 @endsection
 
 @section('content')
+@role('admin')
     <div class="row">
         <div class="col-md-6">
             <!-- Información de perfil -->
@@ -18,16 +19,14 @@
                     <h3 class="card-title">Información de perfil</h3>
                 </div>
                 <div class="card-body">
-                    
-
                     @if (Laravel\Fortify\Features::canUpdateProfileInformation())
                         @livewire('profile.update-profile-information-form')
                     @endif
                 </div>
-
             </div>
         </div>
-
+@endrole    
+        @role('admin')
         <div class="col-md-6">
             <!-- Actualizar contraseña -->
             <div class="card">
@@ -35,16 +34,13 @@
                     <h3 class="card-title">Actualizar contraseña</h3>
                 </div>
                 <div class="card-body">
-
-
                     @if (Laravel\Fortify\Features::enabled(Laravel\Fortify\Features::updatePasswords()))
                         @livewire('profile.update-password-form')
                     @endif
                 </div>
-
             </div>
         </div>
-    </div>
+    @endrole
 
     @if (Laravel\Fortify\Features::canManageTwoFactorAuthentication() || Laravel\Jetstream\Jetstream::hasAccountDeletionFeatures())
         <div class="row mt-4">
@@ -61,21 +57,28 @@
                     </div>
                 @endif
 
-                <!-- Eliminar cuenta -->
-                @if (Laravel\Jetstream\Jetstream::hasAccountDeletionFeatures())
-                    <div class="card mt-4">
-                        <div class="card-header bg-success text-white text-center">
-                            <h3 class="card-title">Eliminar cuenta</h3>
+                <!-- Eliminar cuenta solo visible para el rol admin -->
+                @role('admin')
+                    @if (Laravel\Jetstream\Jetstream::hasAccountDeletionFeatures())
+                        <div class="card mt-4">
+                            <div class="card-header bg-success text-white text-center">
+                                <h3 class="card-title">Eliminar cuenta</h3>
+                            </div>
+                            <div class="card-body">
+                                @livewire('profile.delete-user-form')
+                            </div>
                         </div>
-                        <div class="card-body">
-                            @livewire('profile.delete-user-form')
-                        </div>
-                    </div>
-                @endif
+                    @endif
+                @endrole
+                <!-- Mensaje para usuarios que no tienen el rol admin -->
+@unlessrole('admin')
+<p class="text-center text-muted" style="font-size: 1.1rem;"><b>Actualmente solo tienes acceso a esta opción.<b></p>
+@endunlessrole
             </div>
         </div>
     @endif
 @endsection
+
 
 
 @section('css')

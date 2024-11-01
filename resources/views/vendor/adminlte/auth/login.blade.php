@@ -84,6 +84,27 @@
 @stop
 
 @section('auth_footer')
+    @if (Route::has('custom.password.reset'))
+        <p class="my-0">
+            <a href="{{ route('custom.password.reset') }}">
+                {{ __('adminlte::adminlte.i_forgot_my_password') }}
+            </a>
+        </p>
+    @endif
+
+    @if (Route::has('custom.register_new'))
+        <p class="my-0">
+            <a href="{{ route('custom.register_new') }}">
+                {{ __('adminlte::adminlte.register_a_new_membership') }}
+            </a>
+        </p>
+    @endif
+@stop
+
+
+
+
+{{-- @section('auth_footer')
     @if (Route::has('password.request'))
         <p class="my-0">
             <a href="{{ $password_reset_url }}">
@@ -99,4 +120,4 @@
             </a>
         </p>
     @endif
-@stop
+@stop --}}

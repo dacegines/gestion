@@ -40,13 +40,6 @@
             </form>
         </div>
 
-        <div class="container-fluit text-center">
-            <!-- Mostrar el mensaje si el usuario es 'invitado' y centrar el texto -->
-            @if (Auth::user()->hasRole('invitado'))
-                <p class="text-danger mt-2"><b>Actualmente eres un usuario invitado y solo tienes acceso a esta información.</b></p>
-            @endif
-        </div>        
-
         <div class="divider"></div>
 
         <div class="table-responsive">
@@ -116,8 +109,14 @@
         </div>
         
     </div>
+    
 </div>
-
+<div class="container-fluit text-center">
+    <!-- Mostrar el mensaje si el usuario es 'invitado' y centrar el texto -->
+    @if (Auth::user()->hasRole('invitado'))
+        <p class="text-center text-muted" style="font-size: 1.0rem;"><b>Actualmente eres un usuario invitado y solo tienes acceso a esta información.</b></p>
+    @endif
+</div>     
 @endsection
 
 

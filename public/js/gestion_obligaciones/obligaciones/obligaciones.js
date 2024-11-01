@@ -158,7 +158,7 @@ function obtenerDetallesEvidencia(evidenciaId, requisitoId) {
                     </div>
                                                             ${
                                 userRole === 'invitado' ? `
-                                    <p class="text-danger"><b>Actualmente eres un usuario invitado y no puedes acceder a esta información.</b></p>
+                                    <p class="text-center text-muted" style="font-size: 1.0rem;"><b>Actualmente eres un usuario invitado y no puedes acceder a esta información.</b></p>
                                 ` : `
                                     <p style="text-align: justify;"><b>${sanitizeInput(response.data.clausula_condicionante_articulo)}</b></p>
                                 `
@@ -327,7 +327,7 @@ function obtenerTablaNotificaciones(idNotificaciones, requisitoId) {
                                 </div>
                                                             ${
                                 userRole === 'invitado' ? `
-                                    <p class="text-danger"><b>Actualmente eres un usuario invitado y no puedes acceder a esta información.</b></p>
+                                    <p class="text-center text-muted" style="font-size: 1.0rem;"><b>Actualmente eres un usuario invitado y no puedes acceder a esta información.</b></p>
                                 ` : `
                                     <p style="text-align: justify;"><b>${sanitizeInput(response.data.clausula_condicionante_articulo)}</b></p>
                                 `

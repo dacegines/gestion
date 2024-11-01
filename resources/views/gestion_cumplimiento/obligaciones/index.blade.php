@@ -61,12 +61,7 @@
             </form>
         </div>
         
-        <div class="container-fluit text-center">
-            <!-- Mostrar el mensaje si el usuario es 'invitado' y centrar el texto -->
-            @if (Auth::user()->hasRole('invitado'))
-                <p class="text-danger mt-2"><b>Actualmente eres un usuario invitado y solo tienes acceso a estas obligaciones.</b></p>
-            @endif
-        </div>
+
                 
         <div class="divider"></div>
         <button class="btn btn-success" onclick="location.reload();">Actualizar</button>
@@ -265,7 +260,7 @@
                                         <button type="button" class="btn btn-success" onclick="ejecutarAccionConDatos()">Enviar correo</button>
                                     @else
                                         <!-- Mostrar mensaje si el usuario tiene el rol de invitado -->
-                                        <p class="text-danger"><b>Actualmente eres un usuario invitado y no puedes subir evidencias para esta obligación.</b></p>
+                                        <p class="text-center text-muted" style="font-size: 1.0rem;"><b>Actualmente eres un usuario invitado y no puedes adjuntar archivos.<b></p>
                                     @endif
                                     
                                     </form>
@@ -309,6 +304,11 @@
     <div class="text-center mt-4">
         <h5>Este usuario no tiene obligaciones registradas o el año no contiene obligaciones registradas.</h5>
     </div>
+@endif
+
+@if (Auth::user()->hasRole('invitado'))
+    <p class="text-center text-muted" style="font-size: 1.1rem;"><b>Actualmente eres un usuario invitado y solo tienes acceso a estas obligaciones.<b></p>
+
 @endif
 
 
