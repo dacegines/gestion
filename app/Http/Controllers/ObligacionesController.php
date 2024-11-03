@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Mail\DatosEvidenciaMail;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\AlertaCorreo;
 
 class ObligacionesController extends Controller
 {
@@ -74,10 +75,19 @@ class ObligacionesController extends Controller
                 $this->logWarning('Número de requisito vacío al intentar calcular el total de avance.');
                 return 0;
             }
-
-            $total_avance = Requisito::where('numero_requisito', $numero_requisito)
-                                     ->sum('avance');
-            return round($total_avance, 2);
+    
+            // Calcular el avance total sumando el campo 'avance'
+            $total_avance = Requisito::where('numero_requisito', $numero_requisito)->sum('avance');
+    
+            // Redondear el total a 2 decimales y ajustar a 100% si está muy cerca de 100
+            $total_avance = round($total_avance, 2);
+    
+            // Ajustar el valor a exactamente 100% si está en un rango cercano
+            if ($total_avance > 99.95 && $total_avance < 100.05) {
+                $total_avance = 100.00;
+            }
+    
+            return $total_avance;
         } catch (\Exception $e) {
             $this->logError('Error al calcular el total de avance', ['numero_requisito' => $numero_requisito, 'error' => $e->getMessage()]);
             return 0;
@@ -556,6 +566,34 @@ class ObligacionesController extends Controller
     }
 }
 
-    
+public function enviarCorreoAlerta(Request $request)
+{
+    $diasRestantes = $request->input('dias_restantes');
+
+    // Definir el color de fondo según los días restantes
+    switch ($diasRestantes) {
+        case 30:
+            $colorFondo = '#90ee90'; // Verde claro
+            break;
+        case 15:
+            $colorFondo = '#ffff99'; // Amarillo claro
+            break;
+        case 5:
+            $colorFondo = '#ffcc99'; // Naranja claro
+            break;
+        case 2:
+        case 1:
+            $colorFondo = '#ff9999'; // Rojo claro
+            break;
+        default:
+            $colorFondo = '#ffffff'; // Color por defecto (blanco)
+            break;
+    }
+
+    // Enviar el correo
+    Mail::to('daniel.cervantes@supervia.mx')->send(new AlertaCorreo($diasRestantes, $colorFondo));
+
+    return response()->json(['success' => true, 'message' => "Correo de alerta enviado correctamente."]);
+}
 
 }

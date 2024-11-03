@@ -195,15 +195,21 @@
     <div id="tabla-notificaciones-info-{{ $requisito->id }}" class="info-container">
         <!-- Aquí se cargará la tabla de notificaciones -->
     </div>
+
 </div>
 
 
                     </div>
+                    
                 </div>
+                
             </div>
+            
         </div>
+        
     </div>
 @endforeach
+
 
 
 <!-- Modales para cada detalle -->
@@ -240,30 +246,32 @@
                                         <span>Agregar Archivos:</span>
                                     </div>
                                     <!-- Formulario de carga de archivos -->
-                                    <form id="uploadForm" action="{{ route('archivos.subir') }}" method="POST" enctype="multipart/form-data">
-                                        @csrf
-                                        <input type="hidden" name="requisito_id" value="{{ $requisito->id }}">
-                                        <input type="hidden" name="evidencia" value="{{ $evidencia->numero_evidencia }}">
-                                        <input type="hidden" name="evidencian" value="{{ $evidencia->evidencia }}">
-                                        <input type="hidden" name="fecha_limite_cumplimiento" value="{{ $detalle->fecha_limite_cumplimiento }}">
-                                        <!-- Campos ocultos para el usuario y puesto -->
-                                        <input type="hidden" name="usuario" value="{{ Auth::user()->name }}">
-                                        <input type="hidden" name="puesto" value="{{ Auth::user()->puesto }}">
-                                        <div class="form-group">
-                                            <br>
-                                            <label for="archivo">Seleccione un archivo</label>
-                                            <input type="file" name="archivo" class="archivo" id="archivo" required>
-                                        </div>
-                                        @if (!Auth::user()->hasRole('invitado'))
-                                        <!-- Mostrar botones para subir archivo y enviar correo si no es invitado -->
-                                        <button type="button" class="btn btn-success" onclick="handleFileUpload('#uploadForm')">Subir Archivo</button>
-                                        <button type="button" class="btn btn-success" onclick="ejecutarAccionConDatos()">Enviar correo</button>
-                                    @else
-                                        <!-- Mostrar mensaje si el usuario tiene el rol de invitado -->
-                                        <p class="text-center text-muted" style="font-size: 1.0rem;"><b>Actualmente eres un usuario invitado y no puedes adjuntar archivos.<b></p>
-                                    @endif
-                                    
-                                    </form>
+<!-- Formulario de carga de archivos -->
+<form id="uploadForm" action="{{ route('archivos.subir') }}" method="POST" enctype="multipart/form-data">
+    @csrf
+    <input type="hidden" name="requisito_id" value="{{ $requisito->id }}">
+    <input type="hidden" name="evidencia" value="{{ $evidencia->numero_evidencia }}">
+    <input type="hidden" name="evidencian" value="{{ $evidencia->evidencia }}">
+    <input type="hidden" name="fecha_limite_cumplimiento" value="{{ $detalle->fecha_limite_cumplimiento }}">
+    <!-- Campos ocultos para el usuario y puesto -->
+    <input type="hidden" name="usuario" value="{{ Auth::user()->name }}">
+    <input type="hidden" name="puesto" value="{{ Auth::user()->puesto }}">
+    
+    <div class="form-group">
+        <br>
+        <label for="archivo">Seleccione un archivo</label>
+        <input type="file" name="archivo" class="archivo" id="archivo" required>
+    </div>
+
+    @if (!Auth::user()->hasRole('invitado'))
+        <!-- Mostrar botones para subir archivo y enviar correo si no es invitado -->
+        <button type="button" class="btn btn-success" onclick="handleFileUpload('#uploadForm')">Subir Archivo</button>
+        <button type="button" class="btn btn-success" onclick="ejecutarAccionConDatos()">Enviar correo</button>
+    @else
+        <!-- Mostrar mensaje si el usuario tiene el rol de invitado -->
+        <p class="text-center text-muted" style="font-size: 1.0rem;"><b>Actualmente eres un usuario invitado y no puedes adjuntar archivos.</b></p>
+    @endif
+</form>
                                 </div>
                             </div>
                         </div>
@@ -337,6 +345,7 @@
     const actualizarPorcentajeUrl = "{{ route('actualizar.porcentaje') }}";
     const actualizarSumaPorcentajeUrl = "{{ route('actualizar.suma.porcentaje') }}";
     const eliminarArchivoUrl = "{{ route('archivos.eliminar') }}";
+    const enviarCorreoAlertaUrl = `{{ url('/enviar-correo-alerta') }}`;
 </script>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -344,7 +353,9 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
         const userRole = "{{ Auth::user()->roles->pluck('name')->first() }}";
-    </script>    
+    </script>
+    
+    
 
 <script src="{{ asset('js/gestion_obligaciones/obligaciones/obligaciones.js') }}"></script>    
     

@@ -15,10 +15,8 @@
                 <label for="year-select" class="mr-2">Año:</label>
                 <select id="year-select" name="year" class="form-control form-control-sm">
                     @if (Auth::user()->hasRole('invitado'))
-                        <!-- Solo mostrar 2024 si el usuario es 'invitado' -->
                         <option value="2024" selected>2024</option>
                     @else
-                        <!-- Mostrar todos los años si no es 'invitado' -->
                         @for ($yearOption = 2024; $yearOption <= 2040; $yearOption++)
                             <option value="{{ $yearOption }}" {{ isset($year) && $year == $yearOption ? 'selected' : '' }}>
                                 {{ $yearOption }}
@@ -26,21 +24,17 @@
                         @endfor
                     @endif
                 </select>
-            
-                <!-- Botón Ver, deshabilitado si el usuario es invitado -->
                 <button type="submit" class="btn btn-success btn-sm ml-2"
                         @if (Auth::user()->hasRole('invitado')) disabled @endif>Ver</button>
             </form>            
-
         </div>
 
         <div class="container-fluit text-center">
-            <!-- Mostrar el mensaje si el usuario es 'invitado' y centrar el texto -->
             @if (Auth::user()->hasRole('invitado'))
                 <p class="text-center text-muted" style="font-size: 1.0rem;"><b>Actualmente eres un usuario invitado y solo tienes acceso a esta información.</b></p>
             @endif
         </div>       
-     
+
         <hr class="divider">
         <div class="row text-center justify-content-center">
             @foreach ([
@@ -144,7 +138,6 @@
                                     </td>
                                 </tr>
                                 @endforeach
-                                <!-- Mensaje para el usuario invitado -->
                                 <tr>
                                     <td colspan="5" class="text-center text-muted" style="font-size: 1.0rem;">
                                         Actualmente eres un usuario invitado y no tienes acceso a toda la información.
@@ -183,7 +176,6 @@
 @endsection
 
 @section('js')
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
@@ -192,45 +184,80 @@ window.chartData = {
     fechas: @json($fechas),
     vencidas: @json($vencidasG),
     porVencer: @json($porVencerG),
-    completas: @json($completasG)
+    completas: @json($completasG),
+    nombres: @json($nombres),
+    avancesTotales: @json($avancesTotales)
 };
+
+// Ajuste de avances totales: redondear a 2 decimales y ajustar valores cercanos a 100%
+// Ajuste de avances totales: redondear a 2 decimales y ajustar valores cercanos a 100%
+window.chartData.avancesTotales = window.chartData.avancesTotales.map(avance => {
+    // Verificar que avance sea un número, en caso contrario asignar 0
+    avance = typeof avance === 'number' ? avance : 0; 
+    avance = parseFloat(avance.toFixed(2)); // Redondear a 2 decimales
+    return (avance >= 99.95 && avance <= 100.05) ? 100 : avance; // Ajustar a 100 si está cerca
+});
+
+
 document.addEventListener('DOMContentLoaded', function() {
     new Chart(document.getElementById('barChartObligaciones').getContext('2d'), {
-        type: 'bar',
-        data: {
-            labels: @json($nombres),
-            datasets: [{
-                label: 'Total Avance',
-                data: @json($avancesTotales),
-                backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            indexAxis: 'y',
-            scales: {
-                x: {
-                    beginAtZero: true,
-                    max: 100,
-                    grid: { display: true },
-                    ticks: { callback: function(value) { return value + '%'; } }
-                },
-                y: { grid: { display: true } }
+    type: 'bar',
+    data: {
+        labels: @json($nombres),
+        datasets: [{
+            label: 'Total Avance',
+            data: window.chartData.avancesTotales,
+            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        scales: {
+            x: {
+                beginAtZero: true,
+                max: 100,
+                grid: { display: true },
+                ticks: {
+                    callback: function(value) { return value + '%'; },
+                    font: {
+                        size: 10 // Ajustar el tamaño de fuente aquí
+                    }
+                }
             },
-            plugins: {
-                legend: { display: true, position: 'top' },
-                datalabels: {
-                    anchor: 'end',
-                    align: 'end',
-                    formatter: function(value) { return value.toFixed(2) + '%'; },
-                    color: 'black',
-                    font: { weight: 'bold' }
+            y: {
+                grid: { display: true },
+                ticks: {
+                    font: {
+                        size: 10 // Ajustar el tamaño de fuente aquí para etiquetas de nombres
+                    }
                 }
             }
         },
-        plugins: [ChartDataLabels]
-    });
+        layout: {
+            padding: {
+                right: 40 // Aumenta el espacio derecho para que se vea el "100%"
+            }
+        },
+        plugins: {
+            legend: { display: true, position: 'top' },
+            datalabels: {
+                anchor: 'end',
+                align: 'end',
+                formatter: function(value) { 
+                    return Math.round(value) + '%'; // Redondea y muestra solo enteros
+                },
+                color: 'black',
+                font: { weight: 'bold' }
+            }
+        }
+    },
+    plugins: [ChartDataLabels]
+});
+
+
+    // Avance Total Gráfico
     new Chart(document.getElementById('avanceTotalChart').getContext('2d'), {
         type: 'doughnut',
         data: {
@@ -259,6 +286,8 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         plugins: [ChartDataLabels]
     });
+
+    // Estatus General Gráfico
     new Chart(document.getElementById('vencidasPorVencerCompletasChart').getContext('2d'), {
         type: 'line',
         data: {
@@ -297,6 +326,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+
     document.getElementById('tablasPeriodicidad').innerHTML = `
         <div class="row">
             <div class="col-md-4">

@@ -239,13 +239,40 @@ function obtenerTablaNotificaciones(idNotificaciones, requisitoId) {
             tablaNotificacionesHtml += '<tr><td colspan="3" style="text-align: center;">No hay notificaciones</td></tr>';
         }
 
-        tablaNotificacionesHtml += '</tbody></table></div></div></div>';
+        // Cerramos la tabla de notificaciones
+        tablaNotificacionesHtml += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Añadimos los botones de "Alertas por Correo Electrónico" debajo de la tabla
+        tablaNotificacionesHtml += `
+            <div class="details-card mt-2">
+                <div class="section-header bg-light-grey">
+                    <i class="fas fa-envelope"></i>
+                    <span>Alertas por Correo Electrónico:</span>
+                </div>
+<div class="d-flex justify-content-around mt-4">
+    <button class="btn btn-primary" style="background-color: #90ee90; color: black; border: 1px solid black;" onclick="enviarAlertaCorreo(30)">30 días</button>
+    <button class="btn btn-primary" style="background-color: #ffff99; color: black; border: 1px solid black;" onclick="enviarAlertaCorreo(15)">15 días</button>
+    <button class="btn btn-primary" style="background-color: #ffcc99; color: black; border: 1px solid black;" onclick="enviarAlertaCorreo(5)">5 días</button>
+    <button class="btn btn-primary" style="background-color: #ff9999; color: black; border: 1px solid black;" onclick="enviarAlertaCorreo(2)">Inmediato (2 días)</button>
+    <button class="btn btn-primary" style="background-color: #ff6666; color: black; border: 1px solid black;" onclick="enviarAlertaCorreo(1)">Inmediato (1 día)</button>
+</div>
+            </div>
+        `;
+          
+        // Insertamos el contenido en el contenedor de la tabla de notificaciones
         document.getElementById("tabla-notificaciones-info-" + requisitoId).innerHTML = tablaNotificacionesHtml;
     })
     .catch(function(error) {
         console.error('Error al obtener la tabla de notificaciones:', error);
     });
 }
+
 
     //modal detalle
     
@@ -849,3 +876,31 @@ $('#modalDetalleContent').on('hidden.bs.modal', function () {
     // Ejemplo:
     // $('header, footer, .sidebar').removeAttr('inert');
 });
+
+
+function enviarAlertaCorreo(diasRestantes) {
+    console.log("Botón de alerta clicado para " + diasRestantes + " días");
+
+    axios.post(enviarCorreoAlertaUrl, {
+    dias_restantes: diasRestantes
+})
+.then(response => {
+    console.log("Correo enviado:", response.data);
+    Swal.fire({
+        title: 'Correo Enviado',
+        text: `Se ha enviado un correo para la alerta de ${diasRestantes} días.`,
+        icon: 'success'
+    });
+})
+.catch(error => {
+    console.error("Error al enviar el correo:", error);
+    Swal.fire({
+        title: 'Error',
+        text: 'Hubo un problema al enviar el correo.',
+        icon: 'error'
+    });
+});
+
+}
+
+

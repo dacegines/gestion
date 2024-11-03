@@ -190,6 +190,9 @@ Route::get('/register_new', [CustomRegisterController::class, 'show'])->name('cu
 Route::post('/register_new', [CustomRegisterController::class, 'submitRequest'])->name('custom.account.register.submit'); // Enviar formulario de registro
 
 
+Route::get('/obtener-archivos/{fecha_limite_cumplimiento}', [DetallesController::class, 'obtenerArchivosPorFecha'])->name('obtener.archivos.fecha');
+
+Route::post('/enviar-correo-alerta', [ObligacionesController::class, 'enviarCorreoAlerta']);
 
 
 
