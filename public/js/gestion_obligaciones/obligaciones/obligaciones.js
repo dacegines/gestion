@@ -562,25 +562,33 @@ function cargarArchivos(requisitoId, evidenciaId, fechaLimite) {
     .then(function(response) {
         const archivos = response.data.archivos;
         let tableBody = archivos.length > 0 
-            ? archivos.map((archivo, index) => `
-                <tr>
-                    <td>${index + 1}</td>
-                    <td>${sanitizeInput(archivo.nombre_archivo)}</td>
-                    <td>${sanitizeInput(archivo.usuario)}</td>
-                    <td>${sanitizeInput(archivo.puesto)}</td>
-                    <td>${new Date(sanitizeInput(archivo.created_at)).toLocaleString()}</td>
-                    ${
-                        userRole === 'invitado' ? `
-                            <td colspan="2" class="text-danger"><b>Sin acceso</b></td>
-                        ` : `
-                            <td><button class="btn btn-sm btn-info btn-ver-archivo" data-url="${storageUploadsUrl}/${sanitizeInput(archivo.nombre_archivo)}"><i class="fas fa-eye"></i></button></td>
-                            <td><button class="btn btn-sm btn-danger btn-eliminar-archivo" onclick="eliminarArchivo(${sanitizeInput(archivo.id)}, '${sanitizeInput(requisitoId)}', '${sanitizeInput(evidenciaId)}', '${sanitizeInput(fechaLimite)}')"><i class="fas fa-trash-alt"></i></button></td>
-                        `
-                    }
-                </tr>`).join('')
-            : '<tr><td colspan="8">No hay archivos adjuntos</td></tr>';
-
-        document.getElementById('archivosTableBody').innerHTML = tableBody;
+        ? archivos.map((archivo, index) => `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${sanitizeInput(archivo.nombre_archivo.split('_').slice(1).join('_'))}</td>
+                <td>${sanitizeInput(archivo.usuario)}</td>
+                <td>${sanitizeInput(archivo.puesto)}</td>
+                <td>${new Date(sanitizeInput(archivo.created_at)).toLocaleString()}</td>
+                <td>
+                    <button 
+                        class="btn btn-sm btn-info btn-ver-archivo" 
+                        data-url="${storageUploadsUrl}/${sanitizeInput(archivo.nombre_archivo)}"
+                        ${userRole === 'invitado' ? 'disabled' : ''}
+                    >
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </td>
+                ${
+                    userRole === 'admin' 
+                        ? `<td><button class="btn btn-sm btn-danger btn-eliminar-archivo" onclick="eliminarArchivo(${sanitizeInput(archivo.id)}, '${sanitizeInput(requisitoId)}', '${sanitizeInput(evidenciaId)}', '${sanitizeInput(fechaLimite)}')"><i class="fas fa-trash-alt"></i></button></td>`
+                        : `<td><button class="btn btn-sm btn-danger btn-eliminar-archivo" disabled><i class="fas fa-trash-alt"></i></button></td>`
+                }
+            </tr>`).join('')
+        : '<tr><td colspan="8">No hay archivos adjuntos</td></tr>';
+    
+    document.getElementById('archivosTableBody').innerHTML = tableBody;
+    
+    
 
         document.querySelectorAll('.btn-ver-archivo').forEach(function(button) {
             button.addEventListener('click', function() {
@@ -685,7 +693,7 @@ function abrirModalDetalle(detalleId, requisitoId) {
             // Establecer la clase de error y el mensaje correspondiente
             elementoPrueba.classList.remove('alert-success');
             elementoPrueba.classList.add('alert-danger');
-            elementoPrueba.innerHTML = '<strong><i class="fas fa-times"></i></strong> Esta evidencia no ha sido revisada.';
+            elementoPrueba.innerHTML = '<strong><i class="fas fa-times"></i></strong> Esta evidencia no ha sido revisada o volvió a su estatus inicial.';
         }
     })
     .catch(function(error) {

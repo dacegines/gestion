@@ -8,18 +8,24 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log; // Importar Log para registro de errores
-
+use Barryvdh\DomPDF\Facade\Pdf;
 class DashboardController extends Controller
 {
     public function index(Request $request)
     {
+        // Obtener el ID del usuario autenticado
+        $user_id = Auth::id();
+    
         // Validación de la entrada
         $request->validate([
             'year' => 'nullable|integer|min:2000|max:' . (Carbon::now()->year + 20),
         ]);
     
+        // Capturar el año, con un valor predeterminado si no se proporciona
         $year = $request->input('year', Carbon::now()->year);
         $userPuesto = Auth::user()->puesto;
+
+        $status = $request->input('status', 'default_status');
     
         // Definir los puestos que verán todos los registros
         $puestosExcluidos = [
@@ -89,55 +95,46 @@ class DashboardController extends Controller
     
             // Contar las obligaciones para el año y puesto seleccionados
             $totalObligaciones = Requisito::when(!in_array($userPuesto, $puestosExcluidos), function ($query) use ($userPuesto) {
-                    return $query->where('responsable', $userPuesto);
-                })
-                ->whereYear('fecha_limite_cumplimiento', $year)
-                ->count();
+                return $query->where('responsable', $userPuesto);
+            })
+            ->whereYear('fecha_limite_cumplimiento', $year)
+            ->count();
     
             // Avance total por requisito para el gráfico de avance total
-            $resumenRequisitos = Requisito::select('nombre', DB::raw('SUM(avance) as total_avance'))
-                ->when(!in_array($userPuesto, $puestosExcluidos), function ($query) use ($userPuesto) {
-                    return $query->where('responsable', $userPuesto);
-                })
-                ->whereYear('fecha_limite_cumplimiento', $year)
-                ->groupBy('nombre')
-                ->get()
-                ->map(function ($requisito) {
-                    // Asegurar que el avance total no exceda el 100%
-                    $requisito->total_avance = min($requisito->total_avance, 100);
-                    return $requisito;
-                });
-
-            $nombres = $resumenRequisitos->pluck('nombre');
-            $avancesTotales = $resumenRequisitos->pluck('total_avance');
-
-
-            
-
-            
+            $resumenRequisitos = Requisito::select(
+                'nombre',
+                DB::raw("LEAST(SUM(CASE WHEN porcentaje = 100 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 100) AS total_avance")
+            )
+            ->when(!in_array($userPuesto, $puestosExcluidos), function ($query) use ($userPuesto) {
+                return $query->where('responsable', $userPuesto);
+            })
+            ->whereYear('fecha_limite_cumplimiento', $year)
+            ->groupBy('nombre')
+            ->orderBy('total_avance', 'DESC')
+            ->get();
     
-            // Calcular porcentaje de avance
-// Calcular el porcentaje de avance agrupado por puesto (responsable) 
-// o específico para el puesto del usuario
-$avanceData = Requisito::select(
-    DB::raw('COUNT(*) AS total_evidencias'),
-    DB::raw('SUM(CASE WHEN porcentaje = 100 THEN 1 ELSE 0 END) AS evidencias_resueltas'),
-    DB::raw('ROUND(SUM(CASE WHEN porcentaje = 100 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS avance_porcentaje')
-)
-->when(!in_array($userPuesto, $puestosExcluidos), function ($query) use ($userPuesto) {
-    // Filtrar solo por el puesto del usuario si no está en los puestos excluidos
-    return $query->where('responsable', $userPuesto);
-})
-->whereYear('fecha_limite_cumplimiento', $year)
-->first(); // Obtenemos solo el primer resultado (solo debería haber uno)
-
-// Establecer valores de avance con base en el resultado de la consulta
-$totalRegistros = $avanceData->total_evidencias ?? 0;
-$avanceTotal = $avanceData->evidencias_resueltas ?? 0;
-$porcentajeAvance = $avanceData->avance_porcentaje ?? 0;
-
-// Retornar o usar las variables $totalRegistros, $avanceTotal y $porcentajeAvance en el código
-
+            // Extraer nombres y porcentaje de avance para la gráfica
+            $nombres = $resumenRequisitos->pluck('nombre');
+            $avancesTotales = $resumenRequisitos->pluck('total_avance')->map(function ($avance) {
+                return (float) number_format($avance, 2); // Convertir a número y redondear a 2 decimales
+            });
+    
+            // Calcular porcentaje de avance agrupado por puesto (responsable) 
+            $avanceData = Requisito::select(
+                DB::raw('COUNT(*) AS total_evidencias'),
+                DB::raw('SUM(CASE WHEN porcentaje = 100 THEN 1 ELSE 0 END) AS evidencias_resueltas'),
+                DB::raw('ROUND(SUM(CASE WHEN porcentaje = 100 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS avance_porcentaje')
+            )
+            ->when(!in_array($userPuesto, $puestosExcluidos), function ($query) use ($userPuesto) {
+                return $query->where('responsable', $userPuesto);
+            })
+            ->whereYear('fecha_limite_cumplimiento', $year)
+            ->first();
+    
+            // Establecer valores de avance con base en el resultado de la consulta
+            $totalRegistros = $avanceData->total_evidencias ?? 0;
+            $avanceTotal = $avanceData->evidencias_resueltas ?? 0;
+            $porcentajeAvance = $avanceData->avance_porcentaje ?? 0;
     
             // Filtrar requisitos por estado (activas, completas, vencidas, por vencer)
             $requisitosActivos = $requisitos->where('fecha_limite_cumplimiento', '>', Carbon::now()->addDays(30))
@@ -155,60 +152,49 @@ $porcentajeAvance = $avanceData->avance_porcentaje ?? 0;
                 ->where('approved', '!=', 1);
             $porVencer = $requisitosPorVencer->count();
     
-        // Calcular porcentaje de requisitos completos para cada periodicidad
-        $bimestral = Requisito::select(DB::raw("ROUND(SUM(CASE WHEN porcentaje = 100 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS avance"))
-            ->when(!in_array($userPuesto, $puestosExcluidos), function ($query) use ($userPuesto) {
-                return $query->where('responsable', $userPuesto);
-            })
-            ->where('periodicidad', 'bimestral')
-            ->whereYear('fecha_limite_cumplimiento', $year)
-            ->first();
-
-        $semestral = Requisito::select(DB::raw("ROUND(SUM(CASE WHEN porcentaje = 100 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS avance"))
-            ->when(!in_array($userPuesto, $puestosExcluidos), function ($query) use ($userPuesto) {
-                return $query->where('responsable', $userPuesto);
-            })
-            ->where('periodicidad', 'semestral')
-            ->whereYear('fecha_limite_cumplimiento', $year)
-            ->first();
-
-        $anual = Requisito::select(DB::raw("ROUND(SUM(CASE WHEN porcentaje = 100 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS avance"))
-            ->when(!in_array($userPuesto, $puestosExcluidos), function ($query) use ($userPuesto) {
-                return $query->where('responsable', $userPuesto);
-            })
-            ->where('periodicidad', 'anual')
-            ->whereYear('fecha_limite_cumplimiento', $year)
-            ->first();
-            
+            // Calcular porcentaje de requisitos completos para cada periodicidad
+            $bimestral = Requisito::select(DB::raw("ROUND(SUM(CASE WHEN porcentaje = 100 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS avance"))
+                ->when(!in_array($userPuesto, $puestosExcluidos), function ($query) use ($userPuesto) {
+                    return $query->where('responsable', $userPuesto);
+                })
+                ->where('periodicidad', 'bimestral')
+                ->whereYear('fecha_limite_cumplimiento', $year)
+                ->first();
+    
+            $semestral = Requisito::select(DB::raw("ROUND(SUM(CASE WHEN porcentaje = 100 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS avance"))
+                ->when(!in_array($userPuesto, $puestosExcluidos), function ($query) use ($userPuesto) {
+                    return $query->where('responsable', $userPuesto);
+                })
+                ->where('periodicidad', 'semestral')
+                ->whereYear('fecha_limite_cumplimiento', $year)
+                ->first();
+    
+            $anual = Requisito::select(DB::raw("ROUND(SUM(CASE WHEN porcentaje = 100 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS avance"))
+                ->when(!in_array($userPuesto, $puestosExcluidos), function ($query) use ($userPuesto) {
+                    return $query->where('responsable', $userPuesto);
+                })
+                ->where('periodicidad', 'anual')
+                ->whereYear('fecha_limite_cumplimiento', $year)
+                ->first();
+    
+            $mostrarBimestral = !is_null($bimestral) && $bimestral->avance > 0;
+            $mostrarSemestral = !is_null($semestral) && $semestral->avance > 0;
+            $mostrarAnual = !is_null($anual) && $anual->avance > 0;
     
             return view('dashboard', compact(
-                'totalObligaciones',
-                'activas',
-                'completas',
-                'vencidas',
-                'porVencer',
-                'requisitos',
-                'requisitosCompletos',
-                'requisitosActivos',
-                'requisitosVencidos',
-                'requisitosPorVencer',
-                'fechas',
-                'vencidasG',
-                'porVencerG',
-                'completasG',
-                'nombres',
-                'avancesTotales',
-                'porcentajeAvance',
-                'bimestral',
-                'semestral',
-                'anual',
-                'year'
+                'totalObligaciones', 'activas', 'completas', 'vencidas', 'porVencer', 
+                'requisitos', 'requisitosCompletos', 'requisitosActivos', 
+                'requisitosVencidos', 'requisitosPorVencer', 'fechas', 'vencidasG', 
+                'porVencerG', 'completasG', 'nombres', 'avancesTotales', 
+                'porcentajeAvance', 'bimestral', 'semestral', 'anual', 'year', 
+                'mostrarBimestral', 'mostrarSemestral', 'mostrarAnual', 'user_id', 'status'
             ));
         } catch (\Exception $e) {
             Log::error('Error en DashboardController@index: ' . $e->getMessage());
             return redirect()->back()->withErrors('Ocurrió un error al cargar el dashboard.');
         }
     }
+    
     
 
     public function apiResumenObligaciones(Request $request)
@@ -301,4 +287,114 @@ $porcentajeAvance = $avanceData->avance_porcentaje ?? 0;
     {
         return $this->index($request);
     }
+
+    public function descargarPDF(Request $request)
+    {
+        // Captura los datos necesarios
+        $year = $request->input('year', date('Y'));
+        $user_id = $request->input('user_id');
+        $status = $request->input('status');
+        $chartImageAvanceObligaciones = $request->input('chartImageAvanceObligaciones');
+        $chartImageAvanceTotal = $request->input('chartImageAvanceTotal');
+        $chartImageEstatusGeneral = $request->input('chartImageEstatusGeneral');
+    
+        // Obtener el puesto del usuario autenticado
+        $userPuesto = Auth::user()->puesto;
+    
+        // Definir los puestos que verán todos los registros
+        $puestosExcluidos = [
+            'Director Jurídico',
+            'Directora General',
+            'Jefa de Cumplimiento',
+            'Director de Finanzas',
+            'Director de Operación',
+            'Invitado'
+        ];
+    
+        // Determinar si se aplicará el filtro de responsable
+        if (in_array($userPuesto, $puestosExcluidos)) {
+            // Mostrar todos los registros si el puesto está en los excluidos
+            $requisitos = Requisito::whereYear('fecha_limite_cumplimiento', $year)
+                ->orderBy('fecha_limite_cumplimiento', 'asc')
+                ->get();
+        } else {
+            // Aplicar filtro por puesto del usuario si no está en los excluidos
+            $requisitos = Requisito::where('responsable', $userPuesto)
+                ->whereYear('fecha_limite_cumplimiento', $year)
+                ->orderBy('fecha_limite_cumplimiento', 'asc')
+                ->get();
+        }
+    
+        // Calcular los totales de la misma manera que en el método index
+        $totalObligaciones = $requisitos->count();
+        $activas = $requisitos->where('fecha_limite_cumplimiento', '>', Carbon::now()->addDays(30))
+                              ->where('approved', '!=', 1)
+                              ->count();
+        $completas = $requisitos->where('porcentaje', 100)->count();
+        $vencidas = $requisitos->where('fecha_limite_cumplimiento', '<', Carbon::now())
+                               ->where('approved', '!=', 1)
+                               ->count();
+        $porVencer = $requisitos->whereBetween('fecha_limite_cumplimiento', [Carbon::now(), Carbon::now()->addDays(30)])
+                                ->where('approved', '!=', 1)
+                                ->count();
+    
+        // Calcular periodicidad de avance
+        $bimestral = Requisito::select(DB::raw("ROUND(SUM(CASE WHEN porcentaje = 100 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS avance"))
+            ->when(!in_array($userPuesto, $puestosExcluidos), function ($query) use ($userPuesto) {
+                return $query->where('responsable', $userPuesto);
+            })
+            ->where('periodicidad', 'bimestral')
+            ->whereYear('fecha_limite_cumplimiento', $year)
+            ->first();
+    
+        $semestral = Requisito::select(DB::raw("ROUND(SUM(CASE WHEN porcentaje = 100 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS avance"))
+            ->when(!in_array($userPuesto, $puestosExcluidos), function ($query) use ($userPuesto) {
+                return $query->where('responsable', $userPuesto);
+            })
+            ->where('periodicidad', 'semestral')
+            ->whereYear('fecha_limite_cumplimiento', $year)
+            ->first();
+    
+        $anual = Requisito::select(DB::raw("ROUND(SUM(CASE WHEN porcentaje = 100 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) AS avance"))
+            ->when(!in_array($userPuesto, $puestosExcluidos), function ($query) use ($userPuesto) {
+                return $query->where('responsable', $userPuesto);
+            })
+            ->where('periodicidad', 'anual')
+            ->whereYear('fecha_limite_cumplimiento', $year)
+            ->first();
+    
+        // Determinar si mostrar cada periodicidad en el PDF
+        $mostrarBimestral = !is_null($bimestral) && $bimestral->avance > 0;
+        $mostrarSemestral = !is_null($semestral) && $semestral->avance > 0;
+        $mostrarAnual = !is_null($anual) && $anual->avance > 0;
+    
+        // Preparar los datos para la vista del PDF
+        $data = [
+            'year' => $year,
+            'user_id' => $user_id,
+            'status' => $status,
+            'totalObligaciones' => $totalObligaciones,
+            'activas' => $activas,
+            'completas' => $completas,
+            'vencidas' => $vencidas,
+            'porVencer' => $porVencer,
+            'chartImageAvanceObligaciones' => $chartImageAvanceObligaciones,
+            'chartImageAvanceTotal' => $chartImageAvanceTotal,
+            'chartImageEstatusGeneral' => $chartImageEstatusGeneral,
+            'bimestral' => $bimestral,
+            'semestral' => $semestral,
+            'anual' => $anual,
+            'mostrarBimestral' => $mostrarBimestral,
+            'mostrarSemestral' => $mostrarSemestral,
+            'mostrarAnual' => $mostrarAnual,
+            'userPuesto' => $userPuesto
+        ];
+    
+        // Generar el PDF usando la vista
+        $pdf = Pdf::loadView('pdf.resumen_pdf', $data);
+        return $pdf->download('reporte_resumen.pdf');
+    }
+    
+       
+    
 }

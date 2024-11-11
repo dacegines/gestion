@@ -280,6 +280,12 @@
                             <h5><b>Archivos adjuntos</b></h5>
                             <hr>
                             <div style="max-height: 500px; overflow-y: auto;">
+                                @if (Auth::user()->hasRole('invitado'))
+                                    <p class="text-center text-muted" style="font-size: 1.0rem;">
+                                        <b>Actualmente eres un usuario invitado y no puedes ver los archivos adjuntos.</b>
+                                    </p>
+                                @endif
+                        
                                 <table class="table table-striped table-bordered text-center">
                                     <thead class="thead-dark">
                                         <tr>

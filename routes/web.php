@@ -195,5 +195,6 @@ Route::get('/obtener-archivos/{fecha_limite_cumplimiento}', [DetallesController:
 Route::post('/enviar-correo-alerta', [ObligacionesController::class, 'enviarCorreoAlerta']);
 
 
+Route::post('/descargar-pdf', [DashboardController::class, 'descargarPDF'])->name('descargar-pdf');
 
 

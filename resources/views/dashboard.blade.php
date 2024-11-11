@@ -24,17 +24,30 @@
                         @endfor
                     @endif
                 </select>
-                <button type="submit" class="btn btn-success btn-sm ml-2"
-                        @if (Auth::user()->hasRole('invitado')) disabled @endif>Ver</button>
-            </form>            
+                
+                <!-- Botón para "Ver" -->
+                <button type="submit" class="btn btn-success btn-sm ml-2" @if (Auth::user()->hasRole('invitado')) disabled @endif>
+                    Ver
+                </button>
+        
+                <!-- Botón para "Descargar PDF" -->
+                <button type="button" onclick="descargarPDF()" class="btn btn-danger btn-sm ml-2">
+                    <i class="fas fa-file-pdf"></i> PDF <i class="fas fa-download"></i>
+                </button>
+                <!-- Campos ocultos para las imágenes de los gráficos -->
+                <input type="hidden" name="chartImageAvanceObligaciones" id="chartImageAvanceObligaciones">
+                <input type="hidden" name="chartImageAvanceTotal" id="chartImageAvanceTotal">
+                <input type="hidden" name="chartImageEstatusGeneral" id="chartImageEstatusGeneral">
+            </form>
         </div>
+        
 
         <div class="container-fluit text-center">
             @if (Auth::user()->hasRole('invitado'))
                 <p class="text-center text-muted" style="font-size: 1.0rem;"><b>Actualmente eres un usuario invitado y solo tienes acceso a esta información.</b></p>
             @endif
         </div>       
-
+             
         <hr class="divider">
         <div class="row text-center justify-content-center">
             @foreach ([
@@ -179,6 +192,53 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+
+
+
+
+<script>
+function generarPDF() {
+    // Asegura que jsPDF esté disponible
+    const { jsPDF } = window.jspdf;
+
+    // Seleccionar el elemento que quieres capturar
+    const elemento = document.getElementById('card-resumen');
+
+    // Utilizar html2canvas para capturar el elemento como imagen
+    html2canvas(elemento).then(canvas => {
+        const imgData = canvas.toDataURL('image/png'); // Convierte el canvas a imagen PNG
+
+        // Crear un nuevo documento PDF
+        const pdf = new jsPDF(); 
+        const imgWidth = 190; // Ancho de la imagen en el PDF (ajústalo según necesites)
+        const pageHeight = pdf.internal.pageSize.height;
+        const imgHeight = canvas.height * imgWidth / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        // Agregar la imagen al PDF
+        pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+
+        // Si la imagen es más alta que una página, añadir páginas adicionales
+        while (heightLeft >= 0) {
+            position = heightLeft - imgHeight;
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+        }
+
+        // Descargar el archivo PDF
+        pdf.save('reporte.pdf');
+    });
+}
+
+</script>
+
+
+
 <script>
 window.chartData = {
     fechas: @json($fechas),
@@ -190,7 +250,7 @@ window.chartData = {
 };
 
 // Ajuste de avances totales: redondear a 2 decimales y ajustar valores cercanos a 100%
-// Ajuste de avances totales: redondear a 2 decimales y ajustar valores cercanos a 100%
+
 window.chartData.avancesTotales = window.chartData.avancesTotales.map(avance => {
     // Verificar que avance sea un número, en caso contrario asignar 0
     avance = typeof avance === 'number' ? avance : 0; 
@@ -230,7 +290,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 grid: { display: true },
                 ticks: {
                     font: {
-                        size: 10 // Ajustar el tamaño de fuente aquí para etiquetas de nombres
+                        size: 12     // Ajustar el tamaño de fuente aquí para etiquetas de nombres
                     }
                 }
             }
@@ -289,77 +349,198 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Estatus General Gráfico
     new Chart(document.getElementById('vencidasPorVencerCompletasChart').getContext('2d'), {
-        type: 'line',
-        data: {
-            labels: window.chartData.fechas,
-            datasets: [
-                {
-                    label: 'Vencidas',
-                    data: window.chartData.vencidas,
-                    borderColor: '#ff6384',
-                    backgroundColor: 'transparent',
-                    fill: false
-                },
-                {
-                    label: 'Por Vencer',
-                    data: window.chartData.porVencer,
-                    borderColor: '#ffcd56',
-                    backgroundColor: 'transparent',
-                    fill: false
-                },
-                {
-                    label: 'Completas',
-                    data: window.chartData.completas,
-                    borderColor: '#4bc0c0',
-                    backgroundColor: 'transparent',
-                    fill: false
-                }
-            ]
-        },
-        options: {
-            scales: {
-                x: { beginAtZero: true, grid: { display: true } },
-                y: { beginAtZero: true, grid: { display: true } }
+    type: 'line',
+    data: {
+        labels: window.chartData.fechas,
+        datasets: [
+            {
+                label: 'Vencidas',
+                data: window.chartData.vencidas,
+                borderColor: '#ff6384',
+                backgroundColor: 'transparent',
+                fill: false
             },
-            plugins: {
-                legend: { display: true, position: 'top' }
+            {
+                label: 'Por Vencer',
+                data: window.chartData.porVencer,
+                borderColor: '#ffcd56',
+                backgroundColor: 'transparent',
+                fill: false
+            },
+            {
+                label: 'Completas',
+                data: window.chartData.completas,
+                borderColor: '#4bc0c0',
+                backgroundColor: 'transparent',
+                fill: false
+            }
+        ]
+    },
+    options: {
+        scales: {
+            x: {
+                ticks: {
+                    font: {
+                        size: 18 // Ajusta el tamaño de fuente del eje X
+                    }
+                },
+                grid: { display: true }
+            },
+            y: {
+                ticks: {
+                    font: {
+                        size: 18 // Ajusta el tamaño de fuente del eje Y
+                    }
+                },
+                grid: { display: true }
+            }
+        },
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top',
+                labels: {
+                    font: {
+                        size: 18 // Tamaño de fuente para las etiquetas de la leyenda
+                    }
+                }
+            },
+            tooltip: {
+                bodyFont: {
+                    size: 18 // Tamaño de fuente para el texto del tooltip
+                }
             }
         }
-    });
+    }
+});
 
     document.getElementById('tablasPeriodicidad').innerHTML = `
-        <div class="row">
-            <div class="col-md-4">
-                <table class="table table-bordered text-center" style="font-size: 0.8rem;">
-                    <thead class="thead-light">
-                        <tr><th>Periodo</th><th>Avance (%)</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>{{ e($bimestral->periodicidad ?? 'Bimestral') }}</td><td>{{ e($bimestral->avance ?? 0) }}%</td></tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="col-md-4">
-                <table class="table table-bordered text-center" style="font-size: 0.8rem;">
-                    <thead class="thead-light">
-                        <tr><th>Periodo</th><th>Avance (%)</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>{{ e($semestral->periodicidad ?? 'Semestral') }}</td><td>{{ e($semestral->avance ?? 0) }}%</td></tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="col-md-4">
-                <table class="table table-bordered text-center" style="font-size: 0.8rem;">
-                    <thead class="thead-light">
-                        <tr><th>Periodo</th><th>Avance (%)</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>{{ e($anual->periodicidad ?? 'Anual') }}</td><td>{{ e($anual->avance ?? 0) }}%</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>`;
+<div class="row d-flex justify-content-center">
+    @if($mostrarBimestral)
+    <div class="col-md-4">
+        <table class="table table-bordered text-center" style="font-size: 0.8rem;">
+            <thead class="thead-light">
+                <tr><th>Periodo</th><th>Avance (%)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>{{ e($bimestral->periodicidad ?? 'Bimestral') }}</td><td>{{ e($bimestral->avance ?? 0) }}%</td></tr>
+            </tbody>
+        </table>
+    </div>
+    @endif
+
+    @if($mostrarSemestral)
+    <div class="col-md-4">
+        <table class="table table-bordered text-center" style="font-size: 0.8rem;">
+            <thead class="thead-light">
+                <tr><th>Periodo</th><th>Avance (%)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>{{ e($semestral->periodicidad ?? 'Semestral') }}</td><td>{{ e($semestral->avance ?? 0) }}%</td></tr>
+            </tbody>
+        </table>
+    </div>
+    @endif
+
+    @if($mostrarAnual)
+    <div class="col-md-4">
+        <table class="table table-bordered text-center" style="font-size: 0.8rem;">
+            <thead class="thead-light">
+                <tr><th>Periodo</th><th>Avance (%)</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>{{ e($anual->periodicidad ?? 'Anual') }}</td><td>{{ e($anual->avance ?? 0) }}%</td></tr>
+            </tbody>
+        </table>
+    </div>
+    @endif
+</div>`;
 });
+</script>
+
+<script>
+function getChartAsBase64(chartId) {
+    const canvas = document.getElementById(chartId);
+    if (!canvas) {
+        console.error(`Canvas con ID '${chartId}' no encontrado.`);
+        return null;
+    }
+    return canvas.toDataURL('image/png');
+}
+
+function descargarPDF() {
+    // Obtener las imágenes en base64 de todas las gráficas
+    const chartImageAvanceObligaciones = getChartAsBase64('barChartObligaciones');
+    const chartImageAvanceTotal = getChartAsBase64('avanceTotalChart');
+    const chartImageEstatusGeneral = getChartAsBase64('vencidasPorVencerCompletasChart'); // Nueva gráfica de Estatus General
+
+    // Crear un formulario dinámico para enviar la solicitud de PDF
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = "{{ route('descargar-pdf') }}"; // Ruta al controlador de PDF
+    form.target = "_blank"; // Abre el PDF en una nueva pestaña
+
+    // Agregar token CSRF
+    const csrfTokenInput = document.createElement('input');
+    csrfTokenInput.type = 'hidden';
+    csrfTokenInput.name = '_token';
+    csrfTokenInput.value = "{{ csrf_token() }}";
+    form.appendChild(csrfTokenInput);
+
+    // Agregar otros datos necesarios
+    const yearInput = document.createElement('input');
+    yearInput.type = 'hidden';
+    yearInput.name = 'year';
+    yearInput.value = "{{ $year }}";
+    form.appendChild(yearInput);
+
+    const userIdInput = document.createElement('input');
+    userIdInput.type = 'hidden';
+    userIdInput.name = 'user_id';
+    userIdInput.value = "{{ $user_id }}";
+    form.appendChild(userIdInput);
+
+    const statusInput = document.createElement('input');
+    statusInput.type = 'hidden';
+    statusInput.name = 'status';
+    statusInput.value = "{{ $status }}";
+    form.appendChild(statusInput);
+
+    // Agregar las imágenes en base64 de las gráficas
+    if (chartImageAvanceObligaciones) {
+        const chartImageAvanceObligacionesInput = document.createElement('input');
+        chartImageAvanceObligacionesInput.type = 'hidden';
+        chartImageAvanceObligacionesInput.name = 'chartImageAvanceObligaciones';
+        chartImageAvanceObligacionesInput.value = chartImageAvanceObligaciones;
+        form.appendChild(chartImageAvanceObligacionesInput);
+    }
+
+    if (chartImageAvanceTotal) {
+        const chartImageAvanceTotalInput = document.createElement('input');
+        chartImageAvanceTotalInput.type = 'hidden';
+        chartImageAvanceTotalInput.name = 'chartImageAvanceTotal';
+        chartImageAvanceTotalInput.value = chartImageAvanceTotal;
+        form.appendChild(chartImageAvanceTotalInput);
+    }
+
+    if (chartImageEstatusGeneral) {
+        const chartImageEstatusGeneralInput = document.createElement('input');
+        chartImageEstatusGeneralInput.type = 'hidden';
+        chartImageEstatusGeneralInput.name = 'chartImageEstatusGeneral';
+        chartImageEstatusGeneralInput.value = chartImageEstatusGeneral;
+        form.appendChild(chartImageEstatusGeneralInput);
+    } else {
+        console.error("La imagen de la gráfica Estatus General no se pudo capturar.");
+    }
+
+    // Agregar el formulario al documento y enviarlo
+    document.body.appendChild(form);
+    form.submit();
+
+    // Remover el formulario después de enviarlo
+    document.body.removeChild(form);
+}
+
+
 </script>
 @endsection

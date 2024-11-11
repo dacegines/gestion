@@ -60,15 +60,13 @@ class ObligacionesController extends Controller
             $query->permitirVisualizacion($user);
         }
     
-        // Log para ver la cantidad de registros antes de aplicar get y el filtro
-       
-    
         return $query->get()
             ->filter(fn($requisito) => !empty($requisito->responsable))
-            ->each(fn($requisito) => $requisito->total_avance = $this->getTotalAvance($requisito->numero_requisito));
+            ->each(fn($requisito) => 
+                $requisito->total_avance = $this->getTotalAvance($requisito->numero_requisito, $user->puesto)
+            );
     }
-
-    public function getTotalAvance($numero_requisito)
+    public function getTotalAvance($numero_requisito, $puesto)
     {
         try {
             if (empty($numero_requisito)) {
@@ -76,23 +74,58 @@ class ObligacionesController extends Controller
                 return 0;
             }
     
-            // Calcular el avance total sumando el campo 'avance'
-            $total_avance = Requisito::where('numero_requisito', $numero_requisito)->sum('avance');
+            // Definir los puestos que verán todos los registros
+            $puestosExcluidos = [
+                'Director Jurídico',
+                'Directora General',
+                'Jefa de Cumplimiento',
+                'Director de Finanzas',
+                'Director de Operación',
+                'Invitado'
+            ];
+    
+            // Crear una consulta base para filtrar por numero_requisito y, si corresponde, por puesto
+            $query = Requisito::where('numero_requisito', $numero_requisito);
+    
+            // Aplicar el filtro de puesto si no está en los puestos excluidos
+            if (!in_array($puesto, $puestosExcluidos)) {
+                $query->where('responsable', $puesto);
+            }
+    
+            // Obtener el total de registros aplicando los filtros
+            $totalRegistros = $query->count();
+            
+            if ($totalRegistros === 0) {
+                $this->logWarning('No se encontraron registros para el número de requisito y puesto especificado.', [
+                    'numero_requisito' => $numero_requisito,
+                    'puesto' => $puesto,
+                ]);
+                return 0;
+            }
+    
+            // Calcular el número de registros completados (donde porcentaje es 100)
+            $completados = $query->where('porcentaje', 100)->count();
+    
+            // Calcular el porcentaje completado
+            $total_avance = ($completados * 100.0) / $totalRegistros;
     
             // Redondear el total a 2 decimales y ajustar a 100% si está muy cerca de 100
             $total_avance = round($total_avance, 2);
-    
-            // Ajustar el valor a exactamente 100% si está en un rango cercano
             if ($total_avance > 99.95 && $total_avance < 100.05) {
                 $total_avance = 100.00;
             }
     
             return $total_avance;
         } catch (\Exception $e) {
-            $this->logError('Error al calcular el total de avance', ['numero_requisito' => $numero_requisito, 'error' => $e->getMessage()]);
+            $this->logError('Error al calcular el total de avance', [
+                'numero_requisito' => $numero_requisito,
+                'puesto' => $puesto,
+                'error' => $e->getMessage()
+            ]);
             return 0;
         }
     }
+    
 
     public function getDetallesEvidencia(Request $request)
     {
@@ -510,7 +543,9 @@ class ObligacionesController extends Controller
             ->permitirVisualizacion($user)
             ->get()
             ->filter(fn($requisito) => !empty($requisito->responsable))
-            ->each(fn($requisito) => $requisito->total_avance = $this->getTotalAvance($requisito->numero_requisito));
+            ->each(fn($requisito) => 
+                $requisito->total_avance = $this->getTotalAvance($requisito->numero_requisito, $user->puesto)
+            );
     
         return view('gestion_cumplimiento.obligaciones.index', compact('requisitos', 'user', 'year'));
     }
