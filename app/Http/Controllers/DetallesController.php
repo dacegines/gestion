@@ -8,6 +8,7 @@ use App\Exports\RequisitosExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Auth; // Importante para manejar la autenticación
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class DetallesController extends Controller
 {
@@ -166,6 +167,66 @@ class DetallesController extends Controller
     
         return response()->json($archivos);
     }
+    
+    public function descargarPDF(Request $request)
+    {
+        $year = $request->input('year', \Carbon\Carbon::now()->year);
+        $search = $request->input('search');
+    
+        // Construir la consulta principal
+        $requisitosQuery = DB::table('requisitos as r')
+            ->select(
+                'r.numero_evidencia',
+                'r.clausula_condicionante_articulo as clausula',
+                'r.evidencia as requisito_evidencia',
+                'r.periodicidad',
+                'r.fecha_limite_cumplimiento',
+                'r.responsable',
+                'r.porcentaje',
+                DB::raw("CASE 
+                    WHEN r.porcentaje = 100 THEN 'Cumplido'
+                    WHEN r.fecha_limite_cumplimiento < NOW() THEN 'Vencido'
+                    WHEN DATEDIFF(r.fecha_limite_cumplimiento, NOW()) <= 30 THEN 'Próximo a Vencer'
+                    ELSE 'Activo'
+                END AS estatus"),
+                DB::raw("(SELECT COUNT(*) FROM archivos a WHERE a.fecha_limite_cumplimiento = r.fecha_limite_cumplimiento) as cantidad_archivos")
+            )
+            ->whereYear('r.fecha_limite_cumplimiento', $year);
+    
+        // Aplicar el filtro de búsqueda si se proporciona
+        if (!empty($search)) {
+            $requisitosQuery->where(function ($query) use ($search) {
+                $query->where('r.numero_evidencia', 'like', "%$search%")
+                      ->orWhere('r.clausula_condicionante_articulo', 'like', "%$search%")
+                      ->orWhere('r.evidencia', 'like', "%$search%")
+                      ->orWhere('r.periodicidad', 'like', "%$search%")
+                      ->orWhere('r.responsable', 'like', "%$search%")
+                      ->orWhere(DB::raw("CASE 
+                            WHEN r.porcentaje = 100 THEN 'Cumplido'
+                            WHEN r.fecha_limite_cumplimiento < NOW() THEN 'Vencido'
+                            WHEN DATEDIFF(r.fecha_limite_cumplimiento, NOW()) <= 30 THEN 'Próximo a Vencer'
+                            ELSE 'Activo'
+                        END"), 'like', "%$search%");
+            });
+        }
+    
+        $requisitos = $requisitosQuery->get();
+    
+        // Verificar si hay resultados antes de generar el PDF
+        if ($requisitos->isEmpty() && $search) {
+            return redirect()->back()->with('error', 'No se encontraron registros para el filtro aplicado.');
+        }
+    
+        // Generar el PDF
+        $pdf = Pdf::loadView('pdf.reporte', compact('requisitos', 'year'))
+                  ->setPaper('A4', 'landscape');
+    
+        return $pdf->download('reporte_detalles.pdf');
+    }
+    
+    
+    
+    
     
     
 

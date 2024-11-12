@@ -198,3 +198,4 @@ Route::post('/enviar-correo-alerta', [ObligacionesController::class, 'enviarCorr
 Route::post('/descargar-pdf', [DashboardController::class, 'descargarPDF'])->name('descargar-pdf');
 
 
+Route::get('/descargar-pdf', [DetallesController::class, 'descargarPDF'])->name('descargar.pdf');

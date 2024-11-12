@@ -1,5 +1,4 @@
 $(document).ready(function() {
-    // Inicializa la tabla con DataTables
     let table = $('#detallesTable').DataTable({
         "language": {
             "lengthMenu": "Mostrar " +
@@ -28,39 +27,40 @@ $(document).ready(function() {
         "info": true,
         "autoWidth": false,
         "responsive": true,
-        "dom": '<"top"Bfl>rt<"bottom"ip><"clear">', // Cambiar la disposición para alinear en una línea
+        "dom": '<"top"Bfl>rt<"bottom"ip><"clear">',
         "buttons": [
             {
                 extend: 'excelHtml5',
-                text: '<i class="fas fa-file-excel"> Exportar</i>', // Ícono en lugar de texto
-                className: 'btn btn-success'
+                text: '<i class="fas fa-file-excel"></i>',
+                className: 'btn btn-success',
+                titleAttr: 'Exportar Excel' // Agregar tooltip
+            },
+            {
+                text: '<i class="fas fa-file-pdf"></i>',
+                className: 'btn btn-danger',
+                titleAttr: 'Exportar PDF', // Agregar tooltip
+                action: function (e, dt, node, config) {
+                    const searchValue = table.search().trim();
+                    const year = $('#year-select').val();
+
+                    const form = $('<form>', {
+                        method: 'GET',
+                        action: descargarPdfUrl
+                    });
+
+                    if (searchValue) {
+                        form.append($('<input>', { type: 'hidden', name: 'search', value: searchValue }));
+                    }
+                    form.append($('<input>', { type: 'hidden', name: 'year', value: year }));
+                    $('body').append(form);
+                    form.submit();
+                }
             }
-            
         ],
-        "lengthMenu": [[-1, 10, 25, 50, 100], ['Todo', 10, 25, 50, 100]], // Configurar menú de longitud de página
-        "pageLength": -1 // Preseleccionar opción "Todo"
+        "lengthMenu": [[-1, 10, 25, 50, 100], ['Todo', 10, 25, 50, 100]],
+        "pageLength": -1
     });
 
-    // Filtrado personalizado por rango de fechas
-    $('#filter-date-btn').on('click', function() {
-        let startDate = $('#start-date').val();
-        let endDate = $('#end-date').val();
-        
-        if (startDate && endDate) {
-            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-                let fechaCumplimiento = data[6]; // Índice de la columna "Fecha límite de cumplimiento"
-                let date = new Date(fechaCumplimiento.split(' ').join('T')); // Conversión de la fecha
-                let start = new Date(startDate);
-                let end = new Date(endDate);
-
-                return (date >= start && date <= end);
-            });
-            table.draw();
-            $.fn.dataTable.ext.search.pop();
-        } else {
-            alert('Por favor seleccione ambas fechas de inicio y fin.');
-        }
-    });
+    // Inicializar Bootstrap tooltips
+    $('[data-toggle="tooltip"]').tooltip();
 });
-
-

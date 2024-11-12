@@ -442,8 +442,8 @@ function handleFileUpload(formSelector) {
         return; // Detener la ejecución si no hay archivo adjunto
     }
 
-    // Validar el tamaño del archivo (máximo 2MB en este ejemplo)
-    const maxFileSize = 2 * 1024 * 1024; // 2MB
+    // Validar el tamaño del archivo (máximo 20MB en este ejemplo)
+    const maxFileSize = 20 * 1024 * 1024; // 20MB
     if (archivoAdjunto.size > maxFileSize) {
         Swal.fire('Error', 'El archivo es demasiado grande. Comuníquese con el administrador del sistema.', 'warning');
         return; // Detener la ejecución si el archivo es demasiado grande

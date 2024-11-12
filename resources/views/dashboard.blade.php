@@ -31,9 +31,12 @@
                 </button>
         
                 <!-- Botón para "Descargar PDF" -->
-                <button type="button" onclick="descargarPDF()" class="btn btn-danger btn-sm ml-2">
-                    <i class="fas fa-file-pdf"></i> PDF <i class="fas fa-download"></i>
-                </button>
+                <button type="button" onclick="descargarPDF()" 
+                class="btn btn-danger btn-sm ml-2" 
+                title="Exportar en PDF" 
+                data-toggle="tooltip">
+            <i class="fas fa-file-pdf"></i> PDF
+        </button>
                 <!-- Campos ocultos para las imágenes de los gráficos -->
                 <input type="hidden" name="chartImageAvanceObligaciones" id="chartImageAvanceObligaciones">
                 <input type="hidden" name="chartImageAvanceTotal" id="chartImageAvanceTotal">
@@ -540,7 +543,11 @@ function descargarPDF() {
     // Remover el formulario después de enviarlo
     document.body.removeChild(form);
 }
-
-
+</script>
+<script>
+    $(document).ready(function() {
+    // Inicializar los tooltips de Bootstrap
+    $('[data-toggle="tooltip"]').tooltip();
+});
 </script>
 @endsection
