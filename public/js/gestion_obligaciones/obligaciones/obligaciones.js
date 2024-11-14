@@ -575,9 +575,10 @@ function cargarArchivos(requisitoId, evidenciaId, fechaLimite) {
                         data-url="${storageUploadsUrl}/${sanitizeInput(archivo.nombre_archivo)}"
                         ${userRole === 'invitado' ? 'disabled' : ''}
                     >
-                        <i class="fas fa-eye"></i>
+                        <i class="fas fa-download"></i>
                     </button>
                 </td>
+
                 ${
                     userRole === 'admin' 
                         ? `<td><button class="btn btn-sm btn-danger btn-eliminar-archivo" onclick="eliminarArchivo(${sanitizeInput(archivo.id)}, '${sanitizeInput(requisitoId)}', '${sanitizeInput(evidenciaId)}', '${sanitizeInput(fechaLimite)}')"><i class="fas fa-trash-alt"></i></button></td>`
@@ -590,9 +591,18 @@ function cargarArchivos(requisitoId, evidenciaId, fechaLimite) {
     
     
 
-        document.querySelectorAll('.btn-ver-archivo').forEach(function(button) {
-            button.addEventListener('click', function() {
-                window.open(sanitizeInput(this.dataset.url), '_blank');
+        document.querySelectorAll('.btn-ver-archivo').forEach(button => {
+            button.addEventListener('click', function () {
+                const fileUrl = this.dataset.url; // Obtener la URL del archivo
+                const fileName = fileUrl.split('/').pop(); // Extraer el nombre del archivo
+        
+                // Crear un enlace temporal para forzar la descarga
+                const link = document.createElement('a');
+                link.href = fileUrl;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
             });
         });
     })
