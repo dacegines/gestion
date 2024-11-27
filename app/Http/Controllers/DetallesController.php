@@ -6,173 +6,84 @@ use App\Models\Requisito;
 use Illuminate\Http\Request;
 use App\Exports\RequisitosExport;
 use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Support\Facades\Auth; // Importante para manejar la autenticación
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class DetallesController extends Controller
 {
-    
+    // Método principal para mostrar la vista de requisitos
     public function index(Request $request)
     {
         if (!Auth::check()) {
             return redirect()->route('login');
         }
-    
-        $hoy = \Carbon\Carbon::now();
-        $year = $hoy->year;
+
         $user = Auth::user();
-    
-        $puestosExcluidos = [
-            'Director Jurídico', 'Directora General', 'Jefa de Cumplimiento', 
-            'Director de Finanzas', 'Director de Operación', 'Invitado'
-        ];
-    
-        // Consulta principal para obtener los requisitos
-        $requisitosQuery = DB::table('requisitos as r')
-            ->select(
-                'r.id', 'r.numero_evidencia', 
-                'r.clausula_condicionante_articulo as clausula',
-                'r.evidencia as requisito_evidencia', 'r.periodicidad', 
-                'r.fecha_limite_cumplimiento', 'r.responsable', 
-                'r.porcentaje',
-                DB::raw("CASE 
-                    WHEN r.porcentaje = 100 THEN 'Cumplido'
-                    WHEN r.fecha_limite_cumplimiento < NOW() THEN 'Vencido'
-                    WHEN DATEDIFF(r.fecha_limite_cumplimiento, NOW()) <= 30 THEN 'Próximo a Vencer'
-                    ELSE 'Activo'
-                END AS estatus")
-            )
-            ->whereYear('r.fecha_limite_cumplimiento', $year)
-            ->orderBy('r.fecha_limite_cumplimiento', 'asc');
-    
-        if (!in_array($user->puesto, $puestosExcluidos)) {
-            $requisitosQuery->where('r.responsable', $user->puesto);
-        }
-    
-        $requisitos = $requisitosQuery->get();
-    
-        // Consulta independiente para contar archivos por fecha_limite_cumplimiento
-        $conteoArchivos = DB::table('archivos')
-            ->select('fecha_limite_cumplimiento', DB::raw('COUNT(*) as cantidad_archivos'))
-            ->groupBy('fecha_limite_cumplimiento')
-            ->orderBy('fecha_limite_cumplimiento', 'asc')
-            ->get()
-            ->keyBy('fecha_limite_cumplimiento');
-    
-        // Agregar el conteo de archivos a cada requisito
-        foreach ($requisitos as $requisito) {
-            $fechaLimite = $requisito->fecha_limite_cumplimiento;
-            $requisito->cantidad_archivos = $conteoArchivos->has($fechaLimite) ? $conteoArchivos->get($fechaLimite)->cantidad_archivos : 0;
-        }
-    
+        $year = \Carbon\Carbon::now()->year;
+
+        // Construir consulta base
+        $requisitos = $this->getRequisitos($year, $user);
+
         return view('gestion_cumplimiento.detalles.index', compact('requisitos', 'year'));
     }
-    
-    
-    
-    
-    
 
+    // Método para filtrar los requisitos por año
     public function filtrarDetalles(Request $request)
     {
         $validatedData = $request->validate([
             'year' => 'required|integer|min:2024|max:2040',
         ]);
-    
+
         $year = $validatedData['year'];
-        $user = Auth::user(); // Obtener el usuario autenticado
-    
-        // Definir los puestos excluidos
-        $puestosExcluidos = [
-            'Director Jurídico', 'Directora General', 'Jefa de Cumplimiento', 
-            'Director de Finanzas', 'Director de Operación', 'Invitado'
-        ];
-    
-        // Construir la consulta de requisitos
-        $requisitosQuery = DB::table('requisitos as r')
-            ->select(
-                'r.id', 
-                'r.numero_evidencia', 
-                'r.clausula_condicionante_articulo as clausula',
-                'r.evidencia as requisito_evidencia', 
-                'r.periodicidad', 
-                'r.fecha_limite_cumplimiento', 
-                'r.responsable', 
-                'r.porcentaje',
-                DB::raw("CASE 
-                    WHEN r.porcentaje = 100 THEN 'Cumplido'
-                    WHEN r.fecha_limite_cumplimiento < NOW() THEN 'Vencido'
-                    WHEN DATEDIFF(r.fecha_limite_cumplimiento, NOW()) <= 30 THEN 'Próximo a Vencer'
-                    ELSE 'Activo'
-                END AS estatus")
-            )
-            ->whereYear('r.fecha_limite_cumplimiento', $year)
-            ->orderBy('r.fecha_limite_cumplimiento', 'asc');
-    
-        // Aplicar el filtro de puesto si el usuario no está en los puestos excluidos
-        if (!in_array($user->puesto, $puestosExcluidos)) {
-            $requisitosQuery->where('r.responsable', $user->puesto);
-        }
-    
-        // Ejecutar la consulta
-        $requisitos = $requisitosQuery->get();
-    
-        // Obtener el conteo de archivos para cada fecha límite de cumplimiento
-        $conteoArchivos = DB::table('archivos')
-            ->select('fecha_limite_cumplimiento', DB::raw('COUNT(*) as cantidad_archivos'))
-            ->groupBy('fecha_limite_cumplimiento')
-            ->get()
-            ->keyBy('fecha_limite_cumplimiento');
-    
-        // Agregar el conteo de archivos a cada requisito
-        foreach ($requisitos as $requisito) {
-            $fechaLimite = $requisito->fecha_limite_cumplimiento;
-            $requisito->cantidad_archivos = $conteoArchivos->has($fechaLimite) ? $conteoArchivos->get($fechaLimite)->cantidad_archivos : 0;
-        }
-    
+        $user = Auth::user();
+
+        $requisitos = $this->getRequisitos($year, $user);
+
         return view('gestion_cumplimiento.detalles.index', compact('requisitos', 'year'));
     }
-    
-    
 
+    // Método para exportar requisitos a Excel
     public function export(Request $request)
     {
-        // Verificar si el usuario está autenticado
         if (!Auth::check()) {
-            return redirect()->route('login'); // Redirigir al login si no está autenticado
+            return redirect()->route('login');
         }
 
-        // Validar la entrada del año
         $validatedData = $request->validate([
-            'year' => 'required|integer|min:2024|max:2040', // Validar año entre 2024 y 2040
+            'year' => 'required|integer|min:2024|max:2040',
         ]);
 
         $year = $validatedData['year'];
 
-        // Filtrar los requisitos por el año seleccionado
-        $requisitos = Requisito::whereYear('fecha_limite_cumplimiento', $year)
-            ->orderBy('fecha_limite_cumplimiento', 'asc')
-            ->get();
+        try {
+            $requisitos = Requisito::whereYear('fecha_limite_cumplimiento', $year)
+                ->orderBy('fecha_limite_cumplimiento', 'asc')
+                ->get();
 
-        // Pasar los requisitos filtrados al exportador
-        return Excel::download(new RequisitosExport($requisitos), 'requisitos.xlsx');
+            return Excel::download(new RequisitosExport($requisitos), 'requisitos.xlsx');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Ocurrió un error al exportar los datos.');
+        }
     }
+
+    // Método para obtener archivos relacionados con una fecha específica
     public function obtenerArchivosPorFecha($fecha_limite_cumplimiento)
     {
         $archivos = DB::table('archivos')
             ->where('fecha_limite_cumplimiento', $fecha_limite_cumplimiento)
             ->select('nombre_archivo', 'ruta_archivo')
             ->get();
-    
+
         return response()->json($archivos);
     }
-    
+
+    // Método para generar un PDF con los requisitos (sin modificaciones)
     public function descargarPDF(Request $request)
     {
         $year = $request->input('year', \Carbon\Carbon::now()->year);
         $search = $request->input('search');
-    
+
         // Construir la consulta principal
         $requisitosQuery = DB::table('requisitos as r')
             ->select(
@@ -192,7 +103,7 @@ class DetallesController extends Controller
                 DB::raw("(SELECT COUNT(*) FROM archivos a WHERE a.fecha_limite_cumplimiento = r.fecha_limite_cumplimiento) as cantidad_archivos")
             )
             ->whereYear('r.fecha_limite_cumplimiento', $year);
-    
+
         // Aplicar el filtro de búsqueda si se proporciona
         if (!empty($search)) {
             $requisitosQuery->where(function ($query) use ($search) {
@@ -209,25 +120,68 @@ class DetallesController extends Controller
                         END"), 'like', "%$search%");
             });
         }
-    
+
         $requisitos = $requisitosQuery->get();
-    
+
         // Verificar si hay resultados antes de generar el PDF
         if ($requisitos->isEmpty() && $search) {
             return redirect()->back()->with('error', 'No se encontraron registros para el filtro aplicado.');
         }
-    
+
         // Generar el PDF
         $pdf = Pdf::loadView('pdf.reporte', compact('requisitos', 'year'))
                   ->setPaper('A4', 'landscape');
-    
+
         return $pdf->download('reporte_detalles.pdf');
     }
-    
-    
-    
-    
-    
-    
 
+    // Método privado para construir la consulta de requisitos
+    private function getRequisitos($year, $user, $search = null)
+    {
+        $puestosExcluidos = [
+            'Director Jurídico', 'Directora General', 'Jefa de Cumplimiento',
+            'Director de Finanzas', 'Director de Operación', 'Invitado'
+        ];
+
+        $query = DB::table('requisitos as r')
+            ->leftJoin('archivos as a', 'r.fecha_limite_cumplimiento', '=', 'a.fecha_limite_cumplimiento')
+            ->select(
+                'r.id',
+                DB::raw('MAX(r.numero_evidencia) as numero_evidencia'),
+                DB::raw('MAX(r.clausula_condicionante_articulo) as clausula'),
+                DB::raw('MAX(r.evidencia) as requisito_evidencia'),
+                DB::raw('MAX(r.periodicidad) as periodicidad'),
+                DB::raw('MAX(r.fecha_limite_cumplimiento) as fecha_limite_cumplimiento'),
+                DB::raw('MAX(r.responsable) as responsable'),
+                DB::raw('MAX(r.porcentaje) as porcentaje'),
+                DB::raw('COUNT(a.id) as cantidad_archivos'),
+                DB::raw("CASE 
+                    WHEN MAX(r.porcentaje) = 100 THEN 'Cumplido'
+                    WHEN MAX(r.fecha_limite_cumplimiento) < NOW() THEN 'Vencido'
+                    WHEN DATEDIFF(MAX(r.fecha_limite_cumplimiento), NOW()) <= 30 THEN 'Próximo a Vencer'
+                    ELSE 'Activo'
+                END AS estatus")
+            )
+            ->whereYear('r.fecha_limite_cumplimiento', $year)
+            ->groupBy('r.id')
+            ->orderBy('r.fecha_limite_cumplimiento', 'asc');
+
+        if (!in_array($user->puesto, $puestosExcluidos)) {
+            $query->where('r.responsable', $user->puesto);
+        }
+
+        if (!empty($search)) {
+            $query->where(function ($subQuery) use ($search) {
+                $subQuery->where('r.numero_evidencia', 'like', "%$search%")
+                    ->orWhere('r.clausula_condicionante_articulo', 'like', "%$search%")
+                    ->orWhere('r.evidencia', 'like', "%$search%")
+                    ->orWhere('r.periodicidad', 'like', "%$search%")
+                    ->orWhere('r.responsable', 'like', "%$search%");
+            });
+        }
+
+        return $query->get();
+    }
 }
+
+

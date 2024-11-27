@@ -129,26 +129,32 @@ class ObligacionesController extends Controller
 
     public function getDetallesEvidencia(Request $request)
     {
+        // Validación de la entrada
+        $request->validate([
+            'evidencia_id' => 'required|numeric|exists:requisitos,numero_evidencia',
+        ]);
+    
         try {
-            $evidenciaId = $request->input('evidencia_id');
-            if (empty($evidenciaId)) {
-                $this->logWarning('ID de evidencia vacío al intentar obtener los detalles de evidencia.');
-                return response()->json(['error' => 'ID de evidencia no proporcionado'], 400);
-            }
-
+            $evidenciaId = $request->evidencia_id;
+    
+            // Buscar el detalle asociado al numero_evidencia
             $detalle = Requisito::where('numero_evidencia', $evidenciaId)->first();
+    
             if ($detalle) {
-                $fechas_limite = Requisito::where('numero_evidencia', $evidenciaId)
+                // Obtener todas las fechas límite asociadas a esta evidencia
+                $fechasLimite = Requisito::where('numero_evidencia', $evidenciaId)
                     ->pluck('fecha_limite_cumplimiento')
-                    ->map(fn($fecha) => Carbon::parse($fecha)->format('d/m/Y'))
-                    ->toArray();
-
+                    ->map(function ($fecha) {
+                        return Carbon::parse($fecha)->format('d/m/Y');
+                    });
+    
                 $this->logInfo('Detalles de evidencia obtenidos', ['evidencia_id' => $evidenciaId]);
+    
                 return response()->json([
                     'evidencia' => $detalle->evidencia,
                     'periodicidad' => $detalle->periodicidad,
                     'responsable' => $detalle->responsable,
-                    'fechas_limite_cumplimiento' => $fechas_limite,
+                    'fechas_limite_cumplimiento' => $fechasLimite, 
                     'origen_obligacion' => $detalle->origen_obligacion,
                     'clausula_condicionante_articulo' => $detalle->clausula_condicionante_articulo,
                     'id_notificacion' => $detalle->id_notificacion,
@@ -156,22 +162,28 @@ class ObligacionesController extends Controller
                 ]);
             } else {
                 $this->logWarning('No se encontró la evidencia', ['evidencia_id' => $evidenciaId]);
+    
                 return response()->json(['error' => 'No se encontró la evidencia'], 404);
             }
         } catch (\Exception $e) {
-            $this->logError('Error al obtener los detalles de evidencia', ['evidencia_id' => $evidenciaId, 'error' => $e->getMessage()]);
+            $this->logError('Error al obtener los detalles de evidencia', [
+                'evidencia_id' => $request->input('evidencia_id'),
+                'error' => $e->getMessage()
+            ]);
+    
             return response()->json(['error' => 'Ocurrió un error al obtener los detalles de la evidencia'], 500);
         }
     }
 
     public function obtenerNotificaciones(Request $request)
     {
+        // Validación de la entrada
+        $request->validate([
+            'id_notificaciones' => ['required', 'regex:/^[a-zA-Z]+\d+(\.\d+)?$/'],
+        ]);
+
         try {
-            $idNotificacion = $request->input('id_notificaciones');
-            if (empty($idNotificacion)) {
-                $this->logWarning('ID de notificación vacío al intentar obtener notificaciones.');
-                return response()->json(['error' => 'ID de notificación no proporcionado'], 200);
-            }
+            $idNotificacion = $request->id_notificaciones;
 
             $notificaciones = DB::table('notificaciones')
                 ->where('id_notificacion', $idNotificacion)
@@ -242,33 +254,41 @@ class ObligacionesController extends Controller
 
     public function cambiarEstado(Request $request)
     {
+        // Validación de la entrada
+        $request->validate([
+            'id' => 'required|integer|exists:requisitos,id',
+        ]);
+    
         try {
-            $requisitoId = $request->input('id');
-            if (empty($requisitoId)) {
-                $this->logWarning('ID de requisito no proporcionado.');
-                return response()->json(['error' => 'ID de requisito no proporcionado'], 400);
-            }
-
+            $requisitoId = $request->id;
+    
+            // Buscar el requisito
             $requisito = Requisito::find($requisitoId);
             if (!$requisito) {
                 $this->logInfo('Requisito no encontrado', ['requisito_id' => $requisitoId]);
                 return response()->json(['error' => 'Requisito no encontrado'], 404);
             }
-
+    
+            // Cambiar el estado del requisito
             $requisito->approved = !$requisito->approved;
             $requisito->save();
-
-            $this->logInfo('Estado del requisito cambiado', ['requisito_id' => $requisitoId, 'nuevo_estado' => $requisito->approved]);
-
+    
+            $this->logInfo('Estado del requisito cambiado', [
+                'requisito_id' => $requisitoId,
+                'nuevo_estado' => $requisito->approved
+            ]);
+    
+            // Obtener los correos de los responsables y destinatarios adicionales
             $emailResponsables = !empty($requisito->email) ? [$requisito->email] : [];
             $otrosCorreos = DB::table('responsables')
                 ->distinct()
                 ->whereIn('puesto', ['Gerente Jurídico', 'Director Jurídico', 'Jefa de Cumplimiento'])
                 ->pluck('email')
                 ->toArray();
-
+    
             $destinatarios = array_merge($emailResponsables, $otrosCorreos);
-
+    
+            // Enviar correo a los responsables si hay destinatarios
             if (count($destinatarios) > 0) {
                 Mail::to($destinatarios)->send(new EstadoEvidenciaCambiado(
                     $requisito->nombre,
@@ -280,18 +300,23 @@ class ObligacionesController extends Controller
                     $requisito->clausula_condicionante_articulo,
                     $requisito->approved
                 ));
+    
                 $this->logInfo('Correo enviado correctamente', ['destinatarios' => $destinatarios]);
             } else {
                 $this->logWarning('No se encontraron destinatarios para el envío de correo', ['requisito_id' => $requisitoId]);
             }
-
+    
             return response()->json(['success' => true, 'approved' => $requisito->approved]);
-
+    
         } catch (\Exception $e) {
-            $this->logError('Error al cambiar el estado del requisito', ['requisito_id' => $requisitoId ?? 'N/A', 'error' => $e->getMessage()]);
+            $this->logError('Error al cambiar el estado del requisito', [
+                'requisito_id' => $request->id ?? 'N/A',
+                'error' => $e->getMessage()
+            ]);
             return response()->json(['error' => 'Ocurrió un error al cambiar el estado del requisito'], 500);
         }
     }
+    
 
     public function obtenerEstadoApproved(Request $request)
     {

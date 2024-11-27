@@ -107,6 +107,7 @@ function obtenerDetallesEvidencia(evidenciaId, requisitoId) {
             response.data.fechas_limite_cumplimiento.forEach(function(fecha) {
                 fechasLimiteHtml += `<li><b>${sanitizeInput(fecha)}</b></li>`;
             });
+            
         } else {
             fechasLimiteHtml = '<p>No hay fechas límite de cumplimiento</p>';
         }
@@ -632,9 +633,9 @@ function actualizarEstado(detalleId, requisitoId, responsable, numero_requisito)
             Swal.fire({
                 position: "center",
                 icon: "success",
-                title: "El estado de la obligación ha sido cambiado",
+                title: "El estado de la obligación ha sido cambiado.<br>Se notificará al responsable por correo electrónico.",
                 showConfirmButton: false,
-                timer: 3000
+                timer: 6000
             });
 
             actualizarPorcentaje(detalleId);
