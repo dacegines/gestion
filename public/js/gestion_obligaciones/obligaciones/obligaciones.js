@@ -20,14 +20,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const evidenciaId = this.dataset.evidenciaId;
             const idNotificaciones = this.dataset.idNotificaciones;
             const requisitoId = this.dataset.requisitoId;
-
+            
             const firstModal = document.getElementById('modal' + requisitoId);
             if (firstModal) {
                 $(firstModal).modal('hide');
             }
 
             obtenerDetallesEvidencia(evidenciaId, requisitoId);
-            obtenerNotificaciones(idNotificaciones, requisitoId);
+            
             obtenerTablaNotificaciones(idNotificaciones, requisitoId);
 
             // Realizar la solicitud para obtener el estado "approved"
@@ -79,6 +79,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const evidenciaId = this.dataset.evidenciaId;
             const idNotificaciones = this.dataset.idNotificaciones;
             const requisitoId = this.dataset.requisitoId;
+
+            
             
             // Validar los IDs antes de hacer cualquier otra cosa
             if (!isValidId(evidenciaId) || !isValidId(idNotificaciones) || !isValidId(requisitoId)) {
