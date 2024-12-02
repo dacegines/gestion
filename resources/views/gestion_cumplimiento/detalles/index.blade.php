@@ -24,11 +24,16 @@
                     </select>
                 </div>
             
-                <button type="submit" class="btn btn-success btn-sm">Ver</button>
+                <button type="submit" class="btn btn-success btn-sm" 
+                @if (Auth::user()->hasRole('invitado')) disabled @endif>Ver</button>
 
             </form>
         </div>
-
+        <div class="container-fluit text-center">
+            @if (Auth::user()->hasRole('invitado'))
+                <p class="text-center text-muted" style="font-size: 1.0rem;"><b>Actualmente eres un usuario invitado y solo tienes acceso a esta información.</b></p>
+            @endif
+        </div>      
         <div class="divider"></div>
 
         <div class="table-responsive">
@@ -53,12 +58,16 @@
                         <td style="text-align: justify; font-size: 11px;">{{ $requisito->requisito_evidencia }}</td>
                         <td style="font-size: 11px;">{{ $requisito->periodicidad }}</td>
                         <td class="adjuntos-link" data-fecha="{{ $requisito->fecha_limite_cumplimiento }}" style="font-size: 11px;">
-                            @if($requisito->cantidad_archivos > 0)
-                                <span style="cursor: pointer; color: blue; text-decoration: underline; font-size: 11px;">
-                                    {{ $requisito->cantidad_archivos }} archivo{{ $requisito->cantidad_archivos > 1 ? 's' : '' }}
-                                </span>
+                            @if(Auth::user()->hasRole('invitado'))
+                                <span class="text-muted" style="font-size: 11px;">Sin acceso</span>
                             @else
-                                <span style="font-size: 11px;">No hay adjuntos</span>
+                                @if($requisito->cantidad_archivos > 0)
+                                    <span style="cursor: pointer; color: blue; text-decoration: underline; font-size: 11px;">
+                                        {{ $requisito->cantidad_archivos }} archivo{{ $requisito->cantidad_archivos > 1 ? 's' : '' }}
+                                    </span>
+                                @else
+                                    <span style="font-size: 11px;">No hay adjuntos</span>
+                                @endif
                             @endif
                         </td>
                         <td style="font-size: 11px; white-space: nowrap;">
