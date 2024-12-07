@@ -57,12 +57,14 @@
             </div>
         @else
             <div style="background-color: #dc3545; border: 1px solid #dc3545; color: white; padding: 15px; border-radius: 5px; font-size: 16px; ">
-                <i class="fas fa-times"></i> Esta obligación no ha sido revisada o volvió a su estatus inicial.
+                <i class="fas fa-times"></i> Esta obligación volvió a su estatus inicial.
             </div>
         @endif
 
                     <!-- Aquí puedes continuar con el contenido adicional del correo -->
                 </div>
+                <div class="section-header">📌 Nombre del Requisito:</div>
+                <p>{{ $nombre }}</p>
                 <div class="section-header">📝 Obligación:</div>
                 <p>{{ $titulo }}</p>                                
                 <div class="section-header">🗓 Periodicidad:</div>
@@ -74,7 +76,7 @@
                 <div class="section-header">📄 Origen de la obligación:</div>
                 <p>{{ $origen_obligacion }}</p>
                 <div class="section-header">📜 Cláusula, condicionante, o artículo:</div>
-                <p>{{ $clausula }}</p>
+                <p style="text-align: justify;">{{ $clausula }}</p>
 
             </div>
         </div>

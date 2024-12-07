@@ -55,6 +55,8 @@
                         <i class="fas fa-check"></i> Se ha subido una nueva evidencia a esta Obligación.
                     </div>
                     <hr>
+                    <div class="section-header">📌 Nombre del Requisito:</div>
+                    <p>{{ $nombre }}</p>
                     <div class="section-header">📝 Obligación:</div>
                     <p>{{ $evidencia }}</p>
                     <div class="section-header">🗓 Periodicidad:</div>
