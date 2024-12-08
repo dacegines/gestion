@@ -10,6 +10,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CustomPasswordResetController;
 use App\Http\Controllers\CustomRegisterController;
 use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\AdminUsersController;
 
 // Ruta de inicio
 Route::get('/', function () {
@@ -72,6 +73,11 @@ Route::middleware([
     Route::post('/archivos/subir', [ArchivoController::class, 'subirArchivo'])->name('archivos.subir');
     Route::post('/archivos/listar', [ArchivoController::class, 'listarArchivos'])->name('archivos.listar');
     Route::post('/archivos/eliminar', [ArchivoController::class, 'eliminar'])->name('archivos.eliminar');
+
+    // Rutas de AdminUsuarios
+    Route::get('/adminUsuarios', [AdminUsersController::class, 'index'])->name('adminUsuarios');
+    Route::post('/adminUsuarios/register', [AdminUsersController::class, 'register'])->name('adminUsuarios.register');
+    Route::post('/check-email', [AdminUsersController::class, 'checkEmail'])->name('check.email');
 });
 
 // Rutas de CustomPasswordResetController

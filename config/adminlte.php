@@ -319,16 +319,26 @@ return [
             'can' => 'manage-blog',
         ],
         [
+            'text' => 'Administracion de Usuarios',
+            'route' => 'adminUsuarios',
+            'icon' => 'fas fa-user-plus',
+            'can' => 'superUsuario',
+            
+            
+        ],
+          
+        [
             'text' => 'Dashboard',
             'route' => 'dashboard',
             
-        ],
+            
+        ],       
 
         [
             'text' => 'Obligaciones',
             'url' => 'obligaciones', 
             'icon' => 'fas fa-fw fa-clipboard',
-            
+
         ],        
         
 
