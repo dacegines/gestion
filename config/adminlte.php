@@ -318,6 +318,7 @@ return [
             'url' => 'admin/blog',
             'can' => 'manage-blog',
         ],
+
         [
             'text' => 'Administracion de Usuarios',
             'route' => 'adminUsuarios',
@@ -326,6 +327,7 @@ return [
             
             
         ],
+
           
         [
             'text' => 'Dashboard',

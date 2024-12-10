@@ -78,6 +78,14 @@ Route::middleware([
     Route::get('/adminUsuarios', [AdminUsersController::class, 'index'])->name('adminUsuarios');
     Route::post('/adminUsuarios/register', [AdminUsersController::class, 'register'])->name('adminUsuarios.register');
     Route::post('/check-email', [AdminUsersController::class, 'checkEmail'])->name('check.email');
+    Route::post('/permissions/store', [AdminUsersController::class, 'storePermission'])->name('permissions.store');
+    Route::post('/roles/store', [AdminUsersController::class, 'storeRole'])->name('roles.store');
+    Route::post('/admin-usuarios/{id}/delete', [AdminUsersController::class, 'destroy'])->name('adminUsuarios.destroy');
+    Route::put('/adminUsuarios/update', [AdminUsersController::class, 'update'])->name('adminUsuarios.update');
+
+
+
+
 });
 
 // Rutas de CustomPasswordResetController

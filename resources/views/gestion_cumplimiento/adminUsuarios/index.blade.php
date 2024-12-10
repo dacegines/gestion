@@ -13,8 +13,117 @@
         <button type="button" class="btn border" data-toggle="modal" data-target="#createUserModal">
             Crear nuevo usuario
         </button>
+        <hr>
+        @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ session('success') }}
+            <button type="button" class="close text-white" data-dismiss="alert" aria-label="Cerrar">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    @endif
+    
+    @if (session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="close text-white" data-dismiss="alert" aria-label="Cerrar">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    @endif
+    
+    
+    @if (session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ session('error') }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    @endif
+    
+        
+        {{-- Tabla de usuarios --}}
+        <div class="table-responsive">
+            <table id="usersTable" class="table table-striped table-bordered text-center">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Num</th>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Puesto</th>
+                        <th>Rol</th>
+                        <th>Permiso</th>
+                        <th>Acciones</th> <!-- Mantener para eliminar -->
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($users as $user)
+                    <tr>
+                        <td>{{ $user->id }}</td> <!-- ID del usuario -->
+                        <td class="editable" data-id="{{ $user->id }}" data-column="name">{{ $user->user_name }}</td>
+                        <td class="editable" data-id="{{ $user->id }}" data-column="email">{{ $user->email }}</td>
+                        <td class="editable" data-id="{{ $user->id }}" data-column="puesto">{{ $user->puesto }}</td>
+                        <td>{{ $user->role_name }}</td>
+                        <td>{{ $user->permission_name }}</td>
+                        <td>
+
+                            <!-- Botón para editar -->
+                            <button 
+                                type="button" 
+                                class="btn btn-warning btn-sm edit-user-btn" 
+                                data-id="{{ $user->id }}" 
+                                data-name="{{ $user->user_name }}" 
+                                data-email="{{ $user->email }}" 
+                                data-puesto="{{ $user->puesto }}" 
+                                data-toggle="modal" 
+                                data-target="#editUserModal">
+                                Editar
+                            </button>
+
+                            <!-- Botón para el modal de Rol -->
+                            <button 
+                                type="button" 
+                                class="btn btn-secondary btn-sm role-btn" 
+                                data-id="{{ $user->id }}" 
+                                data-name="{{ $user->user_name }}" 
+                                data-email="{{ $user->email }}" 
+                                data-role="{{ $user->role_id }}" 
+                                data-toggle="modal" 
+                                data-target="#roleModal">
+                                Asignar-Rol
+                            </button>
+                            
+                            
+                    
+                                <!-- Botón para el modal de Área -->
+                            <button 
+                                type="button" 
+                                class="btn btn-secondary btn-sm area-btn" 
+                                data-id="{{ $user->id }}" 
+                                data-name="{{ $user->user_name }}" 
+                                data-email="{{ $user->email }}" 
+                                data-toggle="modal" 
+                                data-target="#areaModal">
+                                Asignar-Área
+                            </button>
+
+                            <!-- Botón para borrar -->
+                            <form action="{{ route('adminUsuarios.destroy', $user->id) }}" method="POST" class="d-inline delete-user-form">
+                                @csrf
+                                <button type="submit" class="btn btn-danger btn-sm delete-user-btn">
+                                    Borrar
+                                </button>
+                            </form>                   
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            
+        </div>
     </div>
-    <hr>
+    
 </div>
 
 {{-- Modal --}}
@@ -85,15 +194,16 @@
                         <input type="password" name="password" id="password" class="form-control"
                             placeholder="{{ __('adminlte::adminlte.password') }}">
                         <div class="input-group-append">
+                            <button type="button" class="btn btn-outline-secondary toggle-password" data-target="#password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>                            
+                        <div class="input-group-append">
                             <div class="input-group-text">
                                 <span class="fas fa-lock"></span>
                             </div>
                         </div>
-                        <div class="input-group-append">
-                            <button type="button" class="btn btn-outline-secondary toggle-password" data-target="#password">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
+
                     </div>
                     <div id="password-requirements" class="text-muted mt-1 d-none">
                         <small id="length" class="text-danger">La contraseña debe tener al menos 8 caracteres.</small><br>
@@ -108,15 +218,16 @@
                         <input type="password" name="password_confirmation" id="password-confirm" class="form-control"
                             placeholder="{{ __('adminlte::adminlte.retype_password') }}">
                         <div class="input-group-append">
+                            <button type="button" class="btn btn-outline-secondary toggle-password" data-target="#password-confirm">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>                            
+                        <div class="input-group-append">
                             <div class="input-group-text">
                                 <span class="fas fa-lock"></span>
                             </div>
                         </div>
-                        <div class="input-group-append">
-                            <button type="button" class="btn btn-outline-secondary toggle-password" data-target="#password-confirm">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
+
                     </div>
                     <div id="password-feedback" class="mt-1"></div>
 
@@ -135,15 +246,218 @@
     </div>
 </div>
 
+<!-- Modal para Editar -->
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editUserModalLabel">Editar Usuario</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-user-form" action="{{ route('adminUsuarios.update') }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="user_id" id="editUserId">
+
+                    {{-- Nombre --}}
+                    <div class="form-group">
+                        <label for="editUserName">Nombre</label>
+                        <input type="text" name="name" id="editUserName" class="form-control" required>
+                    </div>
+
+                    {{-- Email --}}
+                    <div class="form-group">
+                        <label for="editUserEmail">Email</label>
+                        <input type="email" name="email" id="editUserEmail" class="form-control" required>
+                    </div>
+
+                    {{-- Puesto --}}
+                    <div class="form-group">
+                        <label for="editUserPuesto">Puesto</label>
+                        <input type="text" name="puesto" id="editUserPuesto" class="form-control" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal para Rol -->
+<div class="modal fade" id="roleModal" tabindex="-1" aria-labelledby="roleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="roleModalLabel">Gestionar Rol</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true" class="text-white">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="roleForm" action="{{ route('roles.store') }}" method="POST">
+                    @csrf
+                    <!-- Input oculto predefinido -->
+                    <input type="hidden" name="model_type" value="App\Models\User">
+                    
+                    <!-- Input oculto para el ID del usuario -->
+                    <input type="hidden" name="model_id" id="modelIdRoleInput">
+                
+                    <!-- Input visible para mostrar nombre y email -->
+                    <div class="form-group">
+                        <label for="userNameEmailRoleInput">Usuario</label>
+                        <input type="text" id="userNameEmailRoleInput" class="form-control" readonly>
+                    </div>
+                
+                    <!-- Select para roles -->
+                    <div class="form-group">
+                        <label for="roleSelect">Seleccionar Rol</label>
+                        <select id="roleSelect" name="role_id" class="form-control">
+                            @foreach ($roles as $role)
+                                <option value="{{ $role->id }}">{{ $role->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal para Área -->
+<div class="modal fade" id="areaModal" tabindex="-1" aria-labelledby="areaModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="areaModalLabel">Gestionar Área</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="areaForm" action="{{ route('permissions.store') }}" method="POST">
+                    @csrf
+                    <!-- Input oculto predefinido -->
+                    <input type="hidden" name="model_type" value="App\Models\User">
+                    
+                    <!-- Input oculto para el ID del usuario -->
+                    <input type="hidden" name="model_id" id="modelIdInput">
+
+                    <!-- Input visible para mostrar nombre y email -->
+                    <div class="form-group">
+                        <label for="userNameEmailInput">Usuario</label>
+                        <input type="text" id="userNameEmailInput" class="form-control" readonly>
+                    </div>
+                
+                    <!-- Select para permisos -->
+                    <div class="form-group">
+                        <label for="areaSelect">Seleccionar Permiso</label>
+                        <select id="areaSelect" name="permission_id" class="form-control">
+                            @foreach ($permissions as $permission)
+                                <option value="{{ $permission->id }}">{{ $permission->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 
 
 @endsection
 
 @section('js')
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/parsley.js/2.9.3/parsley.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    $(document).on('click', '.edit-user-btn', function () {
+    const userId = $(this).data('id');
+    const userName = $(this).data('name');
+    const userEmail = $(this).data('email');
+    const userPuesto = $(this).data('puesto');
+
+    // Llenar los campos del modal
+    $('#editUserId').val(userId);
+    $('#editUserName').val(userName);
+    $('#editUserEmail').val(userEmail);
+    $('#editUserPuesto').val(userPuesto);
+});
+
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const deleteForms = document.querySelectorAll('.delete-user-form');
+
+        deleteForms.forEach(form => {
+            form.addEventListener('submit', function (event) {
+                event.preventDefault(); // Evita el envío inmediato
+
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: 'Esta acción eliminará al usuario y todos sus permisos y roles asociados.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit(); // Envía el formulario si se confirma
+                    }
+                });
+            });
+        });
+    });
+</script>
+
+
+
+<script>
+    $(document).on('click', '.role-btn', function () {
+        // Obtener los valores del botón clicado
+        const userId = $(this).data('id');
+        const userName = $(this).data('name');
+        const userEmail = $(this).data('email');
+
+        // Rellenar el campo oculto con el ID del usuario
+        $('#modelIdRoleInput').val(userId);
+
+        // Rellenar el campo visible con el nombre y correo
+        $('#userNameEmailRoleInput').val(`${userName} - ${userEmail}`);
+    });
+</script>
+
+
+
+<script>
+    $(document).on('click', '.area-btn', function () {
+        // Obtener los valores del botón clicado
+        const userId = $(this).data('id');
+        const userName = $(this).data('name');
+        const userEmail = $(this).data('email');
+
+        // Rellenar el campo oculto con el ID del usuario
+        $('#modelIdInput').val(userId);
+
+        // Rellenar el campo visible con el nombre y correo
+        $('#userNameEmailInput').val(`${userName} - ${userEmail}`);
+    });
+</script>
+
 
 <script>
 $(document).ready(function () {
@@ -612,6 +926,66 @@ $(document).ready(function () {
     });
 });
 </script>
+
+<script>
+$(document).ready(function () {
+    $('#usersTable').DataTable({
+        "language": {
+            "lengthMenu": "Mostrar " +
+                `<select class="custom-select custom-select-sm form-control form-control-sm" style="font-size: 15px;">
+                    <option value='10'>10</option>
+                    <option value='25'>25</option>
+                    <option value='50'>50</option>
+                    <option value='100'>100</option>
+                    <option value='-1'>Todo</option>
+                </select>` +
+                " registros por página",
+            "zeroRecords": "No se encontró ningún registro",
+            "info": "Mostrando la página _PAGE_ de _PAGES_",
+            "infoEmpty": "No hay registros disponibles",
+            "infoFiltered": "(filtrado de _MAX_ registros totales)",
+            'search': 'Buscar:',
+            'paginate': {
+                'next': 'Siguiente',
+                'previous': 'Anterior'
+            }
+        },
+        "paging": true,
+        "lengthChange": true,
+        "searching": true,
+        "ordering": true,
+        "info": true,
+        "autoWidth": false,
+        "responsive": true,
+        "dom": '<"top"Bfl>rt<"bottom"ip><"clear">',
+        "buttons": [
+            {
+                extend: 'pdfHtml5',
+                text: '<i class="fas fa-file-pdf"></i>',
+                className: 'btn btn-danger',
+                titleAttr: 'Exportar PDF'
+            }
+        ],
+        "lengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todo"]],
+        "pageLength": 10
+    });
+
+
+});
+
+
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/parsley.js/2.9.3/parsley.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.bootstrap4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
+
 
 @stop
 
