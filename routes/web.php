@@ -82,6 +82,17 @@ Route::middleware([
     Route::post('/roles/store', [AdminUsersController::class, 'storeRole'])->name('roles.store');
     Route::post('/admin-usuarios/{id}/delete', [AdminUsersController::class, 'destroy'])->name('adminUsuarios.destroy');
     Route::put('/adminUsuarios/update', [AdminUsersController::class, 'update'])->name('adminUsuarios.update');
+    // Ruta para crear roles
+    Route::post('/admin-roles/create', [AdminUsersController::class, 'createRole'])->name('adminRoles.create');
+
+    // Ruta para crear áreas
+    Route::post('/admin-permissions/create', [AdminUsersController::class, 'createPermission'])->name('adminPermissions.create');
+
+    Route::delete('/admin-roles/delete/{id}', [AdminUsersController::class, 'deleteRole'])->name('adminRoles.delete');
+    Route::delete('/admin-permissions/delete/{id}', [AdminUsersController::class, 'deletePermission'])->name('adminPermissions.delete');
+    
+    
+    
 
 
 

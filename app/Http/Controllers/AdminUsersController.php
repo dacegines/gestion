@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use App\Models\Role;
+use App\Models\Permission;
 
 
 
@@ -24,22 +26,21 @@ class AdminUsersController extends Controller
                 'users.email',
                 'users.puesto',
                 'roles.name as role_name',
-                'roles.id as role_id', // Incluye el ID del rol
+                'roles.id as role_id',
                 'permissions.name as permission_name'
             )
             ->get();
     
-        // Obtén todos los permisos ordenados por id de forma ascendente
-        $permissions = DB::table('permissions')->select('id', 'name')->orderBy('id', 'asc')->get();
+        // Incluye 'created_at' en las consultas para permisos y roles
+        $permissions = DB::table('permissions')->select('id', 'name', 'created_at')->orderBy('id', 'asc')->get();
+        $roles = DB::table('roles')->select('id', 'name', 'created_at')->orderBy('id', 'asc')->get();
     
-        // Obtén todos los roles ordenados por id de forma ascendente
-        $roles = DB::table('roles')->select('id', 'name')->orderBy('id', 'asc')->get();
-    
-        // Obtén todos los usuarios ordenados por id de forma ascendente
+        // Obtén todos los usuarios ordenados por id
         $allUsers = DB::table('users')->select('id', 'name', 'email')->orderBy('id', 'asc')->get();
     
         return view('gestion_cumplimiento.AdminUsuarios.index', compact('users', 'permissions', 'roles', 'allUsers'));
     }
+    
     
 
     
@@ -47,27 +48,30 @@ class AdminUsersController extends Controller
 
     public function register(Request $request)
     {
-        // Validar los datos
-        $request->validate([
+        // Validar los datos, incluyendo que el correo sea único
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'puesto' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email', // Esta regla asegura que el correo sea único
             'password' => [
                 'required',
                 'string',
-                'min:8', // Mínimo de 8 caracteres
-                'regex:/[A-Z]/', // Al menos una letra mayúscula
-                'regex:/[0-9]/', // Al menos un número
-                'regex:/[!@#$%^&*]/', // Al menos un carácter especial
-                'confirmed', // Coincidencia de confirmación
+                'min:8',
+                'regex:/[A-Z]/',
+                'regex:/[0-9]/',
+                'regex:/[!@#$%^&*]/',
+                'confirmed',
             ],
         ]);
-
+    
         // Crear el usuario
         $user = User::create([
-            'name' => $request->name,
-            'puesto' => $request->puesto,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'name' => $validatedData['name'],
+            'puesto' => $validatedData['puesto'],
+            'email' => $validatedData['email'],
+            'password' => Hash::make($validatedData['password']),
         ]);
-
+    
         // Redirigir con mensaje de éxito
         return redirect()->back()->with('success', 'Usuario registrado exitosamente.');
     }
@@ -191,6 +195,49 @@ public function update(Request $request)
     ]);
 
     return redirect()->back()->with('success', 'Usuario actualizado exitosamente.');
+}
+
+public function createRole(Request $request)
+{
+    $request->validate([
+        'name' => 'required|string|max:255|unique:roles',
+    ]);
+
+    // Crear el rol con el valor de 'guard_name'
+    Role::create([
+        'name' => $request->name,
+        'guard_name' => 'web', // Valor predeterminado para guard_name
+    ]);
+
+    return redirect()->back()->with('success', 'Rol creado exitosamente.');
+}
+
+
+public function createPermission(Request $request)
+{
+    $request->validate([
+        'name' => 'required|string|max:255|unique:permissions',
+    ]);
+
+    // Crear el permiso con el valor de 'guard_name'
+    Permission::create([
+        'name' => $request->name,
+        'guard_name' => 'web', // Valor predeterminado para guard_name
+    ]);
+
+    return redirect()->back()->with('success', 'Permiso creado exitosamente.');
+}
+
+public function deleteRole($id)
+{
+    Role::findOrFail($id)->delete();
+    return redirect()->back()->with('success', 'Rol eliminado correctamente.');
+}
+
+public function deletePermission($id)
+{
+    Permission::findOrFail($id)->delete();
+    return redirect()->back()->with('success', 'Permiso eliminado correctamente.');
 }
 
 
