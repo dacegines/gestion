@@ -38,7 +38,7 @@ class AdminUsersController extends Controller
         // Obtén todos los usuarios ordenados por id
         $allUsers = DB::table('users')->select('id', 'name', 'email')->orderBy('id', 'asc')->get();
     
-        return view('gestion_cumplimiento.AdminUsuarios.index', compact('users', 'permissions', 'roles', 'allUsers'));
+        return view('gestion_cumplimiento.admin_usuarios.index', compact('users', 'permissions', 'roles', 'allUsers'));
     }
     
     
