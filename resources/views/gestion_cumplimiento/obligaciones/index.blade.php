@@ -296,6 +296,8 @@
                                             <th>Fecha de Subida</th>
                                             <th>Ver</th>
                                             <th>Eliminar</th>
+                                            <th>Descargar</th>
+
                                         </tr>
                                     </thead>
                                     <tbody id="archivosTableBody">

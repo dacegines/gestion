@@ -587,8 +587,18 @@ function cargarArchivos(requisitoId, evidenciaId, fechaLimite) {
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 </td>
+                <td>
+                    <button 
+                        class="btn btn-sm btn-success btn-descargar-archivo" 
+                        data-url="${storageUploadsUrl}/${sanitizeInput(archivo.nombre_archivo)}"
+                        ${userRole === 'invitado' ? 'disabled' : ''}
+                    >
+                        <i class="fas fa-download"></i>
+                    </button>
+                </td>
             </tr>`).join('')
-        : '<tr><td colspan="7">No hay archivos adjuntos</td></tr>';
+        : '<tr><td colspan="8">No hay archivos adjuntos</td></tr>';
+        
 
         document.getElementById('archivosTableBody').innerHTML = tableBody;
 
@@ -607,54 +617,56 @@ function agregarEventos() {
         });
     });
 
-// Evento para el botón "Eliminar"
-document.querySelectorAll('.btn-delete-archivo').forEach(button => {
-    button.addEventListener('click', function () {
-        // Obtener los parámetros necesarios desde los atributos data-*
-        const archivoId = this.dataset.id;
-        const archivoUrl = this.dataset.url;
-        const requisitoId = this.dataset.requisitoId;
-        const evidenciaId = this.dataset.evidenciaId;
-        const fechaLimite = this.dataset.fechaLimite;
+    // Evento para el botón "Eliminar"
+    document.querySelectorAll('.btn-eliminar-archivo').forEach(button => {
+        button.addEventListener('click', function () {
+            const archivoId = this.dataset.id;
+            const archivoUrl = this.dataset.url;
 
-        console.log('Requisito ID:', requisitoId);
-        console.log('Evidencia ID:', evidenciaId);
-        console.log('Fecha Límite:', fechaLimite);
-
-        // Confirmar eliminación con SweetAlert
-        Swal.fire({
-            title: '¿Estás seguro?',
-            text: 'Este archivo se eliminará permanentemente.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Llamar al backend para eliminar el archivo
-                axios.post(eliminarArchivoUrl, {
-                    id: archivoId,
-                    ruta_archivo: archivoUrl
-                })
-                .then(response => {
-                    if (response.data.success) {
-                        Swal.fire('Eliminado', response.data.message, 'success');
-                        // Recargar la tabla de archivos
-                        cargarArchivos(requisitoId, evidenciaId, fechaLimite);
-                    } else {
-                        Swal.fire('Error', response.data.message, 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error al eliminar el archivo:', error);
-                    Swal.fire('Error', 'Ocurrió un problema al eliminar el archivo.', 'error');
-                });
-            }
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: 'Este archivo se eliminará permanentemente.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    axios.post(eliminarArchivoUrl, { id: archivoId, ruta_archivo: archivoUrl })
+                    .then(response => {
+                        if (response.data.success) {
+                            Swal.fire('Eliminado', response.data.message, 'success');
+                            cargarArchivos(requisitoId, evidenciaId, fechaLimite);
+                        } else {
+                            Swal.fire('Error', response.data.message, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error al eliminar el archivo:', error);
+                        Swal.fire('Error', 'Ocurrió un problema al eliminar el archivo.', 'error');
+                    });
+                }
+            });
         });
     });
-});
+
+    // Evento para el botón "Descargar"
+    document.querySelectorAll('.btn-descargar-archivo').forEach(button => {
+        button.addEventListener('click', function () {
+            const fileUrl = this.dataset.url; // URL del archivo
+            const fileName = fileUrl.split('/').pop(); // Extraer el nombre del archivo
+
+            // Crear un enlace temporal para forzar la descarga
+            const link = document.createElement('a');
+            link.href = fileUrl;
+            link.download = fileName;
+            document.body.appendChild(link); // Agregar al DOM
+            link.click(); // Simular clic para descargar
+            document.body.removeChild(link); // Eliminar del DOM
+        });
+    });
 }
 
 
