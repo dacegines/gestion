@@ -25,7 +25,7 @@ class ArchivoController extends Controller
     
         if ($request->hasFile('archivo')) {
             $file = $request->file('archivo');
-            $fileName = time().'_'.$file->getClientOriginalName();
+            $fileName = time().'_'.str_replace(' ', '_', $file->getClientOriginalName());
             $filePath = $file->storeAs('uploads', $fileName, 'public');
     
             $archivo = new Archivo();

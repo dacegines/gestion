@@ -295,9 +295,11 @@
                                             <th>Puesto</th>
                                             <th>Fecha de Subida</th>
                                             <th>Ver</th>
+                                            <th>Ver Archivo</th> <!-- Nueva columna -->
                                             <th>Eliminar</th>
                                         </tr>
                                     </thead>
+                                    
                                     <tbody id="archivosTableBody">
                                         <!-- Contenido de la tabla -->
                                     </tbody>

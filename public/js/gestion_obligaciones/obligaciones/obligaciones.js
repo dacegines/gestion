@@ -581,7 +581,16 @@ function cargarArchivos(requisitoId, evidenciaId, fechaLimite) {
                         <i class="fas fa-download"></i>
                     </button>
                 </td>
+                <td>
+                    <button 
+                        class="btn btn-sm btn-secondary btn-ver-archivo-directo" 
+                        data-url="${storageUploadsUrl}/${encodeURIComponent(sanitizeInput(archivo.nombre_archivo))}"
+                    >
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </td>
 
+                
                 ${
                     userRole === 'admin' 
                         ? `<td><button class="btn btn-sm btn-danger btn-eliminar-archivo" onclick="eliminarArchivo(${sanitizeInput(archivo.id)}, '${sanitizeInput(requisitoId)}', '${sanitizeInput(evidenciaId)}', '${sanitizeInput(fechaLimite)}')"><i class="fas fa-trash-alt"></i></button></td>`
@@ -594,20 +603,12 @@ function cargarArchivos(requisitoId, evidenciaId, fechaLimite) {
     
     
 
-        document.querySelectorAll('.btn-ver-archivo').forEach(button => {
-            button.addEventListener('click', function () {
-                const fileUrl = this.dataset.url; // Obtener la URL del archivo
-                const fileName = fileUrl.split('/').pop(); // Extraer el nombre del archivo
-        
-                // Crear un enlace temporal para forzar la descarga
-                const link = document.createElement('a');
-                link.href = fileUrl;
-                link.download = fileName;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            });
+    document.querySelectorAll('.btn-ver-archivo-directo').forEach(button => {
+        button.addEventListener('click', function () {
+            const fileUrl = this.dataset.url; // Obtener la URL del archivo
+            window.open(fileUrl, '_blank'); // Abrir el archivo en una nueva pestaña
         });
+    });
     })
     .catch(function(error) {
         console.error('Error al cargar los archivos:', error);

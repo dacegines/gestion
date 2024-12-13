@@ -656,4 +656,6 @@ public function enviarCorreoAlerta(Request $request)
     return response()->json(['success' => true, 'message' => "Correo de alerta enviado correctamente."]);
 }
 
+
+
 }
