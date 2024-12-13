@@ -122,29 +122,38 @@
 <script>
 $(document).ready(function() {
     // Inicializar DataTables
-    $('#detallesTable').DataTable();
-
-    // Funcionalidad del modal para adjuntos
     $('.adjuntos-link').on('click', function() {
-        const fechaLimite = $(this).data('fecha');
-        axios.get(`{{ url('/obtener-archivos') }}/${fechaLimite}`)
-            .then(response => {
-                const archivos = response.data;
-                $('#lista-archivos').empty();
-                if (archivos.length > 0) {
-                    archivos.forEach((archivo, index) => {
-                        // Extraer la parte después del primer guion bajo
-                        const nombreVisible = archivo.nombre_archivo.substring(archivo.nombre_archivo.indexOf('_') + 1);
-                        $('#lista-archivos').append(
-                            `<li><a href="{{ asset('storage') }}/${archivo.ruta_archivo}" target="_blank">${nombreVisible}</a></li>`
-                        );
-                    });
-                } else {
-                    $('#lista-archivos').append('<li>No hay archivos adjuntos</li>');
-                }
-                $('#modalArchivos').modal('show');
-            });
-    });
+    const fechaLimite = $(this).data('fecha');
+
+    axios.get(`{{ url('/obtener-archivos') }}/${fechaLimite}`)
+        .then(response => {
+            const archivos = response.data;
+            $('#lista-archivos').empty();
+            if (archivos.length > 0) {
+                archivos.forEach((archivo, index) => {
+                    // Extraer la parte después del primer guion bajo
+                    const nombreVisible = archivo.nombre_archivo.substring(archivo.nombre_archivo.indexOf('_') + 1);
+
+                    // Agregar enlace que abra el archivo en una nueva pestaña
+                    $('#lista-archivos').append(`
+                        <li>
+                            <a href="{{ asset('storage') }}/${archivo.ruta_archivo}" target="_blank" style="color: blue; text-decoration: underline;">
+                                ${nombreVisible}
+                            </a>
+                        </li>
+                    `);
+                });
+            } else {
+                $('#lista-archivos').append('<li>No hay archivos adjuntos</li>');
+            }
+            $('#modalArchivos').modal('show');
+        })
+        .catch(error => {
+            console.error('Error al obtener los archivos:', error);
+            $('#lista-archivos').empty().append('<li>Error al cargar los archivos</li>');
+        });
+});
+
 });
 </script>
 <script>
