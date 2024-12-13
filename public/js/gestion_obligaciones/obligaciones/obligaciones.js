@@ -529,7 +529,7 @@ function handleFileUpload(formSelector) {
                     Swal.fire('Error', 'Hubo un problema al preparar la solicitud.', 'error');
                 }
 
-                // Limpiar el formulario incluso si hay un error
+                // Limpiar el formulario 
                 form.reset();
             });
         }
@@ -552,11 +552,7 @@ function correoEnviar() {
 
 // Recargar los archivos para un requisito específico
 function cargarArchivos(requisitoId, evidenciaId, fechaLimite) {
-    if (!isValidId(requisitoId) || !isValidId(evidenciaId) || !isValidId(fechaLimite)) {
-        console.error('IDs no válidos');
-        return;
-    }
-
+    
     axios.post(listarArchivosUrl, {
         requisito_id: sanitizeInput(requisitoId),
         evidencia_id: sanitizeInput(evidenciaId),
@@ -578,41 +574,87 @@ function cargarArchivos(requisitoId, evidenciaId, fechaLimite) {
                         data-url="${storageUploadsUrl}/${sanitizeInput(archivo.nombre_archivo)}"
                         ${userRole === 'invitado' ? 'disabled' : ''}
                     >
-                        <i class="fas fa-download"></i>
+                        <i class="fas fa-eye"></i>
                     </button>
                 </td>
                 <td>
                     <button 
-                        class="btn btn-sm btn-secondary btn-ver-archivo-directo" 
-                        data-url="${storageUploadsUrl}/${encodeURIComponent(sanitizeInput(archivo.nombre_archivo))}"
+                        class="btn btn-sm btn-danger btn-eliminar-archivo" 
+                        data-id="${sanitizeInput(archivo.id)}" 
+                        data-url="${storageUploadsUrl}/${sanitizeInput(archivo.nombre_archivo)}"
+                        ${userRole === 'admin' ? '' : 'disabled'}
                     >
-                        <i class="fas fa-eye"></i>
+                        <i class="fas fa-trash-alt"></i>
                     </button>
                 </td>
-
-                
-                ${
-                    userRole === 'admin' 
-                        ? `<td><button class="btn btn-sm btn-danger btn-eliminar-archivo" onclick="eliminarArchivo(${sanitizeInput(archivo.id)}, '${sanitizeInput(requisitoId)}', '${sanitizeInput(evidenciaId)}', '${sanitizeInput(fechaLimite)}')"><i class="fas fa-trash-alt"></i></button></td>`
-                        : `<td><button class="btn btn-sm btn-danger btn-eliminar-archivo" disabled><i class="fas fa-trash-alt"></i></button></td>`
-                }
             </tr>`).join('')
-        : '<tr><td colspan="8">No hay archivos adjuntos</td></tr>';
-    
-    document.getElementById('archivosTableBody').innerHTML = tableBody;
-    
-    
+        : '<tr><td colspan="7">No hay archivos adjuntos</td></tr>';
 
-    document.querySelectorAll('.btn-ver-archivo-directo').forEach(button => {
-        button.addEventListener('click', function () {
-            const fileUrl = this.dataset.url; // Obtener la URL del archivo
-            window.open(fileUrl, '_blank'); // Abrir el archivo en una nueva pestaña
-        });
-    });
+        document.getElementById('archivosTableBody').innerHTML = tableBody;
+
+        agregarEventos(); // Agregar eventos a los botones
     })
     .catch(function(error) {
         console.error('Error al cargar los archivos:', error);
     });
+}
+function agregarEventos() {
+    // Evento para el botón "Ver"
+    document.querySelectorAll('.btn-ver-archivo').forEach(button => {
+        button.addEventListener('click', function () {
+            const fileUrl = this.dataset.url;
+            window.open(fileUrl, '_blank'); // Abrir en una nueva pestaña
+        });
+    });
+
+// Evento para el botón "Eliminar"
+document.querySelectorAll('.btn-delete-archivo').forEach(button => {
+    button.addEventListener('click', function () {
+        // Obtener los parámetros necesarios desde los atributos data-*
+        const archivoId = this.dataset.id;
+        const archivoUrl = this.dataset.url;
+        const requisitoId = this.dataset.requisitoId;
+        const evidenciaId = this.dataset.evidenciaId;
+        const fechaLimite = this.dataset.fechaLimite;
+
+        console.log('Requisito ID:', requisitoId);
+        console.log('Evidencia ID:', evidenciaId);
+        console.log('Fecha Límite:', fechaLimite);
+
+        // Confirmar eliminación con SweetAlert
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: 'Este archivo se eliminará permanentemente.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Llamar al backend para eliminar el archivo
+                axios.post(eliminarArchivoUrl, {
+                    id: archivoId,
+                    ruta_archivo: archivoUrl
+                })
+                .then(response => {
+                    if (response.data.success) {
+                        Swal.fire('Eliminado', response.data.message, 'success');
+                        // Recargar la tabla de archivos
+                        cargarArchivos(requisitoId, evidenciaId, fechaLimite);
+                    } else {
+                        Swal.fire('Error', response.data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al eliminar el archivo:', error);
+                    Swal.fire('Error', 'Ocurrió un problema al eliminar el archivo.', 'error');
+                });
+            }
+        });
+    });
+});
 }
 
 
@@ -819,37 +861,6 @@ function actualizarPorcentajeSuma(detalleId, numeroRequisito) {
     });
 }
 
-// Función para eliminar el archivo cuando se hace clic en el botón
-function eliminarArchivo(archivoId, requisitoId, evidenciaId, fechaLimite) {
-    Swal.fire({
-        title: '¿Estás seguro?',
-        text: 'Este archivo se eliminará permanentemente.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            
-            // Llama a la función para recargar la lista de archivos
-            axios.post(eliminarArchivoUrl, {
-                id: archivoId
-            })
-            .then(function (response) {
-                Swal.fire('Eliminado', 'El archivo ha sido eliminado.', 'success');
-                // Recargar la lista de archivos o actualizar la vista según sea necesario
-                cargarArchivos(requisitoId, evidenciaId, fechaLimite);
-            })
-            .catch(function (error) {
-                console.error('Error al eliminar el archivo:', error);
-                Swal.fire('Error', 'Hubo un problema al eliminar el archivo.', 'error');
-            });
-            
-        }
-    });
-}
 
 // Cambiar color de estado de avance
 document.addEventListener('DOMContentLoaded', function() {

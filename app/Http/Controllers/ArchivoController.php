@@ -65,26 +65,32 @@ class ArchivoController extends Controller
 
     public function eliminar(Request $request)
     {
-        // Obtener el ID del archivo desde la solicitud
-        $archivoId = $request->input('id');
-        
-        // Buscar el archivo en la base de datos
-        $archivo = Archivo::find($archivoId);
-
+        $validatedData = $request->validate([
+            'id' => 'required|integer|exists:archivos,id',
+            'ruta_archivo' => 'required|string',
+        ]);
+    
+        $archivo = Archivo::find($validatedData['id']);
+    
         if ($archivo) {
-            // Eliminar el archivo del almacenamiento
-            if (Storage::exists('uploads/' . $archivo->nombre_archivo)) {
-                Storage::delete('uploads/' . $archivo->nombre_archivo);
+            try {
+                $rutaArchivo = 'public/' . $archivo->ruta_archivo;
+    
+                if (Storage::exists($rutaArchivo)) {
+                    Storage::delete($rutaArchivo);
+                }
+    
+                $archivo->delete();
+    
+                return response()->json(['success' => true, 'message' => 'Archivo eliminado correctamente']);
+            } catch (\Exception $e) {
+                return response()->json(['success' => false, 'message' => 'Error al eliminar el archivo'], 500);
             }
-
-            // Eliminar el registro de la base de datos
-            $archivo->delete();
-
-            return response()->json(['success' => true, 'message' => 'Archivo eliminado correctamente']);
-        } else {
-            return response()->json(['success' => false, 'message' => 'Archivo no encontrado'], 404);
         }
+    
+        return response()->json(['success' => false, 'message' => 'Archivo no encontrado'], 404);
     }
+    
 
     
 
