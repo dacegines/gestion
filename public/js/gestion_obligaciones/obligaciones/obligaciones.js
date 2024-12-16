@@ -582,6 +582,9 @@ function cargarArchivos(requisitoId, evidenciaId, fechaLimite) {
                         class="btn btn-sm btn-danger btn-eliminar-archivo" 
                         data-id="${sanitizeInput(archivo.id)}" 
                         data-url="${storageUploadsUrl}/${sanitizeInput(archivo.nombre_archivo)}"
+                        data-requisito-id="${sanitizeInput(requisitoId)}" 
+                        data-evidencia-id="${sanitizeInput(evidenciaId)}" 
+                        data-fecha-limite="${sanitizeInput(fechaLimite)}"
                         ${userRole === 'admin' ? '' : 'disabled'}
                     >
                         <i class="fas fa-trash-alt"></i>
@@ -622,6 +625,9 @@ function agregarEventos() {
         button.addEventListener('click', function () {
             const archivoId = this.dataset.id;
             const archivoUrl = this.dataset.url;
+            const requisitoId = this.dataset.requisitoId; // Asegúrate que el botón tenga este atributo
+            const evidenciaId = this.dataset.evidenciaId; // Asegúrate que el botón tenga este atributo
+            const fechaLimite = this.dataset.fechaLimite; // Asegúrate que el botón tenga este atributo
 
             Swal.fire({
                 title: '¿Estás seguro?',
@@ -638,7 +644,7 @@ function agregarEventos() {
                     .then(response => {
                         if (response.data.success) {
                             Swal.fire('Eliminado', response.data.message, 'success');
-                            cargarArchivos(requisitoId, evidenciaId, fechaLimite);
+                            cargarArchivos(requisitoId, evidenciaId, fechaLimite); // Ahora sí pasamos los valores correctos
                         } else {
                             Swal.fire('Error', response.data.message, 'error');
                         }
@@ -853,6 +859,8 @@ function actualizarPorcentaje(detalleId) {
         console.error('Error al actualizar el porcentaje:', error);
     });
 }
+
+
 
 function actualizarPorcentajeSuma(detalleId, numeroRequisito) {
     if (!isValidId(detalleId) || !isValidId(numeroRequisito)) {
