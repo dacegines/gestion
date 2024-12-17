@@ -139,8 +139,8 @@ class DetallesController extends Controller
     private function getRequisitos($year, $user, $search = null)
     {
         $puestosExcluidos = [
-            'Director Jurídico', 'Directora General', 'Jefa de Cumplimiento',
-            'Director de Finanzas', 'Director de Operación', 'Invitado'
+            'Gerente Juri­dico', 'Directora General', 'Jefa de Cumplimiento',
+            'Director de Finanzas', 'Director de Operación, Mtto y TI', 'Invitado'
         ];
 
         $query = DB::table('requisitos as r')

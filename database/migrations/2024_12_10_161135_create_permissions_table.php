@@ -9,19 +9,21 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
-        Schema::create('permissions', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('permissions')) { // Verifica si la tabla ya existe
+            Schema::create('permissions', function (Blueprint $table) {
+                $table->id();
+                $table->timestamps();
+            });
+        }
     }
-
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    
+    public function down()
     {
-        Schema::dropIfExists('permissions');
+        if (Schema::hasTable('permissions')) { // Verifica si la tabla existe antes de borrarla
+            Schema::dropIfExists('permissions');
+        }
     }
+    
 };

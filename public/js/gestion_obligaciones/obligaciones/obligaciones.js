@@ -491,7 +491,7 @@ function handleFileUpload(formSelector) {
 
     Swal.fire({
         title: '¿Estás seguro?',
-        html: 'Al subir este archivo se enviará una notificación vía correo a: <br>Director Jurídico, <br>Gerente Jurídico, <br>Jefa de Cumplimiento.',
+        html: 'Al subir este archivo se enviará una notificación vía correo a: <br>Gerente Jurídico, <br>Jefa de Cumplimiento.',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',

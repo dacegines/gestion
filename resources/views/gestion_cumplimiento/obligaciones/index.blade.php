@@ -9,11 +9,11 @@
 @php
     // Definir los puestos que no deben mostrar el puesto del usuario
     $puestosExcluidos = [
-        'Director Jurídico',
+        'Gerente Juri­dico',
         'Directora General',
         'Jefa de Cumplimiento',
         'Director de Finanzas',
-        'Director de Operación'
+        'Director de Operación, Mtto y TI'
     ];
 @endphp
 

@@ -29,11 +29,11 @@ class ObligacionesController extends Controller
     
             // Definir los puestos excluidos para que vean todas las obligaciones
             $puestosExcluidos = [
-                'Director Jurídico',
+                'Gerente Juri­dico',
                 'Directora General',
                 'Jefa de Cumplimiento',
                 'Director de Finanzas',
-                'Director de Operación',
+                'Director de Operación, Mtto y TI',
                 'Invitado' // Agregar "Invitado" aquí
             ];
     
@@ -76,11 +76,11 @@ class ObligacionesController extends Controller
     
             // Definir los puestos que verán todos los registros
             $puestosExcluidos = [
-                'Director Jurídico',
+                'Gerente Juri­dico',
                 'Directora General',
                 'Jefa de Cumplimiento',
                 'Director de Finanzas',
-                'Director de Operación',
+                'Director de Operación, Mtto y TI',
                 'Invitado'
             ];
     
@@ -282,7 +282,7 @@ class ObligacionesController extends Controller
             $emailResponsables = !empty($requisito->email) ? [$requisito->email] : [];
             $otrosCorreos = DB::table('responsables')
                 ->distinct()
-                ->whereIn('puesto', ['Gerente Jurídico', 'Director Jurídico', 'Jefa de Cumplimiento'])
+                ->whereIn('puesto', ['Gerente Jurídico', 'Jefa de Cumplimiento'])
                 ->pluck('email')
                 ->toArray();
     
@@ -369,7 +369,7 @@ class ObligacionesController extends Controller
         $destinatarioResponsable = $requisito->email;
         $otrosCorreos = DB::table('responsables')
             ->distinct()
-            ->whereIn('puesto', ['Gerente Jurídico', 'Director Jurídico', 'Jefa de Cumplimiento'])
+            ->whereIn('puesto', ['Gerente Jurídico',  'Jefa de Cumplimiento'])
             ->pluck('email')
             ->toArray();
 

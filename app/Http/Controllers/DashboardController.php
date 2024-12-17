@@ -29,11 +29,11 @@ class DashboardController extends Controller
     
         // Definir los puestos que verán todos los registros
         $puestosExcluidos = [
-            'Director Jurídico',
+            'Gerente Juri­dico',
             'Directora General',
             'Jefa de Cumplimiento',
             'Director de Finanzas',
-            'Director de Operación',
+            'Director de Operación, Mtto y TI',
             'Invitado'
         ];
     
@@ -303,11 +303,11 @@ class DashboardController extends Controller
     
         // Definir los puestos que verán todos los registros
         $puestosExcluidos = [
-            'Director Jurídico',
+            'Gerente Juri­dico',
             'Directora General',
             'Jefa de Cumplimiento',
             'Director de Finanzas',
-            'Director de Operación',
+            'Director de Operación, Mtto y TI',
             'Invitado'
         ];
     
