@@ -63,10 +63,11 @@ class ObligacionesController extends Controller
         return $query->get()
             ->filter(fn($requisito) => !empty($requisito->responsable))
             ->each(fn($requisito) => 
-                $requisito->total_avance = $this->getTotalAvance($requisito->numero_requisito, $user->puesto)
+                $requisito->total_avance = $this->getTotalAvance($requisito->numero_requisito, $user->puesto, $year) // Pasa $year
             );
     }
-    public function getTotalAvance($numero_requisito, $puesto)
+    
+    public function getTotalAvance($numero_requisito, $puesto, $year)
     {
         try {
             if (empty($numero_requisito)) {
@@ -76,7 +77,7 @@ class ObligacionesController extends Controller
     
             // Definir los puestos que verán todos los registros
             $puestosExcluidos = [
-                'Gerente Juri­dico',
+                'Gerente Jurídico',
                 'Directora General',
                 'Jefa de Cumplimiento',
                 'Director de Finanzas',
@@ -84,8 +85,9 @@ class ObligacionesController extends Controller
                 'Invitado'
             ];
     
-            // Crear una consulta base para filtrar por numero_requisito y, si corresponde, por puesto
-            $query = Requisito::where('numero_requisito', $numero_requisito);
+            // Crear una consulta base para filtrar por numero_requisito y año
+            $query = Requisito::where('numero_requisito', $numero_requisito)
+                              ->whereYear('fecha_limite_cumplimiento', $year); // Filtrar por año
     
             // Aplicar el filtro de puesto si no está en los puestos excluidos
             if (!in_array($puesto, $puestosExcluidos)) {
@@ -94,11 +96,12 @@ class ObligacionesController extends Controller
     
             // Obtener el total de registros aplicando los filtros
             $totalRegistros = $query->count();
-            
+    
             if ($totalRegistros === 0) {
-                $this->logWarning('No se encontraron registros para el número de requisito y puesto especificado.', [
+                $this->logWarning('No se encontraron registros para el número de requisito, año y puesto especificado.', [
                     'numero_requisito' => $numero_requisito,
                     'puesto' => $puesto,
+                    'year' => $year,
                 ]);
                 return 0;
             }
@@ -120,11 +123,13 @@ class ObligacionesController extends Controller
             $this->logError('Error al calcular el total de avance', [
                 'numero_requisito' => $numero_requisito,
                 'puesto' => $puesto,
+                'year' => $year,
                 'error' => $e->getMessage()
             ]);
             return 0;
         }
     }
+    
     
 
     public function getDetallesEvidencia(Request $request)
@@ -132,48 +137,46 @@ class ObligacionesController extends Controller
         // Validación de la entrada
         $request->validate([
             'evidencia_id' => 'required|numeric|exists:requisitos,numero_evidencia',
+            'year' => 'nullable|numeric|min:2024|max:2040' // Año opcional
         ]);
     
         try {
             $evidenciaId = $request->evidencia_id;
-    
+            $year = $request->year; // Año opcional
+            
             // Buscar el detalle asociado al numero_evidencia
             $detalle = Requisito::where('numero_evidencia', $evidenciaId)->first();
     
             if ($detalle) {
-                // Obtener todas las fechas límite asociadas a esta evidencia
+                // Obtener todas las fechas límite filtradas por año si existe
                 $fechasLimite = Requisito::where('numero_evidencia', $evidenciaId)
+                    ->when($year, function ($query) use ($year) {
+                        return $query->whereYear('fecha_limite_cumplimiento', $year);
+                    })
                     ->pluck('fecha_limite_cumplimiento')
                     ->map(function ($fecha) {
                         return Carbon::parse($fecha)->format('d/m/Y');
                     });
     
-                $this->logInfo('Detalles de evidencia obtenidos', ['evidencia_id' => $evidenciaId]);
-    
                 return response()->json([
                     'evidencia' => $detalle->evidencia,
                     'periodicidad' => $detalle->periodicidad,
                     'responsable' => $detalle->responsable,
-                    'fechas_limite_cumplimiento' => $fechasLimite, 
+                    'fechas_limite_cumplimiento' => $fechasLimite,
                     'origen_obligacion' => $detalle->origen_obligacion,
                     'clausula_condicionante_articulo' => $detalle->clausula_condicionante_articulo,
                     'id_notificacion' => $detalle->id_notificacion,
                     'condicion' => $detalle->condicion,
                 ]);
             } else {
-                $this->logWarning('No se encontró la evidencia', ['evidencia_id' => $evidenciaId]);
-    
                 return response()->json(['error' => 'No se encontró la evidencia'], 404);
             }
         } catch (\Exception $e) {
-            $this->logError('Error al obtener los detalles de evidencia', [
-                'evidencia_id' => $request->input('evidencia_id'),
-                'error' => $e->getMessage()
-            ]);
-    
             return response()->json(['error' => 'Ocurrió un error al obtener los detalles de la evidencia'], 500);
         }
     }
+    
+    
 
     public function obtenerNotificaciones(Request $request)
     {
@@ -565,15 +568,16 @@ class ObligacionesController extends Controller
         }
     
         $requisitos = Requisito::porAno($year)
-            ->permitirVisualizacion($user)
-            ->get()
-            ->filter(fn($requisito) => !empty($requisito->responsable))
-            ->each(fn($requisito) => 
-                $requisito->total_avance = $this->getTotalAvance($requisito->numero_requisito, $user->puesto)
-            );
+        ->permitirVisualizacion($user)
+        ->get()
+        ->filter(fn($requisito) => !empty($requisito->responsable))
+        ->each(fn($requisito) => 
+            $requisito->total_avance = $this->getTotalAvance($requisito->numero_requisito, $user->puesto, $year)
+        );
     
         return view('gestion_cumplimiento.obligaciones.index', compact('requisitos', 'user', 'year'));
     }
+    
 
     public function obtenerDetalleEvidencia(Request $request)
 {

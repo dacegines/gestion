@@ -101,30 +101,29 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function obtenerDetallesEvidencia(evidenciaId, requisitoId) {
-    axios.post(obtenerDetallesEvidenciaUrl, { evidencia_id: evidenciaId })
+    const year = document.getElementById('year-select').value; // Captura el año del formulario
+    
+    axios.post(obtenerDetallesEvidenciaUrl, { 
+        evidencia_id: evidenciaId,
+        year: year
+    })
     .then(function(response) {
-        // Crear un único <ul> para todas las fechas
         let fechasLimiteHtml = '<ul style="list-style-type: disc; padding-left: 20px;">';
         if (response.data.fechas_limite_cumplimiento && response.data.fechas_limite_cumplimiento.length > 0) {
             response.data.fechas_limite_cumplimiento.forEach(function(fecha) {
                 fechasLimiteHtml += `<li><b>${sanitizeInput(fecha)}</b></li>`;
             });
-            
         } else {
             fechasLimiteHtml = '<p>No hay fechas límite de cumplimiento</p>';
         }
-        fechasLimiteHtml += '</ul>'; // Cierra el único <ul> para todas las fechas
+        fechasLimiteHtml += '</ul>';
 
-        // Insertar los detalles de la evidencia en el contenedor correspondiente
         document.getElementById("detail-info-" + requisitoId).innerHTML = `
             <div class="header">
                 <h5><b>${sanitizeInput(response.data.condicion)}</b></h5>
             </div>
-            
             <div class="details-card mt-2">
                 <div class="info-section">
-                    <div class="logo-container" style="text-align: right;"></div>
-                    
                     <div class="section-header bg-light-grey">
                         <i class="fas fa-calendar"></i>
                         <span>Periodicidad:</span>
@@ -132,7 +131,7 @@ function obtenerDetallesEvidencia(evidenciaId, requisitoId) {
                     <ul style="list-style-type: disc; padding-left: 20px;">
                         <li><b>${sanitizeInput(response.data.periodicidad)}</b></li>
                     </ul>
-                    
+
                     <div class="section-header bg-light-grey">
                         <i class="fas fa-user"></i>
                         <span>Responsable:</span>
@@ -140,13 +139,13 @@ function obtenerDetallesEvidencia(evidenciaId, requisitoId) {
                     <ul style="list-style-type: disc; padding-left: 20px;">
                         <li><b>${sanitizeInput(response.data.responsable)}</b></li>
                     </ul>
-                    
+
                     <div class="section-header bg-light-grey">
                         <i class="fas fa-calendar-alt"></i>
                         <span>Fechas límite de cumplimiento:</span>
                     </div>
-                    ${fechasLimiteHtml} <!-- Muestra la lista completa de fechas -->
-                    
+                    ${fechasLimiteHtml}
+
                     <div class="section-header bg-light-grey">
                         <i class="fas fa-file-alt"></i>
                         <span>Origen de la obligación:</span>
@@ -154,18 +153,18 @@ function obtenerDetallesEvidencia(evidenciaId, requisitoId) {
                     <ul style="list-style-type: disc; padding-left: 20px;">
                         <li><b>${sanitizeInput(response.data.origen_obligacion)}</b></li>
                     </ul>
-                    
+
                     <div class="section-header bg-light-grey">
                         <i class="fas fa-book"></i>
                         <span>Cláusula, condicionante, o artículo:</span>
                     </div>
-                                                            ${
-                                userRole === 'invitado' ? `
-                                    <p class="text-center text-muted" style="font-size: 1.0rem;"><b>Actualmente eres un usuario invitado y no puedes acceder a esta información.</b></p>
-                                ` : `
-                                    <p style="text-align: justify;"><b>${sanitizeInput(response.data.clausula_condicionante_articulo)}</b></p>
-                                `
-                            }
+                    ${
+                        userRole === 'invitado' ? `
+                            <p class="text-center text-muted" style="font-size: 1.0rem;"><b>Actualmente eres un usuario invitado y no puedes acceder a esta información.</b></p>
+                        ` : `
+                            <p style="text-align: justify;"><b>${sanitizeInput(response.data.clausula_condicionante_articulo)}</b></p>
+                        `
+                    }
                 </div>
             </div>
         `;
@@ -174,6 +173,8 @@ function obtenerDetallesEvidencia(evidenciaId, requisitoId) {
         console.error('Error al obtener los detalles:', error);
     });
 }
+
+
 
 
 function obtenerNotificaciones(idNotificaciones, requisitoId) {
