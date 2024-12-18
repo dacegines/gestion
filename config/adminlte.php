@@ -323,7 +323,7 @@ return [
             'text' => 'Administracion de Usuarios',
             'route' => 'adminUsuarios',
             'icon' => 'fas fa-user-plus',
-            'can' => 'superUsuario',
+            'can' => 'obligaciones de concesión',
             
             
         ],

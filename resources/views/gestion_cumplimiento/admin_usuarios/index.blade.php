@@ -23,6 +23,12 @@
         <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#createPermissionModal">
             Crear nueva área
         </button>
+
+        {{-- Botón para abrir el modal de Crear Autorización --}}
+        <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#createAuthorizationModal">
+            Crear nueva autorización
+        </button>
+
         <hr>
         @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -64,7 +70,8 @@
                         <th>Puesto</th>
                         <th>Rol</th>
                         <th>Área</th>
-                        <th>Acciones</th> <!-- Mantener para eliminar -->
+                        <th>Autorización</th>
+                        <th>Acciones</th> 
                     </tr>
                 </thead>
                 <tbody>
@@ -76,6 +83,7 @@
                         <td class="editable" data-id="{{ $user->id }}" data-column="puesto">{{ $user->puesto }}</td>
                         <td>{{ $user->role_name }}</td>
                         <td>{{ $user->permission_name }}</td>
+                        <td>{{ $user->authorization_name }}</td>
                         <td>
 
                             <!-- Botón para editar -->
@@ -98,7 +106,7 @@
                                 data-id="{{ $user->id }}" 
                                 data-name="{{ $user->user_name }}" 
                                 data-email="{{ $user->email }}" 
-                                data-role="{{ $user->role_id }}" 
+                                data-role="{{ $user->role_id ?? 'Sin Rol' }}"
                                 data-toggle="modal" 
                                 data-target="#roleModal">
                                 Asignar-Rol
@@ -117,6 +125,21 @@
                                 data-target="#areaModal">
                                 Asignar-Área
                             </button>
+
+                            <!-- Botón para asignar autorización -->
+                            <button 
+                                type="button" 
+                                class="btn btn-secondary btn-sm authorization-btn" 
+                                data-id="{{ $user->id }}" 
+                                data-name="{{ $user->user_name }}" 
+                                data-email="{{ $user->email }}" 
+                                data-toggle="modal" 
+                                data-target="#assignAuthorizationModal">
+                                Asignar Autorización
+                            </button>
+
+
+
 
                             <!-- Botón para borrar -->
                             <form action="{{ route('adminUsuarios.destroy', $user->id) }}" method="POST" class="d-inline delete-user-form">
@@ -499,6 +522,102 @@
     </div>
 </div>
 
+<!-- Modal para Crear Autorización -->
+<div class="modal fade" id="createAuthorizationModal" tabindex="-1" aria-labelledby="createAuthorizationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createAuthorizationModalLabel">Crear Nueva Autorización</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Formulario para Crear Nueva Autorización -->
+                <form id="createAuthorizationForm" action="{{ route('adminAuthorizations.create') }}" method="POST">
+                    @csrf
+                    <!-- Campo de Nombre -->
+                    <div class="form-group">
+                        <label for="authorizationName">Nombre de la Autorización</label>
+                        <input type="text" name="name" id="authorizationName" class="form-control" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-success">Guardar Autorización</button>
+                </form>                
+
+                <!-- Tabla de Autorizaciones Existentes -->
+                <div class="table-responsive mt-2">
+                    <table class="table table-sm table-bordered text-center">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>Nombre Autorización</th>
+                                <th>Fecha de Creación</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($authorizations as $authorization)
+                                <tr>
+                                    <td>{{ $authorization->name }}</td>
+                                    <td>{{ $authorization->created_at }}</td>
+                                    <td>
+                                        <form action="{{ route('adminAuthorizations.delete', $authorization->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-danger btn-sm">Borrar</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Modal para Asignar Autorización -->
+<div class="modal fade" id="assignAuthorizationModal" tabindex="-1" aria-labelledby="assignAuthorizationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="assignAuthorizationModalLabel">Asignar Autorización</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="assignAuthorizationForm" action="{{ route('authorizations.store') }}" method="POST">
+                    @csrf
+                    <!-- Campo oculto para el ID del usuario -->
+                    <input type="hidden" name="model_id" id="modelIdAuthorization">
+                    <input type="hidden" name="model_type" value="App\Models\User">
+
+                    <!-- Campo visible para nombre y email -->
+                    <div class="form-group">
+                        <label for="userNameAuthorization">Usuario</label>
+                        <input type="text" id="userNameAuthorization" class="form-control" readonly>
+                    </div>
+
+                    <!-- Select para Autorizaciones -->
+                    <div class="form-group">
+                        <label for="authorizationSelect">Seleccionar Autorización</label>
+                        <select id="authorizationSelect" name="authorization_id" class="form-control">
+                            @foreach ($authorizations as $authorization)
+                                <option value="{{ $authorization->id }}">{{ $authorization->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-success">Guardar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 
 

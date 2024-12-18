@@ -29,11 +29,11 @@ class ObligacionesController extends Controller
     
             // Definir los puestos excluidos para que vean todas las obligaciones
             $puestosExcluidos = [
-                'Gerente Juri­dico',
+                'Gerente Jurídico',
                 'Directora General',
                 'Jefa de Cumplimiento',
                 'Director de Finanzas',
-                'Director de Operación, Mtto y TI',
+                'Director de Operación',
                 'Invitado' // Agregar "Invitado" aquí
             ];
     
@@ -81,7 +81,7 @@ class ObligacionesController extends Controller
                 'Directora General',
                 'Jefa de Cumplimiento',
                 'Director de Finanzas',
-                'Director de Operación, Mtto y TI',
+                'Director de Operación',
                 'Invitado'
             ];
     

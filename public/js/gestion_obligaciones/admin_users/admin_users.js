@@ -114,6 +114,22 @@ $(document).on('click', '.area-btn', function () {
     $('#userNameEmailInput').val(`${userName} - ${userEmail}`);
 });
 
+// Asignar Autorización
+$(document).on('click', '.authorization-btn', function () {
+    // Obtener los valores del botón clicado
+    const userId = $(this).data('id');      // ID del usuario
+    const userName = $(this).data('name');  // Nombre del usuario
+    const userEmail = $(this).data('email'); // Correo del usuario
+
+    // Rellenar el campo oculto con el ID del usuario
+    $('#modelIdAuthorization').val(userId);
+
+    // Rellenar el campo visible con el nombre y correo del usuario
+    $('#userNameAuthorization').val(`${userName} - ${userEmail}`);
+});
+
+
+
 // Crear usuario nuevo
 $(document).ready(function () {
     $('#create-user-form').on('submit', function (e) {

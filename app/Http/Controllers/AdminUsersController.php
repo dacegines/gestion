@@ -16,34 +16,30 @@ class AdminUsersController extends Controller
     public function index()
     {
         $users = DB::table('users')
-            ->leftJoin('model_has_roles', 'users.id', '=', 'model_has_roles.model_id')
-            ->leftJoin('roles', 'model_has_roles.role_id', '=', 'roles.id')
-            ->leftJoin('model_has_permissions', 'users.id', '=', 'model_has_permissions.model_id')
-            ->leftJoin('permissions', 'model_has_permissions.permission_id', '=', 'permissions.id')
-            ->select(
-                'users.id',
-                'users.name as user_name',
-                'users.email',
-                'users.puesto',
-                'roles.name as role_name',
-                'roles.id as role_id',
-                'permissions.name as permission_name'
-            )
-            ->get();
+        ->leftJoin('model_has_roles', 'users.id', '=', 'model_has_roles.model_id')
+        ->leftJoin('roles', 'model_has_roles.role_id', '=', 'roles.id')
+        ->leftJoin('model_has_permissions', 'users.id', '=', 'model_has_permissions.model_id')
+        ->leftJoin('permissions', 'model_has_permissions.permission_id', '=', 'permissions.id')
+        ->leftJoin('model_has_authorizations', 'users.id', '=', 'model_has_authorizations.model_id')
+        ->leftJoin('authorizations', 'model_has_authorizations.authorization_id', '=', 'authorizations.id')
+        ->select(
+            'users.id',
+            'users.name as user_name',
+            'users.email',
+            'users.puesto',
+            'roles.name as role_name',
+            'permissions.name as permission_name',
+            DB::raw('COALESCE(authorizations.name) as authorization_name') // Corregir aquí
+        )
+        ->get();
     
-        // Incluye 'created_at' en las consultas para permisos y roles
+    
         $permissions = DB::table('permissions')->select('id', 'name', 'created_at')->orderBy('id', 'asc')->get();
         $roles = DB::table('roles')->select('id', 'name', 'created_at')->orderBy('id', 'asc')->get();
+        $authorizations = DB::table('authorizations')->select('id', 'name', 'created_at')->orderBy('id', 'asc')->get();
     
-        // Obtén todos los usuarios ordenados por id
-        $allUsers = DB::table('users')->select('id', 'name', 'email')->orderBy('id', 'asc')->get();
-    
-        return view('gestion_cumplimiento.admin_usuarios.index', compact('users', 'permissions', 'roles', 'allUsers'));
+        return view('gestion_cumplimiento.admin_usuarios.index', compact('users', 'permissions', 'roles', 'authorizations'));
     }
-    
-    
-
-    
     
 
     public function register(Request $request)
@@ -239,6 +235,64 @@ public function deletePermission($id)
     Permission::findOrFail($id)->delete();
     return redirect()->back()->with('success', 'Permiso eliminado correctamente.');
 }
+
+public function storeAuthorization(Request $request)
+{
+    $request->validate([
+        'model_id' => 'required|exists:users,id',
+        'authorization_id' => 'required|exists:authorizations,id',
+        'model_type' => 'required|string',
+    ]);
+
+    // Verificar si ya existe
+    $exists = DB::table('model_has_authorizations')
+        ->where('model_id', $request->input('model_id'))
+        ->where('model_type', $request->input('model_type'))
+        ->exists();
+
+    if ($exists) {
+        DB::table('model_has_authorizations')
+            ->where('model_id', $request->input('model_id'))
+            ->where('model_type', $request->input('model_type'))
+            ->update(['authorization_id' => $request->input('authorization_id')]);
+
+        return redirect()->back()->with('success', 'Autorización actualizada correctamente.');
+    }
+
+    // Si no existe, insertar
+    DB::table('model_has_authorizations')->insert([
+        'authorization_id' => $request->input('authorization_id'),
+        'model_id' => $request->input('model_id'),
+        'model_type' => $request->input('model_type'),
+    ]);
+
+    return redirect()->back()->with('success', 'Autorización asignada correctamente.');
+}
+
+public function createAuthorization(Request $request)
+{
+    $request->validate([
+        'name' => 'required|string|max:255|unique:authorizations,name',
+    ]);
+
+    // Crear la autorización con un valor predeterminado para 'guard_name'
+    DB::table('authorizations')->insert([
+        'name' => $request->input('name'),
+        'guard_name' => 'web', // Valor por defecto para guard_name
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    return redirect()->back()->with('success', 'Autorización creada exitosamente.');
+}
+
+public function deleteAuthorization($id)
+{
+    DB::table('authorizations')->where('id', $id)->delete();
+
+    return redirect()->back()->with('success', 'Autorización eliminada correctamente.');
+}
+
 
 
 

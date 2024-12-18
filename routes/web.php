@@ -90,6 +90,12 @@ Route::middleware([
 
     Route::delete('/admin-roles/delete/{id}', [AdminUsersController::class, 'deleteRole'])->name('adminRoles.delete');
     Route::delete('/admin-permissions/delete/{id}', [AdminUsersController::class, 'deletePermission'])->name('adminPermissions.delete');
+
+    // Ruta para crear autorización
+    Route::post('/authorizations/store', [AdminUsersController::class, 'storeAuthorization'])->name('authorizations.store');
+    Route::post('/admin/authorizations/create', [AdminUsersController::class, 'createAuthorization'])->name('adminAuthorizations.create');
+Route::delete('/admin/authorizations/delete/{id}', [AdminUsersController::class, 'deleteAuthorization'])->name('adminAuthorizations.delete');
+
     
     
     
