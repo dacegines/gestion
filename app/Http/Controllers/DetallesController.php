@@ -138,11 +138,12 @@ class DetallesController extends Controller
     // Método privado para construir la consulta de requisitos
     private function getRequisitos($year, $user, $search = null)
     {
-        $puestosExcluidos = [
-            'Gerente Juri­dico', 'Directora General', 'Jefa de Cumplimiento',
-            'Director de Finanzas', 'Director de Operación, Mtto y TI', 'Invitado'
-        ];
-
+        // Obtener el authorization_id del usuario autenticado
+        $authorizationId = DB::table('model_has_authorizations')
+            ->where('model_id', $user->id)
+            ->value('authorization_id');
+    
+        // Construir la consulta base
         $query = DB::table('requisitos as r')
             ->leftJoin('archivos as a', 'r.fecha_limite_cumplimiento', '=', 'a.fecha_limite_cumplimiento')
             ->select(
@@ -165,12 +166,15 @@ class DetallesController extends Controller
             ->whereYear('r.fecha_limite_cumplimiento', $year)
             ->groupBy('r.id')
             ->orderBy('r.fecha_limite_cumplimiento', 'asc');
-
-        if (!in_array($user->puesto, $puestosExcluidos)) {
+    
+        // Aplicar lógica según authorization_id
+        if ($authorizationId == 8) {
+            // Si el usuario tiene authorization_id = 8, filtrar por su puesto
             $query->where('r.responsable', $user->puesto);
         }
-
+    
         if (!empty($search)) {
+            // Aplicar filtro de búsqueda si se proporciona
             $query->where(function ($subQuery) use ($search) {
                 $subQuery->where('r.numero_evidencia', 'like', "%$search%")
                     ->orWhere('r.clausula_condicionante_articulo', 'like', "%$search%")
@@ -179,9 +183,10 @@ class DetallesController extends Controller
                     ->orWhere('r.responsable', 'like', "%$search%");
             });
         }
-
+    
         return $query->get();
     }
+    
 }
 
 

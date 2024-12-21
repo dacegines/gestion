@@ -28,14 +28,12 @@ class DashboardController extends Controller
         $status = $request->input('status', 'default_status');
     
         // Definir los puestos que verán todos los registros
-        $puestosExcluidos = [
-            'Gerente Juri­dico',
-            'Directora General',
-            'Jefa de Cumplimiento',
-            'Director de Finanzas',
-            'Director de Operación, Mtto y TI',
-            'Invitado'
-        ];
+        $puestosExcluidos = DB::table('users')
+        ->join('model_has_authorizations', 'users.id', '=', 'model_has_authorizations.model_id')
+        ->where('model_has_authorizations.authorization_id', 7) // Cambia el ID si necesitas otra autorización
+        ->distinct()
+        ->pluck('users.puesto')
+        ->toArray();
     
         try {
             // Determinar si se aplicará el filtro de responsable

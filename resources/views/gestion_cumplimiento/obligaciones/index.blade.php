@@ -8,13 +8,12 @@
 <div class="card">
 @php
     // Definir los puestos que no deben mostrar el puesto del usuario
-    $puestosExcluidos = [
-        'Gerente Jurídico',
-        'Directora General',
-        'Jefa de Cumplimiento',
-        'Director de Finanzas',
-        'Director de Operación'
-    ];
+    $puestosExcluidos = DB::table('users')
+        ->join('model_has_authorizations', 'users.id', '=', 'model_has_authorizations.model_id')
+        ->where('model_has_authorizations.authorization_id', 7) // Cambia el ID si necesitas otra autorización
+        ->distinct()
+        ->pluck('users.puesto')
+        ->toArray();
 @endphp
 
 <div class="card-header-title card-header bg-success text-white text-center">
