@@ -27,15 +27,13 @@ class ObligacionesController extends Controller
     
             $currentYear = Carbon::now()->year;
     
-            // Definir los puestos excluidos para que vean todas las obligaciones
-            $puestosExcluidos = [
-                'Gerente Jurídico',
-                'Directora General',
-                'Jefa de Cumplimiento',
-                'Director de Finanzas',
-                'Director de Operación',
-                'Invitado' // Agregar "Invitado" aquí
-            ];
+            // Obtener los puestos de usuarios asociados con authorization_id = 7
+            $puestosExcluidos = DB::table('users')
+                ->join('model_has_authorizations', 'users.id', '=', 'model_has_authorizations.model_id')
+                ->where('model_has_authorizations.authorization_id', 7)
+                ->distinct()
+                ->pluck('users.puesto')
+                ->toArray();
     
             // Obtener los requisitos con avance
             $requisitos = $this->obtenerRequisitosConAvance($currentYear, $user, $puestosExcluidos);
@@ -43,12 +41,12 @@ class ObligacionesController extends Controller
             $this->logInfo('Requisitos cargados correctamente', ['user_id' => $user->id, 'total_requisitos' => $requisitos->count()]);
     
             return view('gestion_cumplimiento.obligaciones.index', compact('requisitos', 'user', 'currentYear', 'puestosExcluidos'));
-    
         } catch (\Exception $e) {
             $this->logError('Error al cargar las obligaciones', ['error' => $e->getMessage(), 'user_id' => $user->id ?? null]);
             return back()->withErrors(['error' => 'Ocurrió un error al cargar las obligaciones.']);
         }
     }
+    
     
 
     private function obtenerRequisitosConAvance($year, $user, $puestosExcluidos)
@@ -75,19 +73,17 @@ class ObligacionesController extends Controller
                 return 0;
             }
     
-            // Definir los puestos que verán todos los registros
-            $puestosExcluidos = [
-                'Gerente Jurídico',
-                'Directora General',
-                'Jefa de Cumplimiento',
-                'Director de Finanzas',
-                'Director de Operación',
-                'Invitado'
-            ];
+            // Obtener los puestos de usuarios asociados con authorization_id = 7
+            $puestosExcluidos = DB::table('users')
+                ->join('model_has_authorizations', 'users.id', '=', 'model_has_authorizations.model_id')
+                ->where('model_has_authorizations.authorization_id', 7)
+                ->distinct()
+                ->pluck('users.puesto')
+                ->toArray();
     
             // Crear una consulta base para filtrar por numero_requisito y año
             $query = Requisito::where('numero_requisito', $numero_requisito)
-                              ->whereYear('fecha_limite_cumplimiento', $year); // Filtrar por año
+                              ->whereYear('fecha_limite_cumplimiento', $year);
     
             // Aplicar el filtro de puesto si no está en los puestos excluidos
             if (!in_array($puesto, $puestosExcluidos)) {
@@ -119,6 +115,7 @@ class ObligacionesController extends Controller
             }
     
             return $total_avance;
+    
         } catch (\Exception $e) {
             $this->logError('Error al calcular el total de avance', [
                 'numero_requisito' => $numero_requisito,
@@ -129,6 +126,7 @@ class ObligacionesController extends Controller
             return 0;
         }
     }
+    
     
     
 
@@ -567,13 +565,26 @@ class ObligacionesController extends Controller
             return back()->withErrors(['error' => 'No se encontró el puesto del usuario autenticado']);
         }
     
+        // Obtener los puestos de usuarios asociados con authorization_id = 7
+        $puestosExcluidos = DB::table('users')
+            ->join('model_has_authorizations', 'users.id', '=', 'model_has_authorizations.model_id')
+            ->where('model_has_authorizations.authorization_id', 7)
+            ->distinct()
+            ->pluck('users.puesto')
+            ->toArray();
+    
+        // Consultar los requisitos
         $requisitos = Requisito::porAno($year)
-        ->permitirVisualizacion($user)
-        ->get()
-        ->filter(fn($requisito) => !empty($requisito->responsable))
-        ->each(fn($requisito) => 
-            $requisito->total_avance = $this->getTotalAvance($requisito->numero_requisito, $user->puesto, $year)
-        );
+            ->with('archivos') // Relación con archivos si aplica
+            ->when(!in_array($user->puesto, $puestosExcluidos), function ($query) use ($user) {
+                // Si el puesto del usuario NO está en la lista de exclusión, aplicar filtros
+                $query->permitirVisualizacion($user);
+            })
+            ->get()
+            ->filter(fn($requisito) => !empty($requisito->responsable)) // Filtrar requisitos con responsables
+            ->each(fn($requisito) =>
+                $requisito->total_avance = $this->getTotalAvance($requisito->numero_requisito, $user->puesto, $year)
+            );
     
         return view('gestion_cumplimiento.obligaciones.index', compact('requisitos', 'user', 'year'));
     }
