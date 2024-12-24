@@ -11,6 +11,7 @@ use App\Http\Controllers\CustomPasswordResetController;
 use App\Http\Controllers\CustomRegisterController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\AdminUsersController;
+use App\Http\Controllers\InicioController;
 
 // Ruta de inicio
 Route::get('/', function () {
@@ -24,9 +25,16 @@ Route::middleware([
     'verified',
 ])->group(function () {
 
+    Route::get('/register', function () {
+        return redirect('/'); // Redirige a la página de inicio
+    })->name('register');
+
+    Route::get('/inicio', [InicioController::class, 'index'])->name('inicio');
+
     Route::get('/profile', [UsuarioController::class, 'profile']);
 
     // Rutas de DashboardController
+    
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/api/resumen-obligaciones', [DashboardController::class, 'obtenerDatosGrafico']);
     Route::post('/api/obtener-avance-total', [DashboardController::class, 'obtenerAvanceTotal'])->name('api.obtenerAvanceTotal');
@@ -75,7 +83,9 @@ Route::middleware([
     Route::post('/archivos/eliminar', [ArchivoController::class, 'eliminar'])->name('archivos.eliminar');
 
     // Rutas de AdminUsuarios
-    Route::get('/adminUsuarios', [AdminUsersController::class, 'index'])->name('adminUsuarios');
+    Route::middleware(['can:superUsuario'])->group(function () {
+        Route::get('/admin-usuarios', [AdminUsersController::class, 'index'])->name('adminUsuarios');
+    });
     Route::post('/adminUsuarios/register', [AdminUsersController::class, 'register'])->name('adminUsuarios.register');
     Route::post('/check-email', [AdminUsersController::class, 'checkEmail'])->name('check.email');
     Route::post('/permissions/store', [AdminUsersController::class, 'storePermission'])->name('permissions.store');

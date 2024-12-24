@@ -260,7 +260,7 @@ return [
     */
 
     'use_route_url' => false,
-    'dashboard_url' => 'obligaciones',
+    'dashboard_url' => 'inicio',
     'logout_url' => 'logout',
     'login_url' => 'login',
     'register_url' => 'register',
@@ -320,10 +320,17 @@ return [
         ],
 
         [
+            'text' => 'Inicio',
+            'route' => 'inicio', // Ruta que apunta al inicio
+            'icon' => 'fas fa-fw fa-home', // Ícono para la opción (puedes cambiarlo según tu preferencia)
+        ],
+        
+
+        [
             'text' => 'Administracion de Usuarios',
             'route' => 'adminUsuarios',
             'icon' => 'fas fa-user-plus',
-            'can' => 'obligaciones de concesión',
+            'can' => 'superUsuario',
             
             
         ],
@@ -332,6 +339,7 @@ return [
         [
             'text' => 'Dashboard',
             'route' => 'dashboard',
+            'can' => ['superUsuario', 'obligaciones de concesión']
             
             
         ],       
@@ -340,6 +348,7 @@ return [
             'text' => 'Obligaciones',
             'url' => 'obligaciones', 
             'icon' => 'fas fa-fw fa-clipboard',
+            'can' => ['superUsuario', 'obligaciones de concesión']
 
         ],        
         
@@ -348,6 +357,7 @@ return [
             'text' => 'Detalles',
             'route' => 'detalles',
             'icon' => 'fas fa-fw fa-file-invoice',
+            'can' => ['superUsuario', 'obligaciones de concesión']
             
         ],
         /*[
@@ -365,11 +375,13 @@ return [
             'label_color' => 'success',
         ],
         */
-        ['header' => 'account_settings'],
+        //['header' => 'account_settings'],
         [
             'text' => 'profile',
             'url' => 'profile',
             'icon' => 'fas fa-fw fa-user',
+            
+            
         ],
         /*
         [
