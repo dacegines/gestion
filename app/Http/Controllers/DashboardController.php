@@ -13,6 +13,10 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
+        if (!Auth::user()->can('superUsuario') && !Auth::user()->can('obligaciones de concesión') ) {
+            abort(403, 'No tienes permiso para acceder a esta página.');
+        }
+
         // Obtener el ID del usuario autenticado
         $user_id = Auth::id();
     

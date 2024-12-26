@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use App\Models\Role;
 use App\Models\Permission;
+use Illuminate\Support\Facades\Auth;
 
 
 
@@ -15,6 +16,10 @@ class AdminUsersController extends Controller
 {
     public function index()
     {
+        if (!Auth::user()->can('superUsuario')) {
+            abort(403, 'No tienes permiso para acceder a esta página.');
+        }
+
         $users = DB::table('users')
         ->leftJoin('model_has_roles', 'users.id', '=', 'model_has_roles.model_id')
         ->leftJoin('roles', 'model_has_roles.role_id', '=', 'roles.id')

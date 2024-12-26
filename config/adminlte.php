@@ -330,7 +330,7 @@ return [
             'text' => 'Administracion de Usuarios',
             'route' => 'adminUsuarios',
             'icon' => 'fas fa-user-plus',
-            'can' => 'superUsuario',
+            'can' => ['superUsuario'],
             
             
         ],

@@ -83,9 +83,9 @@ Route::middleware([
     Route::post('/archivos/eliminar', [ArchivoController::class, 'eliminar'])->name('archivos.eliminar');
 
     // Rutas de AdminUsuarios
-    Route::middleware(['can:superUsuario'])->group(function () {
-        Route::get('/admin-usuarios', [AdminUsersController::class, 'index'])->name('adminUsuarios');
-    });
+    
+    Route::get('/admin-usuarios', [AdminUsersController::class, 'index'])->name('adminUsuarios');
+    
     Route::post('/adminUsuarios/register', [AdminUsersController::class, 'register'])->name('adminUsuarios.register');
     Route::post('/check-email', [AdminUsersController::class, 'checkEmail'])->name('check.email');
     Route::post('/permissions/store', [AdminUsersController::class, 'storePermission'])->name('permissions.store');

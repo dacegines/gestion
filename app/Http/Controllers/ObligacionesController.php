@@ -18,6 +18,10 @@ class ObligacionesController extends Controller
 {
     public function index()
     {
+        if (!Auth::user()->can('superUsuario') && !Auth::user()->can('obligaciones de concesión') ) {
+            abort(403, 'No tienes permiso para acceder a esta página.');
+        }
+
         try {
             $user = Auth::user();
             if (!$user || !$user->puesto) {

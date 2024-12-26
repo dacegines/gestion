@@ -12,7 +12,11 @@ use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Support\Facades\Auth;
 
-
+/**
+ * @method bool can(string $permission, mixed $arguments = [])
+ * @method bool hasRole(string|array $roles)
+ * @method bool hasPermissionTo(string $permission)
+ */
 
 
 

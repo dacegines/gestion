@@ -15,6 +15,10 @@ class DetallesController extends Controller
     // Método principal para mostrar la vista de requisitos
     public function index(Request $request)
     {
+        if (!Auth::user()->can('superUsuario') && !Auth::user()->can('obligaciones de concesión') ) {
+            abort(403, 'No tienes permiso para acceder a esta página.');
+        }
+
         if (!Auth::check()) {
             return redirect()->route('login');
         }
