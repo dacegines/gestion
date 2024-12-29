@@ -8,11 +8,13 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Archivo;
 use App\Mail\EstadoEvidenciaCambiado;
+use App\Models\EvidenceNotification;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Mail\DatosEvidenciaMail;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\AlertaCorreo;
+
 
 class ObligacionesController extends Controller
 {
@@ -259,7 +261,7 @@ class ObligacionesController extends Controller
 
     public function cambiarEstado(Request $request)
     {
-        // Validación de la entrada
+        // Validación de la entrada (sin cambios)
         $request->validate([
             'id' => 'required|integer|exists:requisitos,id',
         ]);
@@ -267,14 +269,14 @@ class ObligacionesController extends Controller
         try {
             $requisitoId = $request->id;
     
-            // Buscar el requisito
+            // Buscar el requisito (sin cambios)
             $requisito = Requisito::find($requisitoId);
             if (!$requisito) {
                 $this->logInfo('Requisito no encontrado', ['requisito_id' => $requisitoId]);
                 return response()->json(['error' => 'Requisito no encontrado'], 404);
             }
     
-            // Cambiar el estado del requisito
+            // Cambiar el estado del requisito (sin cambios)
             $requisito->approved = !$requisito->approved;
             $requisito->save();
     
@@ -283,17 +285,15 @@ class ObligacionesController extends Controller
                 'nuevo_estado' => $requisito->approved
             ]);
     
-            // Obtener los correos de los responsables y destinatarios adicionales
+            //Obtener correos de evidence_notifications con type = 1 ***
+            $emailNotifications = EvidenceNotification::where('type', 1)->pluck('email')->toArray();
+    
+            // Combinar los correos del requisito actual con los de la tabla evidence_notifications
             $emailResponsables = !empty($requisito->email) ? [$requisito->email] : [];
-            $otrosCorreos = DB::table('responsables')
-                ->distinct()
-                ->whereIn('puesto', ['Gerente Jurídico', 'Jefa de Cumplimiento'])
-                ->pluck('email')
-                ->toArray();
+            $destinatarios = array_merge($emailResponsables, $emailNotifications);
     
-            $destinatarios = array_merge($emailResponsables, $otrosCorreos);
     
-            // Enviar correo a los responsables si hay destinatarios
+            // Enviar correo a los responsables si hay destinatarios (sin cambios)
             if (count($destinatarios) > 0) {
                 Mail::to($destinatarios)->send(new EstadoEvidenciaCambiado(
                     $requisito->nombre,
@@ -345,67 +345,66 @@ class ObligacionesController extends Controller
     }
 
     public function enviarCorreoDatosEvidencia(Request $request)
-{
-    try {
-        // Validar que se haya recibido la evidencia
-        $request->validate([
-            'evidencia' => 'required|string'
-        ]);
-
-        // Obtener todos los datos del request
-        $datos = $request->all();
-
-        // Buscar el requisito por la evidencia
-        $requisito = Requisito::where('evidencia', $datos['evidencia'])->first();
-
-        // Si no se encuentra el requisito, retornar error
-        if (!$requisito) {
-            $this->logWarning('No se encontró el requisito asociado a la evidencia', ['evidencia' => $datos['evidencia']]);
-            return response()->json(['error' => 'No se encontró el requisito asociado a la evidencia'], 404);
+    {
+        try {
+            // Validar que se haya recibido la evidencia
+            $request->validate([
+                'evidencia' => 'required|string'
+            ]);
+    
+            // Obtener todos los datos del request
+            $datos = $request->all();
+    
+            // Buscar el requisito por la evidencia
+            $requisito = Requisito::where('evidencia', $datos['evidencia'])->first();
+    
+            // Si no se encuentra el requisito, retornar error
+            if (!$requisito) {
+                $this->logWarning('No se encontró el requisito asociado a la evidencia', ['evidencia' => $datos['evidencia']]);
+                return response()->json(['error' => 'No se encontró el requisito asociado a la evidencia'], 404);
+            }
+    
+            // Obtener los correos electrónicos de la tabla evidence_notifications con type = 1
+            $emailNotifications = EvidenceNotification::where('type', 1)->pluck('email')->toArray();
+    
+            // Obtener el correo del responsable asociado al requisito
+            $emailResponsables = !empty($requisito->email) ? [$requisito->email] : [];
+    
+            // Fusionar los correos electrónicos
+            $destinatarios = array_merge($emailResponsables, $emailNotifications);
+    
+            // Verificar si hay destinatarios
+            if (empty($destinatarios)) {
+                $this->logWarning('No se encontraron destinatarios para el correo', ['evidencia' => $datos['evidencia']]);
+                return response()->json(['error' => 'No se encontraron destinatarios para el correo'], 400);
+            }
+    
+            // Enviar el correo usando el Mailable DatosEvidenciaMail
+            Mail::to($destinatarios)->send(new DatosEvidenciaMail(
+                $requisito->nombre,  // Nombre del requisito
+                $requisito->evidencia,  // Evidencia
+                $requisito->periodicidad,  // Periodicidad
+                $requisito->responsable,  // Responsable
+                $requisito->fecha_limite_cumplimiento,  // Fecha límite de cumplimiento
+                $requisito->origen_obligacion,  // Origen de la obligación
+                $requisito->clausula_condicionante_articulo  // Cláusula, condicionante, o artículo
+            ));
+    
+            // Log de éxito en el envío de correo
+            $this->logInfo('Correo enviado correctamente', ['destinatarios' => $destinatarios, 'evidencia' => $datos['evidencia']]);
+            return response()->json(['success' => true, 'message' => 'Correo enviado correctamente']);
+    
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Log de error de validación
+            $this->logWarning('Error de validación al enviar correo de datos de evidencia', ['errors' => $e->errors()]);
+            return response()->json(['error' => 'Datos no válidos', 'details' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            // Log de error inesperado
+            $this->logError('Error inesperado al enviar correo de datos de evidencia', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Ocurrió un error al enviar el correo'], 500);
         }
-
-        // Si no se encuentra el email del responsable, retornar error
-        if (!$requisito->email) {
-            $this->logWarning('Correo del responsable no encontrado', ['requisito_id' => $requisito->id]);
-            return response()->json(['error' => 'No se encontró el correo del responsable'], 400);
-        }
-
-        // Obtener los destinatarios
-        $destinatarioResponsable = $requisito->email;
-        $otrosCorreos = DB::table('responsables')
-            ->distinct()
-            ->whereIn('puesto', ['Gerente Jurídico',  'Jefa de Cumplimiento'])
-            ->pluck('email')
-            ->toArray();
-
-        // Fusionar correos
-        $destinatarios = array_merge([$destinatarioResponsable], $otrosCorreos);
-
-        // Enviar el correo usando el Mailable DatosEvidenciaMail, pasando cada parámetro individualmente
-        Mail::to($destinatarios)->send(new DatosEvidenciaMail(
-            $requisito->nombre,  // Nombre del requisito
-            $requisito->evidencia,  // Evidencia
-            $requisito->periodicidad,  // Periodicidad
-            $requisito->responsable,  // Responsable
-            $requisito->fecha_limite_cumplimiento,  // Fecha límite de cumplimiento
-            $requisito->origen_obligacion,  // Origen de la obligación
-            $requisito->clausula_condicionante_articulo  // Cláusula, condicionante, o artículo
-        ));
-
-        // Log de éxito en el envío de correo
-        $this->logInfo('Correo enviado correctamente', ['destinatarios' => $destinatarios, 'evidencia' => $datos['evidencia']]);
-        return response()->json(['success' => true, 'message' => 'Correo enviado correctamente']);
-
-    } catch (\Illuminate\Validation\ValidationException $e) {
-        // Log de error de validación
-        $this->logWarning('Error de validación al enviar correo de datos de evidencia', ['errors' => $e->errors()]);
-        return response()->json(['error' => 'Datos no válidos', 'details' => $e->errors()], 422);
-    } catch (\Exception $e) {
-        // Log de error inesperado
-        $this->logError('Error inesperado al enviar correo de datos de evidencia', ['error' => $e->getMessage()]);
-        return response()->json(['error' => 'Ocurrió un error al enviar el correo'], 500);
     }
-}
+    
 
 
     public function actualizarPorcentaje(Request $request)
