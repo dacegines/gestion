@@ -364,46 +364,20 @@ class ObligacionesController extends Controller
                 return response()->json(['error' => 'No se encontró el requisito asociado a la evidencia'], 404);
             }
     
-            // Obtener los correos electrónicos de la tabla evidence_notifications con type = 1
-            $emailNotifications = EvidenceNotification::where('type', 1)->pluck('email')->toArray();
+            // Agregar la lógica que necesites, pero sin enviar correos
     
-            // Obtener el correo del responsable asociado al requisito
-            $emailResponsables = !empty($requisito->email) ? [$requisito->email] : [];
-    
-            // Fusionar los correos electrónicos
-            $destinatarios = array_merge($emailResponsables, $emailNotifications);
-    
-            // Verificar si hay destinatarios
-            if (empty($destinatarios)) {
-                $this->logWarning('No se encontraron destinatarios para el correo', ['evidencia' => $datos['evidencia']]);
-                return response()->json(['error' => 'No se encontraron destinatarios para el correo'], 400);
-            }
-    
-            // Enviar el correo usando el Mailable DatosEvidenciaMail
-            Mail::to($destinatarios)->send(new DatosEvidenciaMail(
-                $requisito->nombre,  // Nombre del requisito
-                $requisito->evidencia,  // Evidencia
-                $requisito->periodicidad,  // Periodicidad
-                $requisito->responsable,  // Responsable
-                $requisito->fecha_limite_cumplimiento,  // Fecha límite de cumplimiento
-                $requisito->origen_obligacion,  // Origen de la obligación
-                $requisito->clausula_condicionante_articulo  // Cláusula, condicionante, o artículo
-            ));
-    
-            // Log de éxito en el envío de correo
-            $this->logInfo('Correo enviado correctamente', ['destinatarios' => $destinatarios, 'evidencia' => $datos['evidencia']]);
-            return response()->json(['success' => true, 'message' => 'Correo enviado correctamente']);
-    
+            return response()->json(['success' => true, 'message' => 'Procesamiento completado sin envío de correo.']);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            // Log de error de validación
-            $this->logWarning('Error de validación al enviar correo de datos de evidencia', ['errors' => $e->errors()]);
+            $this->logWarning('Error de validación al procesar los datos de evidencia', ['errors' => $e->errors()]);
             return response()->json(['error' => 'Datos no válidos', 'details' => $e->errors()], 422);
         } catch (\Exception $e) {
-            // Log de error inesperado
-            $this->logError('Error inesperado al enviar correo de datos de evidencia', ['error' => $e->getMessage()]);
-            return response()->json(['error' => 'Ocurrió un error al enviar el correo'], 500);
+            $this->logError('Error inesperado al procesar los datos de evidencia', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Ocurrió un error durante el procesamiento'], 500);
         }
     }
+    
+    
+    
     
 
 

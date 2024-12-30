@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
@@ -18,8 +17,9 @@ class DatosEvidenciaMail extends Mailable
     public $fecha_limite_cumplimiento;
     public $origen_obligacion;
     public $clausula_condicionante_articulo;
+    public $rutaArchivo; // Ruta del archivo adjunto
 
-    public function __construct($nombre, $evidencia, $periodicidad, $responsable, $fecha_limite_cumplimiento, $origen_obligacion, $clausula_condicionante_articulo)
+    public function __construct($nombre, $evidencia, $periodicidad, $responsable, $fecha_limite_cumplimiento, $origen_obligacion, $clausula_condicionante_articulo, $rutaArchivo = null)
     {
         $this->nombre = $nombre;
         $this->evidencia = $evidencia;
@@ -28,11 +28,12 @@ class DatosEvidenciaMail extends Mailable
         $this->fecha_limite_cumplimiento = $fecha_limite_cumplimiento;
         $this->origen_obligacion = $origen_obligacion;
         $this->clausula_condicionante_articulo = $clausula_condicionante_articulo;
+        $this->rutaArchivo = $rutaArchivo; // Asigna la ruta del archivo adjunto
     }
 
     public function build()
     {
-        return $this->view('emails.datos_evidencia')
+        $correo = $this->view('emails.datos_evidencia')
             ->subject('Nueva evidencia agregada.')
             ->from('noreply@tu-dominio.com', 'Sistema de Notificaciones TDC')
             ->priority(1)
@@ -45,7 +46,20 @@ class DatosEvidenciaMail extends Mailable
                 'origen_obligacion' => $this->origen_obligacion,
                 'clausula_condicionante_articulo' => $this->clausula_condicionante_articulo,
             ]);
+
+        // Adjuntar el archivo si existe
+        if ($this->rutaArchivo && file_exists($this->rutaArchivo)) {
+            $fileName = basename($this->rutaArchivo);
+
+            // Extraer todo después del primer "_"
+            $fileNameTrimmed = substr($fileName, strpos($fileName, '_') + 1);
+
+            $correo->attach($this->rutaArchivo, [
+                'as' => $fileNameTrimmed, // Nombre ajustado del archivo
+                'mime' => mime_content_type($this->rutaArchivo),
+            ]);
+        }
+
+        return $correo;
     }
 }
-
-

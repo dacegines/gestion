@@ -278,7 +278,7 @@
                         <div class="col-md-6">
                             <h5><b>Archivos adjuntos</b></h5>
                             <hr>
-                            <div style="max-height: 500px; overflow-y: auto;">
+                            <div style="max-height: 840px; overflow-y: auto;">
                                 @if (Auth::user()->hasRole('invitado'))
                                     <p class="text-center text-muted" style="font-size: 1.0rem;">
                                         <b>Actualmente eres un usuario invitado y no puedes ver los archivos adjuntos.</b>
