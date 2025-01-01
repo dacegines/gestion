@@ -23,3 +23,26 @@ button[type="submit"], button[type="button"]{
     border-color: #80bdff !important; /* Color del borde al enfocar */
 
 }
+
+    /* Estilo general para todos los enlaces del menú */
+    .sidebar .nav-link {
+        font-size: 0.88rem; /* Tamaño uniforme para el texto */
+        color: #ccc; /* Color del texto */
+    }
+    
+    /* Iconos dentro de los enlaces */
+    .sidebar .nav-link i {
+        margin-right: 0.0rem; /* Espaciado entre ícono y texto */
+    }
+    
+    /* Responsividad para pantallas más pequeñas */
+    @media (max-width: 768px) {
+        .sidebar .nav-link {
+            font-size: 0.85rem; /* Reducir tamaño del texto en pantallas pequeñas */
+        }
+    
+        .sidebar .nav-link i {
+            font-size: 0.9rem; /* Reducir tamaño de los íconos en pantallas pequeñas */
+        }
+    }
+ 

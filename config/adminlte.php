@@ -335,30 +335,36 @@ return [
             
         ],
 
-          
         [
-            'text' => 'Dashboard',
-            'route' => 'dashboard',
-            'can' => ['superUsuario', 'obligaciones de concesión']
+            'text' => 'profile',
+            'url' => 'profile',
+            'icon' => 'fas fa-fw fa-user',
             
             
-        ],       
-
+        ],          
         [
-            'text' => 'Obligaciones',
-            'url' => 'obligaciones', 
-            'icon' => 'fas fa-fw fa-clipboard',
-            'can' => ['superUsuario', 'obligaciones de concesión']
-
-        ],        
-        
-
-        [
-            'text' => 'Detalles',
-            'route' => 'detalles',
-            'icon' => 'fas fa-fw fa-file-invoice',
-            'can' => ['superUsuario', 'obligaciones de concesión']
-            
+            'text' => 'Obligaciones TDC',
+            'icon' => 'fas fa-fw fa-tasks',
+            'submenu' => [
+                [
+                    'text' => 'Dashboard',
+                    'route' => 'dashboard',
+                    'icon' => 'fas fa-fw fa-tachometer-alt',
+                    'can' => ['superUsuario', 'obligaciones de concesión'],
+                ],
+                [
+                    'text' => 'Obligaciones',
+                    'url' => 'obligaciones',
+                    'icon' => 'fas fa-fw fa-clipboard',
+                    'can' => ['superUsuario', 'obligaciones de concesión'],
+                ],
+                [
+                    'text' => 'Detalles',
+                    'route' => 'detalles',
+                    'icon' => 'fas fa-fw fa-file-invoice',
+                    'can' => ['superUsuario', 'obligaciones de concesión'],
+                ],
+            ],
         ],
         /*[
             'text' => 'Resumen',
@@ -376,13 +382,7 @@ return [
         ],
         */
         //['header' => 'account_settings'],
-        [
-            'text' => 'profile',
-            'url' => 'profile',
-            'icon' => 'fas fa-fw fa-user',
-            
-            
-        ],
+
         /*
         [
             'text' => 'change_password',

@@ -36,12 +36,6 @@
         font-size: 2.5rem;
     }
 
-
-
-    h1, p {
-        animation: fadeIn 1s ease-in-out;
-    }
-
     .img_ini {
         animation: zoomIn 1s ease-in-out;
     }
@@ -65,6 +59,27 @@
             opacity: 1;
         }
     }
+    /* Estilo general para todos los enlaces del menú */
+.sidebar .nav-link {
+    font-size: 0.88rem; /* Tamaño uniforme para el texto */
+    color: #ccc; /* Color del texto */
+}
+
+/* Iconos dentro de los enlaces */
+.sidebar .nav-link i {
+    margin-right: 0.0rem; /* Espaciado entre ícono y texto */
+}
+
+/* Responsividad para pantallas más pequeñas */
+@media (max-width: 768px) {
+    .sidebar .nav-link {
+        font-size: 0.85rem; /* Reducir tamaño del texto en pantallas pequeñas */
+    }
+
+    .sidebar .nav-link i {
+        font-size: 0.9rem; /* Reducir tamaño de los íconos en pantallas pequeñas */
+    }
+}
 
 </style>
 

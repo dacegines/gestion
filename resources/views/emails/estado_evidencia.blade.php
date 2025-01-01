@@ -63,8 +63,7 @@
 
                     <!-- Aquí puedes continuar con el contenido adicional del correo -->
                 </div>
-                <div class="section-header">📌 Nombre del Requisito:</div>
-                <p>{{ $nombre }}</p>
+
                 <div class="section-header">📝 Obligación:</div>
                 <p>{{ $titulo }}</p>                                
                 <div class="section-header">🗓 Periodicidad:</div>

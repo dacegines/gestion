@@ -9,26 +9,20 @@
         <h4 class="card-title-description">Administrar Usuarios</h4>
     </div>
     <div class="card-body text-center">
-        {{-- Botón para abrir el modal de Crear Usuario --}}
-        <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#createUserModal">
-            Crear nuevo usuario
-        </button>
-
-        {{-- Botón para abrir el modal de Crear Rol --}}
-        <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#createRoleModal">
-            Crear nuevo rol
-        </button>
-
-        {{-- Botón para abrir el modal de Crear Área --}}
-        <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#createPermissionModal">
-            Crear nueva área
-        </button>
-
-        {{-- Botón para abrir el modal de Crear Autorización --}}
-        <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#createAuthorizationModal">
-            Crear nueva autorización
-        </button>
-
+        <div class="d-flex flex-wrap justify-content-center gap-2">
+            <button type="button" class="btn btn-secondary m-1" data-toggle="modal" data-target="#createUserModal">
+                Crear nuevo usuario
+            </button>
+            <button type="button" class="btn btn-secondary m-1" data-toggle="modal" data-target="#createRoleModal">
+                Crear nuevo rol
+            </button>
+            <button type="button" class="btn btn-secondary m-1" data-toggle="modal" data-target="#createPermissionModal">
+                Crear un nuevo permiso
+            </button>
+            <button type="button" class="btn btn-secondary m-1" data-toggle="modal" data-target="#createAuthorizationModal">
+                Crear nueva autorización
+            </button>
+        </div>
         <hr>
         @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -69,7 +63,7 @@
                         <th>Email</th>
                         <th>Puesto</th>
                         <th>Rol</th>
-                        <th>Área</th>
+                        <th>Permiso</th>
                         <th>Autorización</th>
                         <th>Acciones</th> 
                     </tr>
@@ -85,69 +79,60 @@
                         <td>{{ $user->permission_name }}</td>
                         <td>{{ $user->authorization_name }}</td>
                         <td>
-
-                            <!-- Botón para editar -->
-                            <button 
-                                type="button" 
-                                class="btn btn-warning btn-sm edit-user-btn" 
-                                data-id="{{ $user->id }}" 
-                                data-name="{{ $user->user_name }}" 
-                                data-email="{{ $user->email }}" 
-                                data-puesto="{{ $user->puesto }}" 
-                                data-toggle="modal" 
-                                data-target="#editUserModal">
-                                Editar
-                            </button>
-
-                            <!-- Botón para el modal de Rol -->
-                            <button 
-                                type="button" 
-                                class="btn btn-secondary btn-sm role-btn" 
-                                data-id="{{ $user->id }}" 
-                                data-name="{{ $user->user_name }}" 
-                                data-email="{{ $user->email }}" 
-                                data-role="{{ $user->role_id ?? 'Sin Rol' }}"
-                                data-toggle="modal" 
-                                data-target="#roleModal">
-                                Asignar-Rol
-                            </button>
-                            
-                            
-                    
-                                <!-- Botón para el modal de Área -->
-                            <button 
-                                type="button" 
-                                class="btn btn-secondary btn-sm area-btn" 
-                                data-id="{{ $user->id }}" 
-                                data-name="{{ $user->user_name }}" 
-                                data-email="{{ $user->email }}" 
-                                data-toggle="modal" 
-                                data-target="#areaModal">
-                                Asignar-Área
-                            </button>
-
-                            <!-- Botón para asignar autorización -->
-                            <button 
-                                type="button" 
-                                class="btn btn-secondary btn-sm authorization-btn" 
-                                data-id="{{ $user->id }}" 
-                                data-name="{{ $user->user_name }}" 
-                                data-email="{{ $user->email }}" 
-                                data-toggle="modal" 
-                                data-target="#assignAuthorizationModal">
-                                Asignar Autorización
-                            </button>
-
-
-
-
-                            <!-- Botón para borrar -->
-                            <form action="{{ route('adminUsuarios.destroy', $user->id) }}" method="POST" class="d-inline delete-user-form">
-                                @csrf
-                                <button type="submit" class="btn btn-danger btn-sm delete-user-btn">
-                                    Borrar Usuario
+                            <div class="d-flex flex-column flex-sm-row justify-content-center">
+                                <button 
+                                    type="button" 
+                                    class="btn btn-warning btn-sm m-1 edit-user-btn" 
+                                    data-id="{{ $user->id }}" 
+                                    data-name="{{ $user->user_name }}" 
+                                    data-email="{{ $user->email }}" 
+                                    data-puesto="{{ $user->puesto }}" 
+                                    data-toggle="modal" 
+                                    data-target="#editUserModal">
+                                    Editar
                                 </button>
-                            </form>                   
+                        
+                                <button 
+                                    type="button" 
+                                    class="btn btn-secondary btn-sm m-1 role-btn" 
+                                    data-id="{{ $user->id }}" 
+                                    data-name="{{ $user->user_name }}" 
+                                    data-email="{{ $user->email }}" 
+                                    data-role="{{ $user->role_id ?? 'Sin Rol' }}"
+                                    data-toggle="modal" 
+                                    data-target="#roleModal">
+                                    Rol
+                                </button>
+                        
+                                <button 
+                                    type="button" 
+                                    class="btn btn-secondary btn-sm m-1 area-btn" 
+                                    data-id="{{ $user->id }}" 
+                                    data-name="{{ $user->user_name }}" 
+                                    data-email="{{ $user->email }}" 
+                                    data-toggle="modal" 
+                                    data-target="#areaModal">
+                                    Permiso
+                                </button>
+                        
+                                <button 
+                                    type="button" 
+                                    class="btn btn-secondary btn-sm m-1 authorization-btn" 
+                                    data-id="{{ $user->id }}" 
+                                    data-name="{{ $user->user_name }}" 
+                                    data-email="{{ $user->email }}" 
+                                    data-toggle="modal" 
+                                    data-target="#assignAuthorizationModal">
+                                    Autorización
+                                </button>
+                        
+                                <form action="{{ route('adminUsuarios.destroy', $user->id) }}" method="POST" class="d-inline delete-user-form">
+                                    @csrf
+                                    <button type="submit" class="btn btn-danger btn-sm m-1 delete-user-btn">
+                                        Borrar
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     @endforeach
@@ -341,7 +326,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="createPermissionModalLabel">Crear Nueva Área</h5>
+                <h5 class="modal-title" id="createPermissionModalLabel">Crear Nueva Permiso</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -356,14 +341,14 @@
                         <input type="text" name="name" id="permissionName" class="form-control" required>
                     </div>
 
-                    <button type="submit" class="btn btn-success">Guardar Área</button>
+                    <button type="submit" class="btn btn-success">Guardar Permiso</button>
                 </form>                
                 <!-- Tabla de Permisos Existentes -->
                 <div class="table-responsive mt-2">
                     <table class="table table-sm table-bordered text-center">
                         <thead class="thead-dark">
                             <tr>
-                                <th>Nombre Área</th>
+                                <th>Nombre Permiso</th>
                                 <th>Fecha de Creación</th>
                                 <th>Acciones</th>
                             </tr>
@@ -480,12 +465,12 @@
 </div>
 
 
-<!-- Modal para Área -->
+<!-- Modal para Permiso -->
 <div class="modal fade" id="areaModal" tabindex="-1" aria-labelledby="areaModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="areaModalLabel">Gestionar Área</h5>
+                <h5 class="modal-title" id="areaModalLabel">Gestionar Permiso</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
                     <span aria-hidden="true">&times;</span>
                 </button>

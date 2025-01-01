@@ -36,23 +36,29 @@
                 <div class="form-group mr-2">
                     <label for="year-select" class="mr-2">Año:</label>
                     <select id="year-select" name="year" class="form-control form-control-sm">
+                        @php
+                            $currentYear = \Carbon\Carbon::now()->year; // Obtener el año actual
+                        @endphp
                         @if (Auth::user()->hasRole('invitado'))
                             <!-- Solo mostrar 2024 si el usuario es 'invitado' -->
                             @for ($yearOption = 2024; $yearOption <= 2040; $yearOption++)
-                                <option value="{{ $yearOption }}" {{ (isset($year) && $year == $yearOption) ? 'selected' : '' }}>
+                                <option value="{{ $yearOption }}" 
+                                        {{ ($year ?? $currentYear) == $yearOption ? 'selected' : '' }}>
                                     {{ $yearOption }}
                                 </option>
                             @endfor
                         @else
                             <!-- Mostrar todos los años si no es 'invitado' -->
                             @for ($yearOption = 2024; $yearOption <= 2040; $yearOption++)
-                                <option value="{{ $yearOption }}" {{ (isset($year) && $year == $yearOption) ? 'selected' : '' }}>
+                                <option value="{{ $yearOption }}" 
+                                        {{ ($year ?? $currentYear) == $yearOption ? 'selected' : '' }}>
                                     {{ $yearOption }}
                                 </option>
                             @endfor
                         @endif
                     </select>
                 </div>
+                
         
                 <!-- Botón Ver, deshabilitado si el usuario es invitado -->
                 <button type="submit" class="btn btn-success btn-sm" 
@@ -63,7 +69,7 @@
 
                 
         <div class="divider"></div>
-        <button class="btn btn-success" onclick="location.reload();">Actualizar</button>
+        <button class="btn btn-success" onclick="location.reload();">Actualizar Obligaciones</button>
         <div class="row text-center justify-content-center" id="cajaContainer">
             @if (Auth::user()->hasRole('invitado'))
                 <!-- Mostrar solo 3 registros si el usuario es 'invitado' -->
