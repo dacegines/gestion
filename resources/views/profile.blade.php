@@ -10,7 +10,7 @@
 @endsection
 
 @section('content')
-@role('admin')
+@role('superUsuario')
     <div class="row">
         <div class="col-md-6">
             <!-- Información de perfil -->
@@ -26,7 +26,7 @@
             </div>
         </div>
 @endrole    
-        @role('admin')
+        @role('superUsuario')
         <div class="col-md-6">
             <!-- Actualizar contraseña -->
             <div class="card">
@@ -58,7 +58,7 @@
                 @endif
 
                 <!-- Eliminar cuenta solo visible para el rol admin -->
-                @role('admin')
+                @role('superUsuario')
                     @if (Laravel\Jetstream\Jetstream::hasAccountDeletionFeatures())
                         <div class="card mt-4">
                             <div class="card-header bg-success text-white text-center">
@@ -71,7 +71,7 @@
                     @endif
                 @endrole
                 <!-- Mensaje para usuarios que no tienen el rol admin -->
-@unlessrole('admin')
+@unlessrole('superUsuario')
 <p class="text-center text-muted" style="font-size: 1.1rem;"><b>Actualmente solo tienes acceso a esta opción.<b></p>
 @endunlessrole
             </div>

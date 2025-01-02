@@ -17,7 +17,7 @@ class ArchivoController extends Controller
     public function subirArchivo(Request $request)
     {
         $validatedData = $request->validate([
-            'archivo' => 'required|file|max:10240',
+            'archivo' => 'required|file|max:20480',
             'requisito_id' => 'required|integer',
             'evidencia' => 'required|string',
             'fecha_limite_cumplimiento' => 'required|date',

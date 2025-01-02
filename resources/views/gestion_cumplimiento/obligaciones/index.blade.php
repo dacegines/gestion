@@ -276,6 +276,12 @@
         <!-- Mostrar mensaje si el usuario tiene el rol de invitado -->
         <p class="text-center text-muted" style="font-size: 1.0rem;"><b>Actualmente eres un usuario invitado y no puedes adjuntar archivos.</b></p>
     @endif
+
+    <div id="progressContainer" style="display:none; margin-top: 10px;">
+        <div id="progressBar" style="width: 0%; height: 20px; background-color: green;"></div>
+    </div>
+    <div id="uploadStatus" style="margin-top: 10px; font-weight: bold;"></div>
+    
 </form>
                                 </div>
                             </div>
@@ -284,6 +290,9 @@
                         <div class="col-md-6">
                             <h5><b>Archivos adjuntos</b></h5>
                             <hr>
+                            <div id="loader" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000;">
+                                <img src="{{ asset('img/procesando.gif') }}" alt="Procesando...">
+                            </div>
                             <div style="max-height: 840px; overflow-y: auto;">
                                 @if (Auth::user()->hasRole('invitado'))
                                     <p class="text-center text-muted" style="font-size: 1.0rem;">

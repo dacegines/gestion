@@ -476,9 +476,6 @@ function handleFileUpload(formSelector) {
 
     // Iterar sobre los datos del formulario y extraer los valores específicos
     for (var pair of formData.entries()) {
-        console.log(`${pair[0]}: ${pair[1]}`);
-
-        // Comparar las claves y asignar los valores a las variables correspondientes
         if (pair[0] === 'requisito_id') {
             requisitoId = pair[1];
         } else if (pair[0] === 'evidencia') {
@@ -487,8 +484,6 @@ function handleFileUpload(formSelector) {
             fechaLimite = pair[1];
         }
     }
-
-    // Mostrar los valores específicos en un solo console.log
 
     Swal.fire({
         title: '¿Estás seguro?',
@@ -501,6 +496,9 @@ function handleFileUpload(formSelector) {
         cancelButtonText: 'Cancelar'
     }).then((result) => {
         if (result.isConfirmed) {
+            // Mostrar la imagen de progreso al confirmar
+            const loader = document.getElementById('loader');
+            loader.style.display = 'block';
 
             // Si el usuario confirma, se procede con la subida del archivo
             axios.post(form.action, formData, {
@@ -509,33 +507,25 @@ function handleFileUpload(formSelector) {
                 }
             })
             .then(function(response) {
-                console.log('Archivo subido exitosamente:', response.data);
                 Swal.fire('Éxito', 'El archivo se subió correctamente.', 'success');
-                correoEnviar();
-                cargarArchivos(requisitoId, evidenciaId, fechaLimite);
-                // Limpiar el formulario después de una subida exitosa
-                form.reset();
+                cargarArchivos(requisitoId, evidenciaId, fechaLimite); // Recargar archivos
+                form.reset(); // Limpiar el formulario tras una subida exitosa
             })
             .catch(function(error) {
-                if (error.response) {
-                    if (error.response.status === 413) {
-                        // Archivo demasiado grande
-                        Swal.fire('Error', 'El archivo es demasiado grande. Comuníquese con el administrador del sistema.', 'warning');
-                    } else {
-                        Swal.fire('Error', 'Favor de verificar ya que no se tiene ningún archivo adjunto.', 'warning');
-                    }
-                } else if (error.request) {
-                    Swal.fire('Error', 'No se recibió respuesta del servidor.', 'error');
-                } else {
-                    Swal.fire('Error', 'Hubo un problema al preparar la solicitud.', 'error');
+                let errorMessage = 'Error al subir el archivo.';
+                if (error.response && error.response.status === 413) {
+                    errorMessage = 'El archivo es demasiado grande.';
                 }
-
-                // Limpiar el formulario 
-                form.reset();
+                Swal.fire('Error', errorMessage, 'error');
+            })
+            .finally(function() {
+                loader.style.display = 'none'; // Ocultar la imagen de progreso al finalizar
             });
         }
     });
 }
+
+
 
 function correoEnviar() {
     const datosRecuperados = obtenerDatosInfoSection();
