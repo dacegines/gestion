@@ -34,7 +34,7 @@ class AdminUsersController extends Controller
             'users.puesto',
             'roles.name as role_name',
             'permissions.name as permission_name',
-            DB::raw('COALESCE(authorizations.name) as authorization_name') // Corregir aquí
+            DB::raw('COALESCE(authorizations.name) as authorization_name') 
         )
         ->get();
     
@@ -166,18 +166,22 @@ public function storeRole(Request $request)
 
 public function destroy($id)
 {
-    // Borrar al usuario
+    // Borrar al usuario de la tabla users
     DB::table('users')->where('id', $id)->delete();
 
-    // Borrar los permisos asociados
+    // Borrar los permisos asociados de la tabla model_has_permissions
     DB::table('model_has_permissions')->where('model_id', $id)->delete();
 
-    // Borrar los roles asociados
+    // Borrar los roles asociados de la tabla model_has_roles
     DB::table('model_has_roles')->where('model_id', $id)->delete();
+
+    // Borrar las autorizaciones asociadas de la tabla model_has_authorizations
+    DB::table('model_has_authorizations')->where('model_id', $id)->delete();
 
     // Redirigir con un mensaje de éxito
     return redirect()->back()->with('success', 'Usuario eliminado exitosamente.');
 }
+
 
 public function update(Request $request)
 {

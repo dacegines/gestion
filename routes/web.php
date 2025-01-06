@@ -13,11 +13,18 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\AdminUsersController;
 use App\Http\Controllers\InicioController;
 
+use Illuminate\Support\Facades\Auth;
+
+
 // Ruta de inicio
 Route::get('/', function () {
-    return view('auth.login');
+    if (Auth::check()) {
+        Auth::logout();  // Cierra la sesión si el usuario está autenticado
+        request()->session()->invalidate();  // Invalida la sesión actual
+        request()->session()->regenerateToken();  // Regenera el token CSRF para seguridad
+    }
+    return view('auth.login');  // Redirige al login
 });
-
 // Grupo de middleware para autenticación, sesión y verificación de correo
 Route::middleware([
     'auth:sanctum',
