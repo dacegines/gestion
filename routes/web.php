@@ -41,7 +41,7 @@ Route::middleware([
     Route::get('/profile', [UsuarioController::class, 'profile']);
 
     // Rutas de DashboardController
-    
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/api/resumen-obligaciones', [DashboardController::class, 'obtenerDatosGrafico']);
     Route::post('/api/obtener-avance-total', [DashboardController::class, 'obtenerAvanceTotal'])->name('api.obtenerAvanceTotal');
@@ -90,9 +90,9 @@ Route::middleware([
     Route::post('/archivos/eliminar', [ArchivoController::class, 'eliminar'])->name('archivos.eliminar');
 
     // Rutas de AdminUsuarios
-    
+
     Route::get('/admin-usuarios', [AdminUsersController::class, 'index'])->name('adminUsuarios');
-    
+
     Route::post('/adminUsuarios/register', [AdminUsersController::class, 'register'])->name('adminUsuarios.register');
     Route::post('/check-email', [AdminUsersController::class, 'checkEmail'])->name('check.email');
     Route::post('/permissions/store', [AdminUsersController::class, 'storePermission'])->name('permissions.store');
@@ -111,15 +111,7 @@ Route::middleware([
     // Ruta para crear autorización
     Route::post('/authorizations/store', [AdminUsersController::class, 'storeAuthorization'])->name('authorizations.store');
     Route::post('/admin/authorizations/create', [AdminUsersController::class, 'createAuthorization'])->name('adminAuthorizations.create');
-Route::delete('/admin/authorizations/delete/{id}', [AdminUsersController::class, 'deleteAuthorization'])->name('adminAuthorizations.delete');
-
-    
-    
-    
-
-
-
-
+    Route::delete('/admin/authorizations/delete/{id}', [AdminUsersController::class, 'deleteAuthorization'])->name('adminAuthorizations.delete');
 });
 
 // Rutas de CustomPasswordResetController

@@ -15,7 +15,7 @@ class DetallesController extends Controller
     // Método principal para mostrar la vista de requisitos
     public function index(Request $request)
     {
-        if (!Auth::user()->can('superUsuario') && !Auth::user()->can('obligaciones de concesión') ) {
+        if (!Auth::user()->can('superUsuario') && !Auth::user()->can('obligaciones de concesión')) {
             abort(403, 'No tienes permiso para acceder a esta página.');
         }
 
@@ -112,11 +112,11 @@ class DetallesController extends Controller
         if (!empty($search)) {
             $requisitosQuery->where(function ($query) use ($search) {
                 $query->where('r.numero_evidencia', 'like', "%$search%")
-                      ->orWhere('r.clausula_condicionante_articulo', 'like', "%$search%")
-                      ->orWhere('r.evidencia', 'like', "%$search%")
-                      ->orWhere('r.periodicidad', 'like', "%$search%")
-                      ->orWhere('r.responsable', 'like', "%$search%")
-                      ->orWhere(DB::raw("CASE 
+                    ->orWhere('r.clausula_condicionante_articulo', 'like', "%$search%")
+                    ->orWhere('r.evidencia', 'like', "%$search%")
+                    ->orWhere('r.periodicidad', 'like', "%$search%")
+                    ->orWhere('r.responsable', 'like', "%$search%")
+                    ->orWhere(DB::raw("CASE 
                             WHEN r.porcentaje = 100 THEN 'Cumplido'
                             WHEN r.fecha_limite_cumplimiento < NOW() THEN 'Vencido'
                             WHEN DATEDIFF(r.fecha_limite_cumplimiento, NOW()) <= 30 THEN 'Próximo a Vencer'
@@ -134,7 +134,7 @@ class DetallesController extends Controller
 
         // Generar el PDF
         $pdf = Pdf::loadView('pdf.reporte', compact('requisitos', 'year'))
-                  ->setPaper('A4', 'landscape');
+            ->setPaper('A4', 'landscape');
 
         return $pdf->download('reporte_detalles.pdf');
     }
@@ -146,7 +146,7 @@ class DetallesController extends Controller
         $authorizationId = DB::table('model_has_authorizations')
             ->where('model_id', $user->id)
             ->value('authorization_id');
-    
+
         // Construir la consulta base
         $query = DB::table('requisitos as r')
             ->leftJoin('archivos as a', 'r.fecha_limite_cumplimiento', '=', 'a.fecha_limite_cumplimiento')
@@ -170,13 +170,13 @@ class DetallesController extends Controller
             ->whereYear('r.fecha_limite_cumplimiento', $year)
             ->groupBy('r.id')
             ->orderBy('r.fecha_limite_cumplimiento', 'asc');
-    
+
         // Aplicar lógica según authorization_id
         if ($authorizationId == 8) {
             // Si el usuario tiene authorization_id = 8, filtrar por su puesto
             $query->where('r.responsable', $user->puesto);
         }
-    
+
         if (!empty($search)) {
             // Aplicar filtro de búsqueda si se proporciona
             $query->where(function ($subQuery) use ($search) {
@@ -187,10 +187,7 @@ class DetallesController extends Controller
                     ->orWhere('r.responsable', 'like', "%$search%");
             });
         }
-    
+
         return $query->get();
     }
-    
 }
-
-

@@ -9,8 +9,8 @@ use Illuminate\Http\Request;
 
 class ExportController extends Controller
 {
-    public function export() 
-{
-    return Excel::download(new RequisitosExport, 'requisitos.xlsx');
-}
+    public function export()
+    {
+        return Excel::download(new RequisitosExport, 'requisitos.xlsx');
+    }
 }

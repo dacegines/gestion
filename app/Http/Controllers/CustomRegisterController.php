@@ -36,6 +36,5 @@ class CustomRegisterController extends Controller
 
         // Redirigir a la vista de formulario con un mensaje de éxito
         return redirect()->route('custom.register_new')->with('status', 'Solicitud de creación de cuenta enviada correctamente.');
-    
     }
 }

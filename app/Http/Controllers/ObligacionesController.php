@@ -20,7 +20,7 @@ class ObligacionesController extends Controller
 {
     public function index()
     {
-        if (!Auth::user()->can('superUsuario') && !Auth::user()->can('obligaciones de concesión') ) {
+        if (!Auth::user()->can('superUsuario') && !Auth::user()->can('obligaciones de concesión')) {
             abort(403, 'No tienes permiso para acceder a esta página.');
         }
 
@@ -30,9 +30,9 @@ class ObligacionesController extends Controller
                 $this->logWarning('Usuario autenticado sin puesto definido', ['user_id' => $user->id ?? null]);
                 return back()->withErrors(['error' => 'No se encontró el puesto del usuario autenticado']);
             }
-    
+
             $currentYear = Carbon::now()->year;
-    
+
             // Obtener los puestos de usuarios asociados con authorization_id = 7
             $puestosExcluidos = DB::table('users')
                 ->join('model_has_authorizations', 'users.id', '=', 'model_has_authorizations.model_id')
@@ -40,37 +40,38 @@ class ObligacionesController extends Controller
                 ->distinct()
                 ->pluck('users.puesto')
                 ->toArray();
-    
+
             // Obtener los requisitos con avance
             $requisitos = $this->obtenerRequisitosConAvance($currentYear, $user, $puestosExcluidos);
-    
+
             $this->logInfo('Requisitos cargados correctamente', ['user_id' => $user->id, 'total_requisitos' => $requisitos->count()]);
-    
+
             return view('gestion_cumplimiento.obligaciones.index', compact('requisitos', 'user', 'currentYear', 'puestosExcluidos'));
         } catch (\Exception $e) {
             $this->logError('Error al cargar las obligaciones', ['error' => $e->getMessage(), 'user_id' => $user->id ?? null]);
             return back()->withErrors(['error' => 'Ocurrió un error al cargar las obligaciones.']);
         }
     }
-    
-    
+
+
 
     private function obtenerRequisitosConAvance($year, $user, $puestosExcluidos)
     {
         $query = Requisito::with('archivos')->porAno($year);
-    
+
         // Verificar si el puesto del usuario está en la lista de puestos excluidos
         if (!in_array($user->puesto, $puestosExcluidos)) {
             $query->permitirVisualizacion($user);
         }
-    
+
         return $query->get()
             ->filter(fn($requisito) => !empty($requisito->responsable))
-            ->each(fn($requisito) => 
+            ->each(
+                fn($requisito) =>
                 $requisito->total_avance = $this->getTotalAvance($requisito->numero_requisito, $user->puesto, $year) // Pasa $year
             );
     }
-    
+
     public function getTotalAvance($numero_requisito, $puesto, $year)
     {
         try {
@@ -78,7 +79,7 @@ class ObligacionesController extends Controller
                 $this->logWarning('Número de requisito vacío al intentar calcular el total de avance.');
                 return 0;
             }
-    
+
             // Obtener los puestos de usuarios asociados con authorization_id = 7
             $puestosExcluidos = DB::table('users')
                 ->join('model_has_authorizations', 'users.id', '=', 'model_has_authorizations.model_id')
@@ -86,19 +87,19 @@ class ObligacionesController extends Controller
                 ->distinct()
                 ->pluck('users.puesto')
                 ->toArray();
-    
+
             // Crear una consulta base para filtrar por numero_requisito y año
             $query = Requisito::where('numero_requisito', $numero_requisito)
-                              ->whereYear('fecha_limite_cumplimiento', $year);
-    
+                ->whereYear('fecha_limite_cumplimiento', $year);
+
             // Aplicar el filtro de puesto si no está en los puestos excluidos
             if (!in_array($puesto, $puestosExcluidos)) {
                 $query->where('responsable', $puesto);
             }
-    
+
             // Obtener el total de registros aplicando los filtros
             $totalRegistros = $query->count();
-    
+
             if ($totalRegistros === 0) {
                 $this->logWarning('No se encontraron registros para el número de requisito, año y puesto especificado.', [
                     'numero_requisito' => $numero_requisito,
@@ -107,21 +108,20 @@ class ObligacionesController extends Controller
                 ]);
                 return 0;
             }
-    
+
             // Calcular el número de registros completados (donde porcentaje es 100)
             $completados = $query->where('porcentaje', 100)->count();
-    
+
             // Calcular el porcentaje completado
             $total_avance = ($completados * 100.0) / $totalRegistros;
-    
+
             // Redondear el total a 2 decimales y ajustar a 100% si está muy cerca de 100
             $total_avance = round($total_avance, 2);
             if ($total_avance > 99.95 && $total_avance < 100.05) {
                 $total_avance = 100.00;
             }
-    
+
             return $total_avance;
-    
         } catch (\Exception $e) {
             $this->logError('Error al calcular el total de avance', [
                 'numero_requisito' => $numero_requisito,
@@ -132,9 +132,9 @@ class ObligacionesController extends Controller
             return 0;
         }
     }
-    
-    
-    
+
+
+
 
     public function getDetallesEvidencia(Request $request)
     {
@@ -143,14 +143,14 @@ class ObligacionesController extends Controller
             'evidencia_id' => 'required|numeric|exists:requisitos,numero_evidencia',
             'year' => 'nullable|numeric|min:2024|max:2040' // Año opcional
         ]);
-    
+
         try {
             $evidenciaId = $request->evidencia_id;
             $year = $request->year; // Año opcional
-            
+
             // Buscar el detalle asociado al numero_evidencia
             $detalle = Requisito::where('numero_evidencia', $evidenciaId)->first();
-    
+
             if ($detalle) {
                 // Obtener todas las fechas límite filtradas por año si existe
                 $fechasLimite = Requisito::where('numero_evidencia', $evidenciaId)
@@ -161,7 +161,7 @@ class ObligacionesController extends Controller
                     ->map(function ($fecha) {
                         return Carbon::parse($fecha)->format('d/m/Y');
                     });
-    
+
                 return response()->json([
                     'evidencia' => $detalle->evidencia,
                     'periodicidad' => $detalle->periodicidad,
@@ -179,8 +179,8 @@ class ObligacionesController extends Controller
             return response()->json(['error' => 'Ocurrió un error al obtener los detalles de la evidencia'], 500);
         }
     }
-    
-    
+
+
 
     public function obtenerNotificaciones(Request $request)
     {
@@ -205,7 +205,6 @@ class ObligacionesController extends Controller
 
             $this->logInfo('Notificaciones obtenidas correctamente', ['id_notificacion' => $idNotificacion]);
             return response()->json($notificaciones);
-
         } catch (\Exception $e) {
             $this->logError('Error al obtener notificaciones', ['id_notificacion' => $idNotificacion, 'error' => $e->getMessage()]);
             return response()->json(['error' => 'Ocurrió un error al obtener las notificaciones'], 500);
@@ -265,34 +264,34 @@ class ObligacionesController extends Controller
         $request->validate([
             'id' => 'required|integer|exists:requisitos,id',
         ]);
-    
+
         try {
             $requisitoId = $request->id;
-    
+
             // Buscar el requisito (sin cambios)
             $requisito = Requisito::find($requisitoId);
             if (!$requisito) {
                 $this->logInfo('Requisito no encontrado', ['requisito_id' => $requisitoId]);
                 return response()->json(['error' => 'Requisito no encontrado'], 404);
             }
-    
+
             // Cambiar el estado del requisito (sin cambios)
             $requisito->approved = !$requisito->approved;
             $requisito->save();
-    
+
             $this->logInfo('Estado del requisito cambiado', [
                 'requisito_id' => $requisitoId,
                 'nuevo_estado' => $requisito->approved
             ]);
-    
+
             //Obtener correos de evidence_notifications con type = 1 ***
             $emailNotifications = EvidenceNotification::where('type', 1)->pluck('email')->toArray();
-    
+
             // Combinar los correos del requisito actual con los de la tabla evidence_notifications
             $emailResponsables = !empty($requisito->email) ? [$requisito->email] : [];
             $destinatarios = array_merge($emailResponsables, $emailNotifications);
-    
-    
+
+
             // Enviar correo a los responsables si hay destinatarios (sin cambios)
             if (count($destinatarios) > 0) {
                 Mail::to($destinatarios)->send(new EstadoEvidenciaCambiado(
@@ -305,14 +304,13 @@ class ObligacionesController extends Controller
                     $requisito->clausula_condicionante_articulo,
                     $requisito->approved
                 ));
-    
+
                 $this->logInfo('Correo enviado correctamente', ['destinatarios' => $destinatarios]);
             } else {
                 $this->logWarning('No se encontraron destinatarios para el envío de correo', ['requisito_id' => $requisitoId]);
             }
-    
+
             return response()->json(['success' => true, 'approved' => $requisito->approved]);
-    
         } catch (\Exception $e) {
             $this->logError('Error al cambiar el estado del requisito', [
                 'requisito_id' => $request->id ?? 'N/A',
@@ -321,7 +319,7 @@ class ObligacionesController extends Controller
             return response()->json(['error' => 'Ocurrió un error al cambiar el estado del requisito'], 500);
         }
     }
-    
+
 
     public function obtenerEstadoApproved(Request $request)
     {
@@ -334,7 +332,6 @@ class ObligacionesController extends Controller
             $this->logInfo('Estado "approved" obtenido correctamente', ['requisito_id' => $requisito->id, 'approved' => $requisito->approved]);
 
             return response()->json(['approved' => $requisito->approved]);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             $this->logWarning('Error de validación al obtener el estado "approved"', ['errors' => $e->errors()]);
             return response()->json(['error' => 'Datos no válidos', 'details' => $e->errors()], 422);
@@ -351,21 +348,21 @@ class ObligacionesController extends Controller
             $request->validate([
                 'evidencia' => 'required|string'
             ]);
-    
+
             // Obtener todos los datos del request
             $datos = $request->all();
-    
+
             // Buscar el requisito por la evidencia
             $requisito = Requisito::where('evidencia', $datos['evidencia'])->first();
-    
+
             // Si no se encuentra el requisito, retornar error
             if (!$requisito) {
                 $this->logWarning('No se encontró el requisito asociado a la evidencia', ['evidencia' => $datos['evidencia']]);
                 return response()->json(['error' => 'No se encontró el requisito asociado a la evidencia'], 404);
             }
-    
+
             // Agregar la lógica que necesites, pero sin enviar correos
-    
+
             return response()->json(['success' => true, 'message' => 'Procesamiento completado sin envío de correo.']);
         } catch (\Illuminate\Validation\ValidationException $e) {
             $this->logWarning('Error de validación al procesar los datos de evidencia', ['errors' => $e->errors()]);
@@ -375,11 +372,6 @@ class ObligacionesController extends Controller
             return response()->json(['error' => 'Ocurrió un error durante el procesamiento'], 500);
         }
     }
-    
-    
-    
-    
-
 
     public function actualizarPorcentaje(Request $request)
     {
@@ -403,7 +395,6 @@ class ObligacionesController extends Controller
             ]);
 
             return response()->json(['success' => true, 'nuevo_porcentaje' => $requisito->porcentaje]);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             $this->logWarning('Error de validación al actualizar el porcentaje', ['errors' => $e->errors()]);
             return response()->json(['error' => 'Datos no válidos', 'details' => $e->errors()], 422);
@@ -445,7 +436,6 @@ class ObligacionesController extends Controller
                 'conteo' => DB::table('requisitos')->where('numero_requisito', $numeroRequisito)->count(),
                 'nuevo_avance' => $nuevoAvance,
             ]);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             $this->logWarning('Error de validación al actualizar el avance', ['errors' => $e->errors()]);
             return response()->json(['error' => 'Datos no válidos', 'details' => $e->errors()], 422);
@@ -537,11 +527,11 @@ class ObligacionesController extends Controller
     {
         $year = $request->input('year');
         $user = Auth::user();
-    
+
         if (!$user || !$user->puesto) {
             return back()->withErrors(['error' => 'No se encontró el puesto del usuario autenticado']);
         }
-    
+
         // Obtener los puestos de usuarios asociados con authorization_id = 7
         $puestosExcluidos = DB::table('users')
             ->join('model_has_authorizations', 'users.id', '=', 'model_has_authorizations.model_id')
@@ -549,7 +539,7 @@ class ObligacionesController extends Controller
             ->distinct()
             ->pluck('users.puesto')
             ->toArray();
-    
+
         // Consultar los requisitos
         $requisitos = Requisito::porAno($year)
             ->with('archivos') // Relación con archivos si aplica
@@ -559,95 +549,92 @@ class ObligacionesController extends Controller
             })
             ->get()
             ->filter(fn($requisito) => !empty($requisito->responsable)) // Filtrar requisitos con responsables
-            ->each(fn($requisito) =>
+            ->each(
+                fn($requisito) =>
                 $requisito->total_avance = $this->getTotalAvance($requisito->numero_requisito, $user->puesto, $year)
             );
-    
+
         return view('gestion_cumplimiento.obligaciones.index', compact('requisitos', 'user', 'year'));
     }
-    
+
 
     public function obtenerDetalleEvidencia(Request $request)
-{
-    try {
-        $evidenciaId = $request->input('evidencia_id');
-        $detalleId = $request->input('detalle_id');
-        $requisitoId = $request->input('requisito_id');
+    {
+        try {
+            $evidenciaId = $request->input('evidencia_id');
+            $detalleId = $request->input('detalle_id');
+            $requisitoId = $request->input('requisito_id');
 
-        if (empty($evidenciaId) || empty($detalleId) || empty($requisitoId)) {
-            Log::warning('Datos de entrada faltantes o inválidos', [
-                'evidencia_id' => $evidenciaId,
-                'detalle_id' => $detalleId,
-                'requisito_id' => $requisitoId
+            if (empty($evidenciaId) || empty($detalleId) || empty($requisitoId)) {
+                Log::warning('Datos de entrada faltantes o inválidos', [
+                    'evidencia_id' => $evidenciaId,
+                    'detalle_id' => $detalleId,
+                    'requisito_id' => $requisitoId
+                ]);
+                return response()->json(['error' => 'Datos de entrada faltantes o inválidos'], 400);
+            }
+
+            $detalle = Requisito::where('id', $detalleId)
+                ->where('numero_evidencia', $evidenciaId)
+                ->first();
+
+            if (!$detalle) {
+                Log::info('Detalle no encontrado', ['detalle_id' => $detalleId, 'evidencia_id' => $evidenciaId]);
+                return response()->json(['error' => 'Detalle no encontrado'], 404);
+            }
+
+            $archivo = Archivo::where('requisito_id', $requisitoId)->first();
+
+            return response()->json([
+                'id' => $detalle->id,
+                'numero_requisito' => $evidenciaId,
+                'nombre' => $detalle->nombre,
+                'evidencia' => $detalle->evidencia,
+                'periodicidad' => $detalle->periodicidad,
+                'responsable' => $detalle->responsable,
+                'fecha_limite_cumplimiento' => $detalle->fecha_limite_cumplimiento
+                    ? \Carbon\Carbon::parse($detalle->fecha_limite_cumplimiento)->format('d/m/Y')
+                    : null,
+                'origen_obligacion' => $detalle->origen_obligacion,
+                'clausula_condicionante_articulo' => $detalle->clausula_condicionante_articulo,
+                'nombre_archivo' => $archivo ? $archivo->nombre_archivo : null,
+                'condicion' => $detalle->condicion,
             ]);
-            return response()->json(['error' => 'Datos de entrada faltantes o inválidos'], 400);
+        } catch (\Exception $e) {
+            Log::error('Error al obtener el detalle de evidencia', [
+                'error' => $e->getMessage()
+            ]);
+            return response()->json(['error' => 'Ocurrió un error al obtener el detalle de la evidencia'], 500);
         }
-
-        $detalle = Requisito::where('id', $detalleId)
-                    ->where('numero_evidencia', $evidenciaId)
-                    ->first();
-
-        if (!$detalle) {
-            Log::info('Detalle no encontrado', ['detalle_id' => $detalleId, 'evidencia_id' => $evidenciaId]);
-            return response()->json(['error' => 'Detalle no encontrado'], 404);
-        }
-
-        $archivo = Archivo::where('requisito_id', $requisitoId)->first();
-
-        return response()->json([
-            'id' => $detalle->id,
-            'numero_requisito' => $evidenciaId,
-            'nombre' => $detalle->nombre,
-            'evidencia' => $detalle->evidencia,
-            'periodicidad' => $detalle->periodicidad,
-            'responsable' => $detalle->responsable,
-            'fecha_limite_cumplimiento' => $detalle->fecha_limite_cumplimiento
-                ? \Carbon\Carbon::parse($detalle->fecha_limite_cumplimiento)->format('d/m/Y')
-                : null,
-            'origen_obligacion' => $detalle->origen_obligacion,
-            'clausula_condicionante_articulo' => $detalle->clausula_condicionante_articulo,
-            'nombre_archivo' => $archivo ? $archivo->nombre_archivo : null,
-            'condicion' => $detalle->condicion,
-        ]);
-
-    } catch (\Exception $e) {
-        Log::error('Error al obtener el detalle de evidencia', [
-            'error' => $e->getMessage()
-        ]);
-        return response()->json(['error' => 'Ocurrió un error al obtener el detalle de la evidencia'], 500);
-    }
-}
-
-public function enviarCorreoAlerta(Request $request)
-{
-    $diasRestantes = $request->input('dias_restantes');
-
-    // Definir el color de fondo según los días restantes
-    switch ($diasRestantes) {
-        case 30:
-            $colorFondo = '#90ee90'; // Verde claro
-            break;
-        case 15:
-            $colorFondo = '#ffff99'; // Amarillo claro
-            break;
-        case 5:
-            $colorFondo = '#ffcc99'; // Naranja claro
-            break;
-        case 2:
-        case 1:
-            $colorFondo = '#ff9999'; // Rojo claro
-            break;
-        default:
-            $colorFondo = '#ffffff'; // Color por defecto (blanco)
-            break;
     }
 
-    // Enviar el correo
-    Mail::to('daniel.cervantes@supervia.mx')->send(new AlertaCorreo($diasRestantes, $colorFondo));
+    public function enviarCorreoAlerta(Request $request)
+    {
+        $diasRestantes = $request->input('dias_restantes');
 
-    return response()->json(['success' => true, 'message' => "Correo de alerta enviado correctamente."]);
-}
+        // Definir el color de fondo según los días restantes
+        switch ($diasRestantes) {
+            case 30:
+                $colorFondo = '#90ee90'; // Verde claro
+                break;
+            case 15:
+                $colorFondo = '#ffff99'; // Amarillo claro
+                break;
+            case 5:
+                $colorFondo = '#ffcc99'; // Naranja claro
+                break;
+            case 2:
+            case 1:
+                $colorFondo = '#ff9999'; // Rojo claro
+                break;
+            default:
+                $colorFondo = '#ffffff'; // Color por defecto (blanco)
+                break;
+        }
 
+        // Enviar el correo
+        Mail::to('daniel.cervantes@supervia.mx')->send(new AlertaCorreo($diasRestantes, $colorFondo));
 
-
+        return response()->json(['success' => true, 'message' => "Correo de alerta enviado correctamente."]);
+    }
 }

@@ -108,61 +108,54 @@ class ResumenController extends Controller
         $resumenRequisitos = Requisito::select('nombre', DB::raw('SUM(avance) as total_avance'))
             ->groupBy('nombre')  // Agrupar por 'nombre' únicamente
             ->get();
-    
+
         // Retornar los datos en formato JSON
         return response()->json($resumenRequisitos);
     }
-    
-
-public function obtenerAvanceTotal()
-{
-    // Contar el total de registros únicos en la columna 'nombre'
-    $totalRegistros = Requisito::distinct('nombre')->count('nombre');
-
-    // Calcular la suma del avance total
-    $avanceTotal = Requisito::sum('avance');
-
-    // Calcular el porcentaje de avance
-    $porcentajeAvance = ($totalRegistros > 0) ? round(($avanceTotal / ($totalRegistros * 100)) * 100, 2) : 0;
-
-    return response()->json([
-        'total' => 100,  // Total es siempre 100%
-        'avance' => $porcentajeAvance
-    ]);
-}
 
 
-public function obtenerAvancePorPeriodicidad()
-{
-    // Consulta para obtener la suma de avance para 'bimestral'
-    $bimestral = Requisito::select('periodicidad', DB::raw('SUM(avance) as avance'))
-        ->where('periodicidad', 'bimestral')
-        ->groupBy('periodicidad')
-        ->first();
+    public function obtenerAvanceTotal()
+    {
+        // Contar el total de registros únicos en la columna 'nombre'
+        $totalRegistros = Requisito::distinct('nombre')->count('nombre');
 
-    // Consulta para obtener la suma de avance para 'semestral'
-    $semestral = Requisito::select('periodicidad', DB::raw('SUM(avance) as avance'))
-        ->where('periodicidad', 'semestral')
-        ->groupBy('periodicidad')
-        ->first();
+        // Calcular la suma del avance total
+        $avanceTotal = Requisito::sum('avance');
 
-    // Consulta para obtener la suma de avance para 'anual'
-    $anual = Requisito::select('periodicidad', DB::raw('SUM(avance) as avance'))
-        ->where('periodicidad', 'anual')
-        ->groupBy('periodicidad')
-        ->first();
+        // Calcular el porcentaje de avance
+        $porcentajeAvance = ($totalRegistros > 0) ? round(($avanceTotal / ($totalRegistros * 100)) * 100, 2) : 0;
 
-    return response()->json([
-        'bimestral' => $bimestral,
-        'semestral' => $semestral,
-        'anual' => $anual
-    ]);
-}
-   
+        return response()->json([
+            'total' => 100,  // Total es siempre 100%
+            'avance' => $porcentajeAvance
+        ]);
+    }
 
 
+    public function obtenerAvancePorPeriodicidad()
+    {
+        // Consulta para obtener la suma de avance para 'bimestral'
+        $bimestral = Requisito::select('periodicidad', DB::raw('SUM(avance) as avance'))
+            ->where('periodicidad', 'bimestral')
+            ->groupBy('periodicidad')
+            ->first();
 
+        // Consulta para obtener la suma de avance para 'semestral'
+        $semestral = Requisito::select('periodicidad', DB::raw('SUM(avance) as avance'))
+            ->where('periodicidad', 'semestral')
+            ->groupBy('periodicidad')
+            ->first();
 
+        // Consulta para obtener la suma de avance para 'anual'
+        $anual = Requisito::select('periodicidad', DB::raw('SUM(avance) as avance'))
+            ->where('periodicidad', 'anual')
+            ->groupBy('periodicidad')
+            ->first();
 
-    
+        return response()->json([
+            'bimestral' => $bimestral,
+            'semestral' => $semestral,
+            'anual' => $anual
+        ]);
+    }
 }
