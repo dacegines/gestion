@@ -451,17 +451,18 @@ function cargarDetalleEvidencia(
                         <br>
                     `;
 
-                    // Solo agregar el botón si el rol es 'admin'
-                    if (userRole === "admin") {
+                    // Lista de roles permitidos para mostrar el botón
+                    const allowedRoles = ["admin", "superUsuario"];
+
+                    // Verificar si el rol del usuario está dentro de los roles permitidos
+                    if (allowedRoles.includes(userRole)) {
                         content += `
-                            <button class="btn btn-secondary btnMarcarCumplido w-100" id="btnMarcarCumplido" data-requisito-id="${sanitizeInput(
-                                response.data.id
-                            )}" data-responsable="${sanitizeInput(
-                            response.data.responsable
-                        )}">
-                                <i class=""></i> Cambiar estado de evidencia
-                            </button>
-                        `;
+        <button class="btn btn-secondary btnMarcarCumplido w-100" id="btnMarcarCumplido" data-requisito-id="${sanitizeInput(
+            response.data.id
+        )}" data-responsable="${sanitizeInput(response.data.responsable)}">
+            <i class=""></i> Cambiar estado de evidencia
+        </button>
+    `;
                     }
 
                     // Insertar el contenido en la sección de información
