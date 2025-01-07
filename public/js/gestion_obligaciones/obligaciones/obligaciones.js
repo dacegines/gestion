@@ -718,13 +718,11 @@ function cargarArchivos(requisitoId, evidenciaId, fechaLimite) {
                     <button 
                         class="btn btn-sm btn-danger btn-eliminar-archivo" 
                         data-id="${sanitizeInput(archivo.id)}" 
-                        data-url="${storageUploadsUrl}/${sanitizeInput(
-                                  archivo.nombre_archivo
-                              )}"
+                        data-url="${storageUploadsUrl}/${sanitizeInput(archivo.nombre_archivo)}"
                         data-requisito-id="${sanitizeInput(requisitoId)}" 
                         data-evidencia-id="${sanitizeInput(evidenciaId)}" 
                         data-fecha-limite="${sanitizeInput(fechaLimite)}"
-                        ${userRole === "admin" ? "" : "disabled"}
+                        ${["admin", "superUsuario"].includes(userRole) ? "" : "disabled"}
                     >
                         <i class="fas fa-trash-alt"></i>
                     </button>
