@@ -677,7 +677,24 @@ class ObligacionesController extends Controller
         ]);
     
         try {
-            // Insertar el nuevo registro
+            // Verificar si el registro ya existe
+            $existeRegistro = DB::table('notificaciones')->where([
+                ['requisito_id', $validatedData['numeroRequisito']],
+                ['numero_evidencia', $validatedData['evidenciaId']],
+                ['id_notificacion', $validatedData['idNotificaciones']],
+                ['nombre', $validatedData['nombre']],
+                ['email', $validatedData['email']],
+                ['tipo_notificacion', $validatedData['tipoNotificacion']],
+            ])->exists();
+    
+            if ($existeRegistro) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ya existe esta notificación para este puesto.',
+                ], 200); // Código 200 para evitar errores de consola
+            }
+    
+            // Insertar el registro si no existe
             DB::table('notificaciones')->insert([
                 'requisito_id' => $validatedData['numeroRequisito'],
                 'numero_evidencia' => $validatedData['evidenciaId'],
@@ -689,11 +706,25 @@ class ObligacionesController extends Controller
                 'updated_at' => now(),
             ]);
     
-            return response()->json(['success' => true, 'message' => 'Usuario agregado a la tabla de notificaciones correctamente.']);
+            return response()->json([
+                'success' => true,
+                'message' => 'Usuario agregado a la tabla de notificaciones correctamente.',
+            ], 200); // Código 200: éxito
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Ocurrió un error al guardar el usuario en la tabla de notificaciones.'], 500);
+            // Registro de log en caso de error
+            Log::error('Error al guardar notificación: ', [
+                'error' => $e->getMessage(),
+                'datos' => $validatedData,
+            ]);
+    
+            return response()->json([
+                'success' => false,
+                'message' => 'Ocurrió un error al guardar el usuario en la tabla de notificaciones.',
+            ], 500); // Código 500: error del servidor
         }
     }
+    
+    
     
 
     public function eliminarNotificacion(Request $request)
@@ -718,6 +749,8 @@ class ObligacionesController extends Controller
             return response()->json(['error' => 'Error interno del servidor. Intente más tarde.'], 500);
         }
     }
+
+    
     
     
     

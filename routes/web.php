@@ -68,6 +68,7 @@ Route::middleware([
     Route::post('/filtrar-obligaciones', [ObligacionesController::class, 'filtrarObligaciones'])->name('filtrar.obligaciones');
     Route::post('/approved-result', [ObligacionesController::class, 'obtenerEstadoApproved'])->name('approved.resul');
     Route::post('/enviar-correo-alerta', [ObligacionesController::class, 'enviarCorreoAlerta']);
+    
 
     Route::get('/obligaciones/usuarios', [ObligacionesController::class, 'obtenerUsuarios'])->name('obligaciones.usuarios');
     Route::post('/guardar-usuario-notificacion', [ObligacionesController::class, 'UsuarioNuevoTablaNotificaciones'])->name('guardar.usuario.notificacion');

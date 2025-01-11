@@ -304,7 +304,7 @@ function obtenerTablaNotificaciones(
                                 <!-- Campo Correo -->
                                 <div class="form-group col-md-6">
                                     <label for="select-correo-${requisitoId}" class="font-weight-bold">Correo</label>
-                                    <select id="select-correo-${requisitoId}" class="form-control">
+                                    <select id="select-correo-${requisitoId}" class="form-control" disabled>
                                         <option value="">Seleccione un correo</option>
                                     </select>
                                 </div>
@@ -364,7 +364,8 @@ function obtenerTablaNotificaciones(
                             isSuperUsuario
                                 ? `
                         <td style="text-align: center;">
-                            <button class="btn btn-danger btn-sm" onclick="eliminarNotificacion(${notificacion.id}, ${requisitoId})">
+                            <button class="btn btn-danger btn-sm" 
+                                onclick="eliminarNotificacion(${notificacion.id}, ${requisitoId}, '${idNotificaciones}', '${evidenciaId}', '${numeroRequisito}')">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </td>
@@ -412,64 +413,24 @@ function ocultarFormulario(requisitoId) {
 }
 
 // Función para guardar la nueva notificación
-function guardarNotificacion(requisitoId) {
-    const puesto = document.getElementById(`select-tipo-${requisitoId}`).value; // Nombre del puesto
-    const correo = document.getElementById(
-        `select-correo-${requisitoId}`
-    ).value; // Correo
-    const notificacion = document.getElementById(
-        `select-dias-${requisitoId}`
-    ).value; // Tipo de notificación
-    const numeroRequisito = document.getElementById(
-        `input-requisito-id-${requisitoId}`
-    ).value;
-    const evidenciaId = document.getElementById(
-        `input-notificacion-id1-${requisitoId}`
-    ).value;
-    const idNotificaciones = document.getElementById(
-        `input-notificacion-id2-${requisitoId}`
-    ).value;
-
-    // Enviar datos al servidor
-    axios
-        .post("{{ route('guardar.usuario.notificacion') }}", {
-            requisitoId,
-            numeroRequisito,
-            evidenciaId,
-            idNotificaciones,
-            nombre: puesto, // Nombre del puesto como "nombre"
-            email: correo, // Correo como "email"
-            tipoNotificacion: notificacion, // Tipo de notificación
-        })
-        .then((response) => {
-            alert(response.data.message);
-            ocultarFormulario(requisitoId); // Ocultar formulario al guardar
-        })
-        .catch((error) => {
-            console.error("Error al guardar la notificación:", error);
-            alert(
-                "Ocurrió un error al guardar el usuario en la tabla de notificaciones."
-            );
-        });
-}
 
 function guardarNotificacion(requisitoId) {
     const puesto = document.getElementById(`select-tipo-${requisitoId}`).value;
-    const correo = document.getElementById(
-        `select-correo-${requisitoId}`
-    ).value;
-    const notificacion = document.getElementById(
-        `select-dias-${requisitoId}`
-    ).value;
-    const numeroRequisito = document.getElementById(
-        `input-requisito-id-${requisitoId}`
-    ).value;
-    const evidenciaId = document.getElementById(
-        `input-notificacion-id1-${requisitoId}`
-    ).value;
-    const idNotificaciones = document.getElementById(
-        `input-notificacion-id2-${requisitoId}`
-    ).value;
+    const correo = document.getElementById(`select-correo-${requisitoId}`).value;
+    const notificacion = document.getElementById(`select-dias-${requisitoId}`).value;
+    const numeroRequisito = document.getElementById(`input-requisito-id-${requisitoId}`).value;
+    const evidenciaId = document.getElementById(`input-notificacion-id1-${requisitoId}`).value;
+    const idNotificaciones = document.getElementById(`input-notificacion-id2-${requisitoId}`).value;
+
+    if (!puesto) {
+        Swal.fire({
+            icon: "warning",
+            title: "Puesto no seleccionado",
+            text: "No se ha elegido un puesto válido. Por favor, seleccione un puesto.",
+            confirmButtonText: "Aceptar",
+        });
+        return;
+    }
 
     axios
         .post(guardarNotificacionUrl, {
@@ -482,27 +443,43 @@ function guardarNotificacion(requisitoId) {
             tipoNotificacion: notificacion,
         })
         .then((response) => {
-            Swal.fire({
-                icon: "success",
-                title: "¡Éxito!",
-                text: response.data.message,
-                confirmButtonText: "Aceptar",
-            }).then(() => {
-                ocultarFormulario(requisitoId); // Ocultar formulario al guardar
-            });
+            if (!response.data.success) {
+                // Muestra la alerta de registro duplicado
+                Swal.fire({
+                    icon: "info",
+                    title: "Por favor, seleccione otra opción.",
+                    text: response.data.message,
+                    confirmButtonText: "Aceptar",
+                });
+            } else {
+                // Muestra la alerta de éxito y recarga la tabla de notificaciones
+                Swal.fire({
+                    icon: "success",
+                    title: "¡Éxito!",
+                    text: response.data.message,
+                    confirmButtonText: "Aceptar",
+                }).then(() => {
+                    ocultarFormulario(requisitoId); // Oculta el formulario si se guarda con éxito
+                    // Recarga la tabla de notificaciones
+                    obtenerTablaNotificaciones(idNotificaciones, requisitoId, evidenciaId, numeroRequisito);
+                });
+            }
         })
         .catch((error) => {
             console.error("Error al guardar la notificación:", error);
             Swal.fire({
                 icon: "error",
                 title: "Error",
-                text: "Ocurrió un error al guardar el usuario en la tabla de notificaciones.",
+                text: "Ocurrió un error inesperado al guardar.",
                 confirmButtonText: "Aceptar",
             });
         });
 }
 
-function eliminarNotificacion(notificacionId, requisitoId) {
+
+
+
+function eliminarNotificacion(notificacionId, requisitoId, idNotificaciones, evidenciaId, numeroRequisito) {
     Swal.fire({
         title: "¿Estás seguro?",
         text: "¡No podrás revertir esto!",
@@ -514,23 +491,27 @@ function eliminarNotificacion(notificacionId, requisitoId) {
         cancelButtonText: "Cancelar",
     }).then((result) => {
         if (result.isConfirmed) {
-            axios
-                .post(eliminarNotificacionUrl, { id: notificacionId })
-                .then((response) => {
-                    Swal.fire("¡Eliminado!", response.data.message, "success");
-                    //obtenerTablaNotificaciones(requisitoId);
-                })
-                .catch((error) => {
-                    console.error(error);
-                    Swal.fire(
-                        "Error",
-                        "No se pudo eliminar la notificación.",
-                        "error"
-                    );
-                });
+            axios.post(eliminarNotificacionUrl, {
+                id: notificacionId,
+                requisitoId: requisitoId,
+                idNotificaciones: idNotificaciones,
+                evidenciaId: evidenciaId,
+                numeroRequisito: numeroRequisito,
+            })
+            .then((response) => {
+                Swal.fire("¡Eliminado!", response.data.message, "success");
+                obtenerTablaNotificaciones(idNotificaciones, requisitoId, evidenciaId, numeroRequisito);
+            })
+            .catch((error) => {
+                console.error(error);
+                Swal.fire("Error", "No se pudo eliminar la notificación.", "error");
+            });
         }
     });
 }
+
+
+
 
 // Función para mostrar el formulario y cargar los usuarios
 function mostrarFormulario(requisitoId) {
@@ -538,42 +519,44 @@ function mostrarFormulario(requisitoId) {
         .getElementById(`formulario-agregar-${requisitoId}`)
         .classList.remove("d-none");
 
-    // Obtener el select del formulario
-    const selectTipo = document.getElementById(`select-tipo-${requisitoId}`);
+    // Obtener los selects del formulario
+    const selectPuesto = document.getElementById(`select-tipo-${requisitoId}`);
+    const selectCorreo = document.getElementById(
+        `select-correo-${requisitoId}`
+    );
+
+    // Limpiar los selects antes de llenarlos
+    selectPuesto.innerHTML = '<option value="">Seleccione un puesto</option>';
+    selectCorreo.innerHTML = '<option value="">Seleccione un correo</option>';
 
     // Llamada al endpoint para obtener los usuarios
-
     axios
         .get(usuariosUrl)
         .then((response) => {
             const usuarios = response.data;
 
-            // Select para puesto
-            const selectTipo = document.getElementById(
-                `select-tipo-${requisitoId}`
-            );
-            selectTipo.innerHTML =
-                '<option value="">Seleccione un puesto</option>';
-
-            // Select para correo
-            const selectCorreo = document.getElementById(
-                `select-correo-${requisitoId}`
-            );
-            selectCorreo.innerHTML =
-                '<option value="">Seleccione un correo</option>';
+            // Guardar la relación puesto-correo en un mapa para consulta rápida
+            const puestoCorreoMap = {};
 
             usuarios.forEach((usuario) => {
-                // Llenar select de puesto
+                // Llenar el select de puestos
                 const optionPuesto = document.createElement("option");
                 optionPuesto.value = usuario.puesto;
                 optionPuesto.textContent = `${usuario.name} - ${usuario.puesto}`;
-                selectTipo.appendChild(optionPuesto);
+                selectPuesto.appendChild(optionPuesto);
 
-                // Llenar select de correo
-                const optionCorreo = document.createElement("option");
-                optionCorreo.value = usuario.email; // Guardar el correo como valor
-                optionCorreo.textContent = `${usuario.name} - ${usuario.email}`; // Mostrar nombre y correo
-                selectCorreo.appendChild(optionCorreo);
+                // Guardar el correo asociado al puesto en el mapa
+                puestoCorreoMap[usuario.puesto] = usuario.email;
+            });
+
+            // Evento para cambiar automáticamente el correo cuando se seleccione un puesto
+            selectPuesto.addEventListener("change", function () {
+                const puestoSeleccionado = this.value;
+                const correoCorrespondiente =
+                    puestoCorreoMap[puestoSeleccionado] || "";
+                selectCorreo.innerHTML = `<option value="${correoCorrespondiente}">${
+                    correoCorrespondiente || "Correo no disponible"
+                }</option>`;
             });
         })
         .catch((error) => {

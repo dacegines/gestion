@@ -385,6 +385,8 @@
         const usuariosUrl = "{{ route('obligaciones.usuarios') }}"
         const guardarNotificacionUrl = "{{ route('guardar.usuario.notificacion') }}";
         const eliminarNotificacionUrl = "{{ route('eliminar.usuario.notificacion') }}";
+
+        
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
