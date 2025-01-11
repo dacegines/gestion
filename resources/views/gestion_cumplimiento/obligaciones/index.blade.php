@@ -142,7 +142,8 @@
                                                 data-target="#collapseEvidencia{{ $evidencia->id }}"
                                                 data-evidencia-id="{{ $evidencia->numero_evidencia }}"
                                                 data-id-notificaciones="{{ $evidencia->id_notificaciones }}"
-                                                data-requisito-id="{{ $requisito->id }}">
+                                                data-requisito-id="{{ $requisito->id }}"
+                                                data-numero-requisito="{{ $requisito->numero_requisito }}">
                                                 <strong>{{ $evidencia->numero_evidencia }}</strong>
                                                 {{ $evidencia->evidencia }}
                                             </div>
@@ -279,13 +280,14 @@
                                                 <!-- Mostrar botones para subir archivo y enviar correo si no es invitado -->
                                                 <button type="button" class="btn btn-success"
                                                     onclick="handleFileUpload('#uploadForm')">Subir Archivo</button>
-                                               <!-- <button type="button" class="btn btn-success"
-                                                    onclick="ejecutarAccionConDatos()">Enviar correo</button> -->
+                                                <!-- <button type="button" class="btn btn-success"
+                                                        onclick="ejecutarAccionConDatos()">Enviar correo</button> -->
                                             @else
                                                 <!-- Mostrar mensaje si el usuario tiene el rol de invitado -->
                                                 <p class="text-center text-muted" style="font-size: 1.0rem;">
                                                     <b>Actualmente eres un usuario invitado y no puedes adjuntar
-                                                        archivos.</b></p>
+                                                        archivos.</b>
+                                                </p>
                                             @endif
 
                                             <div id="progressContainer" style="display:none; margin-top: 10px;">
@@ -380,6 +382,9 @@
         const actualizarSumaPorcentajeUrl = "{{ route('actualizar.suma.porcentaje') }}";
         const eliminarArchivoUrl = "{{ route('archivos.eliminar') }}";
         const enviarCorreoAlertaUrl = `{{ url('/enviar-correo-alerta') }}`;
+        const usuariosUrl = "{{ route('obligaciones.usuarios') }}"
+        const guardarNotificacionUrl = "{{ route('guardar.usuario.notificacion') }}";
+        const eliminarNotificacionUrl = "{{ route('eliminar.usuario.notificacion') }}";
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

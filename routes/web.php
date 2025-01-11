@@ -11,6 +11,7 @@ use App\Http\Controllers\CustomPasswordResetController;
 use App\Http\Controllers\CustomRegisterController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\AdminUsersController;
+use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\InicioController;
 
 use Illuminate\Support\Facades\Auth;
@@ -68,6 +69,10 @@ Route::middleware([
     Route::post('/approved-result', [ObligacionesController::class, 'obtenerEstadoApproved'])->name('approved.resul');
     Route::post('/enviar-correo-alerta', [ObligacionesController::class, 'enviarCorreoAlerta']);
 
+    Route::get('/obligaciones/usuarios', [ObligacionesController::class, 'obtenerUsuarios'])->name('obligaciones.usuarios');
+    Route::post('/guardar-usuario-notificacion', [ObligacionesController::class, 'UsuarioNuevoTablaNotificaciones'])->name('guardar.usuario.notificacion');
+    Route::post('/eliminar-notificacion', [ObligacionesController::class, 'eliminarNotificacion'])->name('eliminar.usuario.notificacion');
+
     // Rutas de DetallesController
     Route::get('/detalles', [DetallesController::class, 'index'])->name('detalles');
     Route::match(['get', 'post'], '/detalles', [DetallesController::class, 'index'])->name('gestion_cumplimiento.detalles.index');
@@ -112,6 +117,10 @@ Route::middleware([
     Route::post('/authorizations/store', [AdminUsersController::class, 'storeAuthorization'])->name('authorizations.store');
     Route::post('/admin/authorizations/create', [AdminUsersController::class, 'createAuthorization'])->name('adminAuthorizations.create');
     Route::delete('/admin/authorizations/delete/{id}', [AdminUsersController::class, 'deleteAuthorization'])->name('adminAuthorizations.delete');
+
+
+    // Rutas de Notificaciones
+    Route::get('/admin-notificaciones', [NotificacionController::class, 'index'])->name('admin.notificaciones');
 });
 
 // Rutas de CustomPasswordResetController

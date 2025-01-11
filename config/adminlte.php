@@ -321,8 +321,8 @@ return [
 
         [
             'text' => 'Inicio',
-            'route' => 'inicio', // Ruta que apunta al inicio
-            'icon' => 'fas fa-fw fa-home', // Ícono para la opción (puedes cambiarlo según tu preferencia)
+            'route' => 'inicio', 
+            'icon' => 'fas fa-fw fa-home', 
         ],
         
 
@@ -347,23 +347,34 @@ return [
             'icon' => 'fas fa-fw fa-tasks',
             'submenu' => [
                 [
-                    'text' => 'Dashboard',
-                    'route' => 'dashboard',
-                    'icon' => 'fas fa-fw fa-tachometer-alt',
-                    'can' => ['superUsuario', 'obligaciones de concesión'],
+                    'text' => 'Administrar Notificaciones',
+                    'route' => 'admin.notificaciones',  
+                    'icon' => 'fas fa-fw fa-bell',  
+                    'can' => ['superUsuario', 'gestionar alertas'],  
                 ],
+
                 [
                     'text' => 'Obligaciones',
                     'url' => 'obligaciones',
                     'icon' => 'fas fa-fw fa-clipboard',
                     'can' => ['superUsuario', 'obligaciones de concesión'],
-                ],
+                ], 
+                
                 [
                     'text' => 'Detalles',
                     'route' => 'detalles',
                     'icon' => 'fas fa-fw fa-file-invoice',
                     'can' => ['superUsuario', 'obligaciones de concesión'],
+                ],                
+                
+                [
+                    'text' => 'Dashboard',
+                    'route' => 'dashboard',
+                    'icon' => 'fas fa-fw fa-tachometer-alt',
+                    'can' => ['superUsuario', 'obligaciones de concesión'],
                 ],
+
+
             ],
         ],
         /*[

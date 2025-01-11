@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const evidenciaId = this.dataset.evidenciaId;
             const idNotificaciones = this.dataset.idNotificaciones;
             const requisitoId = this.dataset.requisitoId;
+            const numeroRequisito = this.dataset.numeroRequisito;
 
             const firstModal = document.getElementById("modal" + requisitoId);
             if (firstModal) {
@@ -26,7 +27,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
             obtenerDetallesEvidencia(evidenciaId, requisitoId);
 
-            obtenerTablaNotificaciones(idNotificaciones, requisitoId);
+            obtenerTablaNotificaciones(
+                idNotificaciones,
+                requisitoId,
+                evidenciaId,
+                numeroRequisito
+            );
 
             // Realizar la solicitud para obtener el estado "approved"
             axios
@@ -85,6 +91,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const evidenciaId = this.dataset.evidenciaId;
             const idNotificaciones = this.dataset.idNotificaciones;
             const requisitoId = this.dataset.requisitoId;
+            const numeroRequisito = this.dataset.numeroRequisito;
 
             // Validar los IDs antes de hacer cualquier otra cosa
             if (
@@ -103,7 +110,12 @@ document.addEventListener("DOMContentLoaded", function () {
             obtenerNotificaciones(idNotificaciones, requisitoId);
 
             // Obtener y mostrar la tabla de notificaciones
-            obtenerTablaNotificaciones(idNotificaciones, requisitoId);
+            obtenerTablaNotificaciones(
+                idNotificaciones,
+                requisitoId,
+                evidenciaId,
+                numeroRequisito
+            );
         });
     });
 });
@@ -236,7 +248,12 @@ function obtenerNotificaciones(idNotificaciones, requisitoId) {
         });
 }
 
-function obtenerTablaNotificaciones(idNotificaciones, requisitoId) {
+function obtenerTablaNotificaciones(
+    idNotificaciones,
+    requisitoId,
+    evidenciaId,
+    numeroRequisito
+) {
     axios
         .post(obtenerTablaNotificacionesUrl, {
             id_notificaciones: idNotificaciones,
@@ -249,17 +266,84 @@ function obtenerTablaNotificaciones(idNotificaciones, requisitoId) {
                         <i class="fas fa-table"></i>
                         <span>Tabla de Notificaciones:</span>
                     </div>
-                    <div class="table-responsive">
+            `;
+
+            // Lista de roles permitidos para mostrar el botón
+            const allowedRoles = ["superUsuario"];
+
+            // Verificar si el rol del usuario está dentro de los roles permitidos
+            if (allowedRoles.includes(userRole) && response.data.length > 0) {
+                tablaNotificacionesHtml += `
+                <div class="d-flex justify-content-start mt-2">
+                    <button class="btn btn-dark d-flex align-items-center gap-2" id="btn-agregar-${requisitoId}" onclick="mostrarFormulario(${requisitoId})">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Agregar a Notificaciones</span>
+                    </button>
+                </div>
+                `;
+            }
+            let isSuperUsuario = userRole === "superUsuario";
+            tablaNotificacionesHtml += `
+                    <div id="formulario-agregar-${requisitoId}" class="mt-4 p-4 bg-light border rounded d-none">
+                        <h5 class="mb-3 text-dark text-center">Agregar a Notificaciones</h5>
+                        <form>
+                            <!-- Campos Hidden -->
+                            <input type="hidden" id="input-requisito-id-${requisitoId}" value="${numeroRequisito}">
+                            <input type="hidden" id="input-notificacion-id1-${requisitoId}" value="${evidenciaId}">
+                            <input type="hidden" id="input-notificacion-id2-${requisitoId}" value="${idNotificaciones}">
+
+                            <div class="form-row">
+                                <!-- Campo Puesto -->
+                                <div class="form-group col-md-6">
+                                    <label for="select-tipo-${requisitoId}" class="font-weight-bold">Puesto</label>
+                                    <select id="select-tipo-${requisitoId}" class="form-control">
+                                        <option value="">Seleccione un usuario</option>
+                                    </select>
+                                </div>
+
+                                <!-- Campo Correo -->
+                                <div class="form-group col-md-6">
+                                    <label for="select-correo-${requisitoId}" class="font-weight-bold">Correo</label>
+                                    <select id="select-correo-${requisitoId}" class="form-control">
+                                        <option value="">Seleccione un correo</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Campo Notificación -->
+                            <div class="form-group">
+                                <label for="select-dias-${requisitoId}" class="font-weight-bold">Tipo de Notificación</label>
+                                <select id="select-dias-${requisitoId}" class="form-control">
+                                    <option value="primera_notificacion">1era Notificación</option>
+                                    <option value="segunda_notificacion">2da Notificación</option>
+                                    <option value="tercera_notificacion">3era Notificación</option>
+                                </select>
+                            </div>
+
+                            <!-- Botones Centralizados -->
+                            <div class="d-flex justify-content-center gap-3 mt-4">
+                                <button type="button" class="btn btn-success mx-2" onclick="guardarNotificacion(${requisitoId})">
+                                    <i class="fas fa-save"></i> Guardar
+                                </button>
+                                <button type="button" class="btn btn-secondary mx-2" onclick="ocultarFormulario(${requisitoId})">
+                                    <i class="fas fa-times"></i> Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="table-responsive mt-1">
                         <table class="styled-table table-bordered">
                             <thead>
                                 <tr>
-                                    <th>Nombre</th>
+                                    <th>Puesto</th>
                                     <th>Notificación</th>
                                     <th>Días</th>
+                                    ${isSuperUsuario ? `<th>Eliminar</th>` : ""}
                                 </tr>
                             </thead>
                             <tbody>
-        `;
+            `;
 
             if (response.data.length > 0) {
                 response.data.forEach(function (notificacion) {
@@ -276,41 +360,38 @@ function obtenerTablaNotificaciones(idNotificaciones, requisitoId) {
                         } style="text-align: center;"><b>${sanitizeInput(
                         notificacion.dias
                     )}</b></td>
+                        ${
+                            isSuperUsuario
+                                ? `
+                        <td style="text-align: center;">
+                            <button class="btn btn-danger btn-sm" onclick="eliminarNotificacion(${notificacion.id}, ${requisitoId})">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                        `
+                                : ""
+                        }
                     </tr>
-                `;
+                    `;
                 });
             } else {
-                tablaNotificacionesHtml +=
-                    '<tr><td colspan="3" style="text-align: center;">No hay notificaciones</td></tr>';
+                tablaNotificacionesHtml += ` 
+                    <tr>
+                        <td colspan="${
+                            isSuperUsuario ? 4 : 3
+                        }" style="text-align: center;">No hay notificaciones</td>
+                    </tr>`;
             }
 
-            // Cerramos la tabla de notificaciones
             tablaNotificacionesHtml += `
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
-        `;
+            `;
 
-            // Añadimos los botones de "Alertas por Correo Electrónico" debajo de la tabla
-            tablaNotificacionesHtml += `
-            <div class="details-card mt-2">
-                <div class="section-header bg-light-grey">
-                    <i class="fas fa-envelope"></i>
-                    <span>Alertas por Correo Electrónico:</span>
-                </div>
-<div class="d-flex justify-content-around mt-4">
-    <button class="btn btn-primary" style="background-color: #90ee90; color: black; border: 1px solid black;" onclick="enviarAlertaCorreo(30)">30 días</button>
-    <button class="btn btn-primary" style="background-color: #ffff99; color: black; border: 1px solid black;" onclick="enviarAlertaCorreo(15)">15 días</button>
-    <button class="btn btn-primary" style="background-color: #ffcc99; color: black; border: 1px solid black;" onclick="enviarAlertaCorreo(5)">5 días</button>
-    <button class="btn btn-primary" style="background-color: #ff9999; color: black; border: 1px solid black;" onclick="enviarAlertaCorreo(2)">Inmediato (2 días)</button>
-    <button class="btn btn-primary" style="background-color: #ff6666; color: black; border: 1px solid black;" onclick="enviarAlertaCorreo(1)">Inmediato (1 día)</button>
-</div>
-            </div>
-        `;
-
-            // Insertamos el contenido en el contenedor de la tabla de notificaciones
+            // Insertar contenido en el contenedor de la tabla
             document.getElementById(
                 "tabla-notificaciones-info-" + requisitoId
             ).innerHTML = tablaNotificacionesHtml;
@@ -320,6 +401,184 @@ function obtenerTablaNotificaciones(idNotificaciones, requisitoId) {
                 "Error al obtener la tabla de notificaciones:",
                 error
             );
+        });
+}
+
+// Función para ocultar el formulario
+function ocultarFormulario(requisitoId) {
+    document
+        .getElementById(`formulario-agregar-${requisitoId}`)
+        .classList.add("d-none");
+}
+
+// Función para guardar la nueva notificación
+function guardarNotificacion(requisitoId) {
+    const puesto = document.getElementById(`select-tipo-${requisitoId}`).value; // Nombre del puesto
+    const correo = document.getElementById(
+        `select-correo-${requisitoId}`
+    ).value; // Correo
+    const notificacion = document.getElementById(
+        `select-dias-${requisitoId}`
+    ).value; // Tipo de notificación
+    const numeroRequisito = document.getElementById(
+        `input-requisito-id-${requisitoId}`
+    ).value;
+    const evidenciaId = document.getElementById(
+        `input-notificacion-id1-${requisitoId}`
+    ).value;
+    const idNotificaciones = document.getElementById(
+        `input-notificacion-id2-${requisitoId}`
+    ).value;
+
+    // Enviar datos al servidor
+    axios
+        .post("{{ route('guardar.usuario.notificacion') }}", {
+            requisitoId,
+            numeroRequisito,
+            evidenciaId,
+            idNotificaciones,
+            nombre: puesto, // Nombre del puesto como "nombre"
+            email: correo, // Correo como "email"
+            tipoNotificacion: notificacion, // Tipo de notificación
+        })
+        .then((response) => {
+            alert(response.data.message);
+            ocultarFormulario(requisitoId); // Ocultar formulario al guardar
+        })
+        .catch((error) => {
+            console.error("Error al guardar la notificación:", error);
+            alert(
+                "Ocurrió un error al guardar el usuario en la tabla de notificaciones."
+            );
+        });
+}
+
+function guardarNotificacion(requisitoId) {
+    const puesto = document.getElementById(`select-tipo-${requisitoId}`).value;
+    const correo = document.getElementById(
+        `select-correo-${requisitoId}`
+    ).value;
+    const notificacion = document.getElementById(
+        `select-dias-${requisitoId}`
+    ).value;
+    const numeroRequisito = document.getElementById(
+        `input-requisito-id-${requisitoId}`
+    ).value;
+    const evidenciaId = document.getElementById(
+        `input-notificacion-id1-${requisitoId}`
+    ).value;
+    const idNotificaciones = document.getElementById(
+        `input-notificacion-id2-${requisitoId}`
+    ).value;
+
+    axios
+        .post(guardarNotificacionUrl, {
+            requisitoId,
+            numeroRequisito,
+            evidenciaId,
+            idNotificaciones,
+            nombre: puesto,
+            email: correo,
+            tipoNotificacion: notificacion,
+        })
+        .then((response) => {
+            Swal.fire({
+                icon: "success",
+                title: "¡Éxito!",
+                text: response.data.message,
+                confirmButtonText: "Aceptar",
+            }).then(() => {
+                ocultarFormulario(requisitoId); // Ocultar formulario al guardar
+            });
+        })
+        .catch((error) => {
+            console.error("Error al guardar la notificación:", error);
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Ocurrió un error al guardar el usuario en la tabla de notificaciones.",
+                confirmButtonText: "Aceptar",
+            });
+        });
+}
+
+function eliminarNotificacion(notificacionId, requisitoId) {
+    Swal.fire({
+        title: "¿Estás seguro?",
+        text: "¡No podrás revertir esto!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar",
+    }).then((result) => {
+        if (result.isConfirmed) {
+            axios
+                .post(eliminarNotificacionUrl, { id: notificacionId })
+                .then((response) => {
+                    Swal.fire("¡Eliminado!", response.data.message, "success");
+                    //obtenerTablaNotificaciones(requisitoId);
+                })
+                .catch((error) => {
+                    console.error(error);
+                    Swal.fire(
+                        "Error",
+                        "No se pudo eliminar la notificación.",
+                        "error"
+                    );
+                });
+        }
+    });
+}
+
+// Función para mostrar el formulario y cargar los usuarios
+function mostrarFormulario(requisitoId) {
+    document
+        .getElementById(`formulario-agregar-${requisitoId}`)
+        .classList.remove("d-none");
+
+    // Obtener el select del formulario
+    const selectTipo = document.getElementById(`select-tipo-${requisitoId}`);
+
+    // Llamada al endpoint para obtener los usuarios
+
+    axios
+        .get(usuariosUrl)
+        .then((response) => {
+            const usuarios = response.data;
+
+            // Select para puesto
+            const selectTipo = document.getElementById(
+                `select-tipo-${requisitoId}`
+            );
+            selectTipo.innerHTML =
+                '<option value="">Seleccione un puesto</option>';
+
+            // Select para correo
+            const selectCorreo = document.getElementById(
+                `select-correo-${requisitoId}`
+            );
+            selectCorreo.innerHTML =
+                '<option value="">Seleccione un correo</option>';
+
+            usuarios.forEach((usuario) => {
+                // Llenar select de puesto
+                const optionPuesto = document.createElement("option");
+                optionPuesto.value = usuario.puesto;
+                optionPuesto.textContent = `${usuario.name} - ${usuario.puesto}`;
+                selectTipo.appendChild(optionPuesto);
+
+                // Llenar select de correo
+                const optionCorreo = document.createElement("option");
+                optionCorreo.value = usuario.email; // Guardar el correo como valor
+                optionCorreo.textContent = `${usuario.name} - ${usuario.email}`; // Mostrar nombre y correo
+                selectCorreo.appendChild(optionCorreo);
+            });
+        })
+        .catch((error) => {
+            console.error("Error al cargar la lista de usuarios:", error);
+            alert("Ocurrió un error al cargar la lista de usuarios.");
         });
 }
 
@@ -718,11 +977,17 @@ function cargarArchivos(requisitoId, evidenciaId, fechaLimite) {
                     <button 
                         class="btn btn-sm btn-danger btn-eliminar-archivo" 
                         data-id="${sanitizeInput(archivo.id)}" 
-                        data-url="${storageUploadsUrl}/${sanitizeInput(archivo.nombre_archivo)}"
+                        data-url="${storageUploadsUrl}/${sanitizeInput(
+                                  archivo.nombre_archivo
+                              )}"
                         data-requisito-id="${sanitizeInput(requisitoId)}" 
                         data-evidencia-id="${sanitizeInput(evidenciaId)}" 
                         data-fecha-limite="${sanitizeInput(fechaLimite)}"
-                        ${["admin", "superUsuario"].includes(userRole) ? "" : "disabled"}
+                        ${
+                            ["admin", "superUsuario"].includes(userRole)
+                                ? ""
+                                : "disabled"
+                        }
                     >
                         <i class="fas fa-trash-alt"></i>
                     </button>

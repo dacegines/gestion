@@ -214,9 +214,12 @@ class ObligacionesController extends Controller
     public function obtenerTablaNotificaciones(Request $request)
     {
         $idNotificaciones = $request->input('id_notificaciones');
+
+        // Consulta con ordenamiento por tipo_notificacion de manera personalizada
         $notificaciones = DB::table('notificaciones')
             ->where('id_notificacion', $idNotificaciones)
-            ->get(['nombre', 'tipo_notificacion'])
+            ->orderByRaw("FIELD(tipo_notificacion, 'primera_notificacion', 'segunda_notificacion', 'tercera_notificacion', 'notificacion_carga_vobo')")
+            ->get(['id', 'nombre', 'tipo_notificacion', 'requisito_id'])
             ->toArray();
 
         $resultado = array_map(function ($notificacion) {
@@ -248,15 +251,20 @@ class ObligacionesController extends Controller
             }
 
             return [
+                'id' => $notificacion->id,
                 'nombre' => $notificacion->nombre,
                 'tipo' => $tipoNotificacion,
                 'dias' => $dias,
-                'estilo' => $estilo
+                'estilo' => $estilo,
+                'requisito_id' => $notificacion->requisito_id
             ];
         }, $notificaciones);
 
         return response()->json($resultado);
     }
+
+
+
 
     public function cambiarEstado(Request $request)
     {
@@ -637,4 +645,80 @@ class ObligacionesController extends Controller
 
         return response()->json(['success' => true, 'message' => "Correo de alerta enviado correctamente."]);
     }
+
+    public function obtenerUsuarios()
+    {
+        try {
+            // Obtener todos los usuarios con su nombre y puesto (ajusta los campos según lo que necesites)
+            $usuarios = DB::table('users')->select('id', 'name', 'puesto', 'email')->get();
+
+            if ($usuarios->isEmpty()) {
+                return response()->json(['message' => 'No se encontraron usuarios.'], 404);
+            }
+
+            return response()->json($usuarios, 200);
+        } catch (\Exception $e) {
+            Log::error('Error al obtener usuarios: ' . $e->getMessage());
+            return response()->json(['error' => 'Ocurrió un error al obtener los usuarios.'], 500);
+        }
+    }
+
+    public function UsuarioNuevoTablaNotificaciones(Request $request)
+    {
+        // Validación de los datos recibidos
+        $validatedData = $request->validate([
+            'requisitoId' => 'required|integer|exists:requisitos,id',
+            'numeroRequisito' => 'required|string|max:50',
+            'evidenciaId' => 'required|string|max:50',
+            'idNotificaciones' => 'required|string|max:50|exists:notificaciones,id_notificacion',
+            'nombre' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'tipoNotificacion' => 'required|string|in:primera_notificacion,segunda_notificacion,tercera_notificacion,notificacion_carga_vobo|max:50',
+        ]);
+    
+        try {
+            // Insertar el nuevo registro
+            DB::table('notificaciones')->insert([
+                'requisito_id' => $validatedData['numeroRequisito'],
+                'numero_evidencia' => $validatedData['evidenciaId'],
+                'id_notificacion' => $validatedData['idNotificaciones'],
+                'nombre' => $validatedData['nombre'],
+                'email' => $validatedData['email'],
+                'tipo_notificacion' => $validatedData['tipoNotificacion'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+    
+            return response()->json(['success' => true, 'message' => 'Usuario agregado a la tabla de notificaciones correctamente.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Ocurrió un error al guardar el usuario en la tabla de notificaciones.'], 500);
+        }
+    }
+    
+
+    public function eliminarNotificacion(Request $request)
+    {
+        $validatedData = $request->validate([
+            'id' => 'required|integer|exists:notificaciones,id'
+        ]);
+    
+        try {
+            // Buscar la notificación en la base de datos
+            $notificacion = DB::table('notificaciones')->where('id', $validatedData['id'])->first();
+    
+            if (is_null($notificacion)) {
+                return response()->json(['error' => 'La notificación no existe o ya fue eliminada.'], 404);
+            }
+    
+            // Eliminar la notificación
+            DB::table('notificaciones')->where('id', $validatedData['id'])->delete();
+    
+            return response()->json(['message' => 'La notificación se eliminó correctamente.'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error interno del servidor. Intente más tarde.'], 500);
+        }
+    }
+    
+    
+    
 }
