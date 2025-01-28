@@ -13,6 +13,7 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\AdminUsersController;
 use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\InicioController;
+use App\Http\Controllers\CalendarController;
 
 use Illuminate\Support\Facades\Auth;
 
@@ -122,6 +123,12 @@ Route::middleware([
 
     // Rutas de Notificaciones
     Route::get('/admin-notificaciones', [NotificacionController::class, 'index'])->name('admin.notificaciones');
+
+    //Rutas de Calendario
+    Route::get('/gestion-cumplimiento/calendario', [CalendarController::class, 'index'])->name('gestion.calendario');
+    Route::get('/api/requisitos', [CalendarController::class, 'fetchRequisitos'])->name('api.requisitos');
+    
+
 });
 
 // Rutas de CustomPasswordResetController

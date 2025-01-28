@@ -365,6 +365,13 @@ return [
                     'route' => 'detalles',
                     'icon' => 'fas fa-fw fa-file-invoice',
                     'can' => ['superUsuario', 'obligaciones de concesión'],
+                ],
+                
+                [
+                    'text' => 'Calendario de Obligaciones',
+                    'route' => 'gestion.calendario',
+                    'icon' => 'fas fa-fw fa-calendar',
+                    'can' => ['superUsuario', 'obligaciones de concesión'],
                 ],                
                 
                 [
