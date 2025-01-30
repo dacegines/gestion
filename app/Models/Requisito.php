@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Builder;
+
 
 class Requisito extends Model
 {
@@ -79,4 +81,26 @@ class Requisito extends Model
             return $query->where('responsable', $user->puesto);
         }
     }
+
+    
+
+    public static function boot()
+    {
+        parent::boot();
+    
+        static::addGlobalScope('puestoFilter', function (Builder $builder) {
+            $user = Auth::user();
+    
+            if ($user) {
+                // Filtro para "Gerente de Operación" y "Gerente de Atención a Usuarios"
+                if ($user->puesto === 'Gerente de Operación' || $user->puesto === 'Gerente de Atención a Usuarios') {
+                    $builder->whereIn('evidencia', [
+                        'Escrito de presentación del ajuste de las tarifas de SVP y VELC conforme al INPC a la Dependencia Auxiliar',
+                        'Oficio de la Dependencia Auxiliar en respuesta del ajuste de las tarifas de SVP y VELC, conforme al INPC',
+                    ]);
+                }
+            }
+        });
+    }
+    
 }
