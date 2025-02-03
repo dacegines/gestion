@@ -82,20 +82,50 @@ class ArchivoController extends Controller
 
     public function listarArchivos(Request $request)
     {
-        $requisitoId = $request->input('requisito_id');
+        // Obtener los parámetros de la solicitud (sin requisito_id)
         $evidenciaId = $request->input('evidencia_id');
         $fechaLimite = $request->input('fecha_limite');
-
-        // Obtén los archivos relacionados con el requisito, la evidencia y la fecha límite
-        $archivos = Archivo::where('requisito_id', $requisitoId)
-            ->where('evidencia', $evidenciaId)
-            ->whereDate('fecha_limite_cumplimiento', $fechaLimite) // Filtrar por la fecha límite
+    
+        // Consultar los archivos (sin filtrar por requisito_id)
+        $archivos = Archivo::where('evidencia', $evidenciaId)
+            ->whereDate('fecha_limite_cumplimiento', $fechaLimite)
             ->get();
-
-        // Devuelve los datos en formato JSON
+    
+        // Verificar si se encontraron archivos
+        if ($archivos->isEmpty()) {
+            return response()->json(['message' => 'No se encontraron archivos'], 404);
+        }
+    
+        // Devolver los archivos en formato JSON
         return response()->json(['archivos' => $archivos]);
     }
 
+    //metodo listarArchivos anterior
+    // // Validar los datos de entrada
+    // $request->validate([
+    //     'requisito_id' => 'required|integer',
+    //     'evidencia_id' => 'required|integer',
+    //     'fecha_limite' => 'required|date',
+    // ]);
+
+    // // Obtener los parámetros de la solicitud
+    // $requisitoId = $request->input('requisito_id');
+    // $evidenciaId = $request->input('evidencia_id');
+    // $fechaLimite = $request->input('fecha_limite');
+
+    // // Consultar los archivos
+    // $archivos = Archivo::where('requisito_id', $requisitoId)
+    //     ->where('evidencia', $evidenciaId)
+    //     ->whereDate('fecha_limite_cumplimiento', $fechaLimite)
+    //     ->get();
+
+    // // Verificar si se encontraron archivos
+    // if ($archivos->isEmpty()) {
+    //     return response()->json(['message' => 'No se encontraron archivos'], 404);
+    // }
+
+    // // Devolver los archivos en formato JSON
+    // return response()->json(['archivos' => $archivos]);
 
 
     public function eliminar(Request $request)

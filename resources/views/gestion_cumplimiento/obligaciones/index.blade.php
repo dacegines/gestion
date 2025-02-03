@@ -20,9 +20,9 @@
                 @if (Auth::user()->hasRole('invitado'))
                     Obligaciones - Acceso Limitado
                 @elseif(in_array($user->puesto, $puestosExcluidos))
-                    Obligaciones
+                    Obligaciones TDC
                 @else
-                    Obligaciones - {{ $user->puesto }}
+                    Obligaciones TDC - {{ $user->puesto }}
                 @endif
             </h4>
         </div>

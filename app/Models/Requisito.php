@@ -90,14 +90,10 @@ class Requisito extends Model
     
         static::addGlobalScope('puestoFilter', function (Builder $builder) {
             $user = Auth::user();
-    
+        
             if ($user) {
-                // Filtro para "Gerente de Operación" y "Gerente de Atención a Usuarios"
                 if ($user->puesto === 'Gerente de Operación' || $user->puesto === 'Gerente de Atención a Usuarios') {
-                    $builder->whereIn('evidencia', [
-                        'Escrito de presentación del ajuste de las tarifas de SVP y VELC conforme al INPC a la Dependencia Auxiliar',
-                        'Oficio de la Dependencia Auxiliar en respuesta del ajuste de las tarifas de SVP y VELC, conforme al INPC',
-                    ]);
+                    $builder->whereIn('requisitos.numero_evidencia', ['4.2','4.3']);
                 }
             }
         });

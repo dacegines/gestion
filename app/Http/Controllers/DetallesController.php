@@ -87,7 +87,8 @@ class DetallesController extends Controller
     {
         $year = $request->input('year', \Carbon\Carbon::now()->year);
         $search = $request->input('search');
-
+        $user = Auth::user();
+    
         // Construir la consulta principal
         $requisitosQuery = DB::table('requisitos as r')
             ->select(
@@ -101,13 +102,21 @@ class DetallesController extends Controller
                 DB::raw("CASE 
                     WHEN r.porcentaje = 100 THEN 'Cumplido'
                     WHEN r.fecha_limite_cumplimiento < NOW() THEN 'Vencido'
-                    WHEN DATEDIFF(r.fecha_limite_cumplimiento, NOW()) <= 30 THEN 'Próximo a Vencer'
+                    WHEN DATEDIFF(r.fecha_limite_cumplimiento, NOW()) <= 30 THEN 'Próximo'
                     ELSE 'Activo'
                 END AS estatus"),
                 DB::raw("(SELECT COUNT(*) FROM archivos a WHERE a.fecha_limite_cumplimiento = r.fecha_limite_cumplimiento) as cantidad_archivos")
             )
             ->whereYear('r.fecha_limite_cumplimiento', $year);
-
+    
+        // ✅ Aplicar el filtro de evidencia si el usuario es "Gerente de Operación" o "Gerente de Atención a Usuarios"
+        if ($user && ($user->puesto === 'Gerente de Operación' || $user->puesto === 'Gerente de Atención a Usuarios')) {
+            $requisitosQuery->whereIn('r.evidencia', [
+                'Escrito de presentación del ajuste de las tarifas de SVP y VELC conforme al INPC a la Dependencia Auxiliar',
+                'Oficio de la Dependencia Auxiliar en respuesta del ajuste de las tarifas de SVP y VELC, conforme al INPC',
+            ]);
+        }
+    
         // Aplicar el filtro de búsqueda si se proporciona
         if (!empty($search)) {
             $requisitosQuery->where(function ($query) use ($search) {
@@ -119,25 +128,26 @@ class DetallesController extends Controller
                     ->orWhere(DB::raw("CASE 
                             WHEN r.porcentaje = 100 THEN 'Cumplido'
                             WHEN r.fecha_limite_cumplimiento < NOW() THEN 'Vencido'
-                            WHEN DATEDIFF(r.fecha_limite_cumplimiento, NOW()) <= 30 THEN 'Próximo a Vencer'
+                            WHEN DATEDIFF(r.fecha_limite_cumplimiento, NOW()) <= 30 THEN 'Próximo'
                             ELSE 'Activo'
                         END"), 'like', "%$search%");
             });
         }
-
+    
         $requisitos = $requisitosQuery->get();
-
+    
         // Verificar si hay resultados antes de generar el PDF
         if ($requisitos->isEmpty() && $search) {
             return redirect()->back()->with('error', 'No se encontraron registros para el filtro aplicado.');
         }
-
+    
         // Generar el PDF
         $pdf = Pdf::loadView('pdf.reporte', compact('requisitos', 'year'))
             ->setPaper('A4', 'landscape');
-
+    
         return $pdf->download('reporte_detalles.pdf');
     }
+    
 
     // Método privado para construir la consulta de requisitos
     private function getRequisitos($year, $user, $search = null)
@@ -146,48 +156,58 @@ class DetallesController extends Controller
         $authorizationId = DB::table('model_has_authorizations')
             ->where('model_id', $user->id)
             ->value('authorization_id');
-
-        // Construir la consulta base
-        $query = DB::table('requisitos as r')
-            ->leftJoin('archivos as a', 'r.fecha_limite_cumplimiento', '=', 'a.fecha_limite_cumplimiento')
+    
+        // Construcción de la consulta con `Requisito::query()`
+        $query = Requisito::query()
+            ->leftJoin('archivos as a', 'requisitos.fecha_limite_cumplimiento', '=', 'a.fecha_limite_cumplimiento')
             ->select(
-                'r.id',
-                DB::raw('MAX(r.numero_evidencia) as numero_evidencia'),
-                DB::raw('MAX(r.clausula_condicionante_articulo) as clausula'),
-                DB::raw('MAX(r.evidencia) as requisito_evidencia'),
-                DB::raw('MAX(r.periodicidad) as periodicidad'),
-                DB::raw('MAX(r.fecha_limite_cumplimiento) as fecha_limite_cumplimiento'),
-                DB::raw('MAX(r.responsable) as responsable'),
-                DB::raw('MAX(r.porcentaje) as porcentaje'),
+                'requisitos.id',
+                DB::raw('MAX(requisitos.numero_evidencia) as numero_evidencia'),
+                DB::raw('MAX(requisitos.clausula_condicionante_articulo) as clausula'),
+                DB::raw('MAX(requisitos.evidencia) as requisito_evidencia'), // Aquí se usa MAX()
+                DB::raw('MAX(requisitos.periodicidad) as periodicidad'),
+                DB::raw('MAX(requisitos.fecha_limite_cumplimiento) as fecha_limite_cumplimiento'),
+                DB::raw('MAX(requisitos.responsable) as responsable'),
+                DB::raw('MAX(requisitos.porcentaje) as porcentaje'),
                 DB::raw('COUNT(a.id) as cantidad_archivos'),
                 DB::raw("CASE 
-                    WHEN MAX(r.porcentaje) = 100 THEN 'Cumplido'
-                    WHEN MAX(r.fecha_limite_cumplimiento) < NOW() THEN 'Vencido'
-                    WHEN DATEDIFF(MAX(r.fecha_limite_cumplimiento), NOW()) <= 30 THEN 'Próximo a Vencer'
+                    WHEN MAX(requisitos.porcentaje) = 100 THEN 'Cumplido'
+                    WHEN MAX(requisitos.fecha_limite_cumplimiento) < NOW() THEN 'Vencido'
+                    WHEN DATEDIFF(MAX(requisitos.fecha_limite_cumplimiento), NOW()) <= 30 THEN 'Próximo'
                     ELSE 'Activo'
                 END AS estatus")
             )
-            ->whereYear('r.fecha_limite_cumplimiento', $year)
-            ->groupBy('r.id')
-            ->orderBy('r.fecha_limite_cumplimiento', 'asc');
-
+            ->whereYear('requisitos.fecha_limite_cumplimiento', $year)
+            ->groupBy('requisitos.id')
+            ->orderBy('requisitos.fecha_limite_cumplimiento', 'asc');
+    
         // Aplicar lógica según authorization_id
         if ($authorizationId == 8) {
             // Si el usuario tiene authorization_id = 8, filtrar por su puesto
-            $query->where('r.responsable', $user->puesto);
+            $query->where('requisitos.responsable', $user->puesto);
         }
+    
+
+        if ($authorizationId == 8) {
+            $query->havingRaw('MAX(requisitos.evidencia) IN (?, ?)', [
+                'Escrito de presentación del ajuste de las tarifas de SVP y VELC conforme al INPC a la Dependencia Auxiliar',
+                'Oficio de la Dependencia Auxiliar en respuesta del ajuste de las tarifas de SVP y VELC, conforme al INPC',
+            ]);
+        }
+    
 
         if (!empty($search)) {
-            // Aplicar filtro de búsqueda si se proporciona
-            $query->where(function ($subQuery) use ($search) {
-                $subQuery->where('r.numero_evidencia', 'like', "%$search%")
-                    ->orWhere('r.clausula_condicionante_articulo', 'like', "%$search%")
-                    ->orWhere('r.evidencia', 'like', "%$search%")
-                    ->orWhere('r.periodicidad', 'like', "%$search%")
-                    ->orWhere('r.responsable', 'like', "%$search%");
-            });
+            $query->havingRaw('MAX(requisitos.evidencia) LIKE ?', ["%$search%"])
+                ->orHavingRaw('MAX(requisitos.numero_evidencia) LIKE ?', ["%$search%"])
+                ->orHavingRaw('MAX(requisitos.clausula_condicionante_articulo) LIKE ?', ["%$search%"])
+                ->orHavingRaw('MAX(requisitos.periodicidad) LIKE ?', ["%$search%"])
+                ->orHavingRaw('MAX(requisitos.responsable) LIKE ?', ["%$search%"]);
         }
-
+    
         return $query->get();
     }
+    
+    
+    
+    
 }

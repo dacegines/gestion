@@ -6,7 +6,7 @@
     <hr>
     <div class="card" id="card-resumen">
         <div class="card-header-title card-header bg-success text-white text-center">
-            <h4 class="card-title-description">Resumen</h4>
+            <h4 class="card-title-description">Dashboard de Obligaciones TDC</h4>
         </div>
         <div class="card-body">
             <div class="row justify-content-center">
