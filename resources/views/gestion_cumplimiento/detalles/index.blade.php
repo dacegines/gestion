@@ -6,7 +6,7 @@
     <hr>
     <div class="card">
         <div class="card-header-title card-header bg-success text-white text-center">
-            <h4 class="card-title-description">Detalles</h4>
+            <h4 class="card-title-description">Detalle de Obligaciones TDC</h4>
         </div>
 
         <div class="card-body">
@@ -81,7 +81,7 @@
                                 <td style="font-size: 11px;">{{ $requisito->responsable }}</td>
                                 <td>
                                     <span style="font-size: 11px;"
-                                        class="badge badge-{{ $requisito->estatus === 'Cumplido' ? 'success' : ($requisito->estatus === 'Vencido' ? 'danger' : ($requisito->estatus === 'Próximo a Vencer' ? 'warning' : 'info')) }}">
+                                        class="badge badge-{{ $requisito->estatus === 'Cumplido' ? 'success' : ($requisito->estatus === 'Vencido' ? 'danger' : ($requisito->estatus === 'Próximo' ? 'warning' : 'info')) }}">
                                         {{ $requisito->estatus }}
                                     </span>
                                 </td>

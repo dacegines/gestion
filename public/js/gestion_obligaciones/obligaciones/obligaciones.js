@@ -416,11 +416,21 @@ function ocultarFormulario(requisitoId) {
 
 function guardarNotificacion(requisitoId) {
     const puesto = document.getElementById(`select-tipo-${requisitoId}`).value;
-    const correo = document.getElementById(`select-correo-${requisitoId}`).value;
-    const notificacion = document.getElementById(`select-dias-${requisitoId}`).value;
-    const numeroRequisito = document.getElementById(`input-requisito-id-${requisitoId}`).value;
-    const evidenciaId = document.getElementById(`input-notificacion-id1-${requisitoId}`).value;
-    const idNotificaciones = document.getElementById(`input-notificacion-id2-${requisitoId}`).value;
+    const correo = document.getElementById(
+        `select-correo-${requisitoId}`
+    ).value;
+    const notificacion = document.getElementById(
+        `select-dias-${requisitoId}`
+    ).value;
+    const numeroRequisito = document.getElementById(
+        `input-requisito-id-${requisitoId}`
+    ).value;
+    const evidenciaId = document.getElementById(
+        `input-notificacion-id1-${requisitoId}`
+    ).value;
+    const idNotificaciones = document.getElementById(
+        `input-notificacion-id2-${requisitoId}`
+    ).value;
 
     if (!puesto) {
         Swal.fire({
@@ -461,7 +471,12 @@ function guardarNotificacion(requisitoId) {
                 }).then(() => {
                     ocultarFormulario(requisitoId); // Oculta el formulario si se guarda con éxito
                     // Recarga la tabla de notificaciones
-                    obtenerTablaNotificaciones(idNotificaciones, requisitoId, evidenciaId, numeroRequisito);
+                    obtenerTablaNotificaciones(
+                        idNotificaciones,
+                        requisitoId,
+                        evidenciaId,
+                        numeroRequisito
+                    );
                 });
             }
         })
@@ -476,10 +491,13 @@ function guardarNotificacion(requisitoId) {
         });
 }
 
-
-
-
-function eliminarNotificacion(notificacionId, requisitoId, idNotificaciones, evidenciaId, numeroRequisito) {
+function eliminarNotificacion(
+    notificacionId,
+    requisitoId,
+    idNotificaciones,
+    evidenciaId,
+    numeroRequisito
+) {
     Swal.fire({
         title: "¿Estás seguro?",
         text: "¡No podrás revertir esto!",
@@ -491,27 +509,34 @@ function eliminarNotificacion(notificacionId, requisitoId, idNotificaciones, evi
         cancelButtonText: "Cancelar",
     }).then((result) => {
         if (result.isConfirmed) {
-            axios.post(eliminarNotificacionUrl, {
-                id: notificacionId,
-                requisitoId: requisitoId,
-                idNotificaciones: idNotificaciones,
-                evidenciaId: evidenciaId,
-                numeroRequisito: numeroRequisito,
-            })
-            .then((response) => {
-                Swal.fire("¡Eliminado!", response.data.message, "success");
-                obtenerTablaNotificaciones(idNotificaciones, requisitoId, evidenciaId, numeroRequisito);
-            })
-            .catch((error) => {
-                console.error(error);
-                Swal.fire("Error", "No se pudo eliminar la notificación.", "error");
-            });
+            axios
+                .post(eliminarNotificacionUrl, {
+                    id: notificacionId,
+                    requisitoId: requisitoId,
+                    idNotificaciones: idNotificaciones,
+                    evidenciaId: evidenciaId,
+                    numeroRequisito: numeroRequisito,
+                })
+                .then((response) => {
+                    Swal.fire("¡Eliminado!", response.data.message, "success");
+                    obtenerTablaNotificaciones(
+                        idNotificaciones,
+                        requisitoId,
+                        evidenciaId,
+                        numeroRequisito
+                    );
+                })
+                .catch((error) => {
+                    console.error(error);
+                    Swal.fire(
+                        "Error",
+                        "No se pudo eliminar la notificación.",
+                        "error"
+                    );
+                });
         }
     });
 }
-
-
-
 
 // Función para mostrar el formulario y cargar los usuarios
 function mostrarFormulario(requisitoId) {
@@ -1093,8 +1118,6 @@ function actualizarEstado(
     responsable,
     numero_requisito
 ) {
-    console.log("el valor es: " + detalleId);
-
     // Mostrar alerta de confirmación con SweetAlert2
     Swal.fire({
         title: "¿Estás seguro?",
@@ -1124,11 +1147,6 @@ function actualizarEstado(
                 })
                 .then(function (response) {
                     if (response.data.success) {
-                        console.log(
-                            "Nuevo estado del requisito:",
-                            response.data.approved
-                        );
-
                         const button = document.querySelector(
                             `.btnMarcarCumplido[data-requisito-id="${requisitoId}"]`
                         );
@@ -1264,7 +1282,6 @@ function ejecutarAccionConDatos() {
     axios
         .post(enviarCorreoDatosEvidenciaUrl, datosRecuperados)
         .then(function (response) {
-            console.log("Correo enviado correctamente:", response.data);
             Swal.fire("Éxito", "El correo se envió correctamente.", "success");
         })
         .catch(function (error) {
@@ -1312,11 +1329,6 @@ function actualizarPorcentaje(detalleId) {
         })
         .then(function (response) {
             if (response.data.success) {
-                console.log(
-                    "Porcentaje actualizado correctamente:",
-                    response.data
-                );
-                // Puedes agregar más lógica aquí si es necesario
             } else {
                 throw new Error("Error al actualizar el porcentaje");
             }
@@ -1337,16 +1349,7 @@ function actualizarPorcentajeSuma(detalleId, numeroRequisito) {
             requisito_id: sanitizeInput(detalleId),
             numero_requisito: sanitizeInput(numeroRequisito),
         })
-        .then(function (response) {
-            console.log(
-                "Número de registros encontrados:",
-                response.data.conteo
-            );
-            console.log(
-                "Porcentaje por cada registro:",
-                response.data.porcentaje_por_registro
-            );
-        })
+        .then(function (response) {})
         .catch(function (error) {
             console.error("Error al contar los registros:", error);
         });
@@ -1401,14 +1404,11 @@ $("#modalDetalleContent").on("hidden.bs.modal", function () {
 });
 
 function enviarAlertaCorreo(diasRestantes) {
-    console.log("Botón de alerta clicado para " + diasRestantes + " días");
-
     axios
         .post(enviarCorreoAlertaUrl, {
             dias_restantes: diasRestantes,
         })
         .then((response) => {
-            console.log("Correo enviado:", response.data);
             Swal.fire({
                 title: "Correo Enviado",
                 text: `Se ha enviado un correo para la alerta de ${diasRestantes} días.`,

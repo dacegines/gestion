@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Reporte de Detalles</title>
+    <title>Resumen de Obligaciones TDC</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -86,7 +86,7 @@
         <div class="header-logo">
             <img src="{{ public_path('img/logo_supervia.png') }}" alt="Logo">
         </div>
-        <h2>Reporte de Detalles del Año {{ $year }}</h2>
+        <h2>Resumen de Obligaciones TDC del Año {{ $year }}</h2>
     </header>
 
     <!-- Tabla de detalles -->
@@ -120,7 +120,10 @@
                 <td>{{ \Carbon\Carbon::parse($requisito->fecha_limite_cumplimiento)->translatedFormat('d \d\e F \d\e Y') }}</td>
                 <td>{{ $requisito->responsable }}</td>
                 <td>
-                    <span class="badge badge-{{ $requisito->estatus === 'Cumplido' ? 'success' : ($requisito->estatus === 'Vencido' ? 'danger' : 'warning') }}">
+                    <span class="badge badge-{{ 
+                        $requisito->estatus === 'Cumplido' ? 'success' : 
+                        ($requisito->estatus === 'Vencido' ? 'danger' : 
+                        ($requisito->estatus === 'Próximo' ? 'warning' : 'info')) }}">
                         {{ $requisito->estatus }}
                     </span>
                 </td>

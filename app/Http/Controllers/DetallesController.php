@@ -101,7 +101,7 @@ class DetallesController extends Controller
                 DB::raw("CASE 
                     WHEN r.porcentaje = 100 THEN 'Cumplido'
                     WHEN r.fecha_limite_cumplimiento < NOW() THEN 'Vencido'
-                    WHEN DATEDIFF(r.fecha_limite_cumplimiento, NOW()) <= 30 THEN 'Próximo a Vencer'
+                    WHEN DATEDIFF(r.fecha_limite_cumplimiento, NOW()) <= 30 THEN 'Próximo'
                     ELSE 'Activo'
                 END AS estatus"),
                 DB::raw("(SELECT COUNT(*) FROM archivos a WHERE a.fecha_limite_cumplimiento = r.fecha_limite_cumplimiento) as cantidad_archivos")
@@ -119,7 +119,7 @@ class DetallesController extends Controller
                     ->orWhere(DB::raw("CASE 
                             WHEN r.porcentaje = 100 THEN 'Cumplido'
                             WHEN r.fecha_limite_cumplimiento < NOW() THEN 'Vencido'
-                            WHEN DATEDIFF(r.fecha_limite_cumplimiento, NOW()) <= 30 THEN 'Próximo a Vencer'
+                            WHEN DATEDIFF(r.fecha_limite_cumplimiento, NOW()) <= 30 THEN 'Próximo'
                             ELSE 'Activo'
                         END"), 'like', "%$search%");
             });
@@ -163,7 +163,7 @@ class DetallesController extends Controller
                 DB::raw("CASE 
                     WHEN MAX(r.porcentaje) = 100 THEN 'Cumplido'
                     WHEN MAX(r.fecha_limite_cumplimiento) < NOW() THEN 'Vencido'
-                    WHEN DATEDIFF(MAX(r.fecha_limite_cumplimiento), NOW()) <= 30 THEN 'Próximo a Vencer'
+                    WHEN DATEDIFF(MAX(r.fecha_limite_cumplimiento), NOW()) <= 30 THEN 'Próximo'
                     ELSE 'Activo'
                 END AS estatus")
             )

@@ -39,8 +39,9 @@ class CalendarController extends Controller
             $requisitos = Requisito::select([
                 'id', // ID del evento
                 'nombre as title', // Título del evento
+                'numero_evidencia as obligacion',
                 'fecha_limite_cumplimiento as start', // Fecha de inicio
-                'evidencia as description', // Descripción del evento
+                'clausula_condicionante_articulo as description', // Descripción del evento
                 'responsable',
                 'approved' // Estado del evento
             ])->get();

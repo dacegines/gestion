@@ -1,0 +1,87 @@
+        /* Aplica estilos solo al calendario dentro del contenedor .calendar-container */
+        .calendar-container .fc-widget-header {
+            background-color: #343a40;
+            /* Fondo oscuro */
+            color: #ffffff;
+            /* Texto blanco */
+            font-weight: bold;
+            /* Texto en negrita */
+            border: 1px solid #495057;
+            /* Borde oscuro */
+        }
+
+        /* Estilos de los eventos en el calendario */
+        .calendar-container .fc-event {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .calendar-container .fc-event:hover {
+            white-space: normal;
+            word-wrap: break-word;
+            height: auto !important;
+            z-index: 1000;
+            overflow: visible;
+        }
+
+        /* Estilos para aprobados */
+        .calendar-container .bg-success {
+            background-color: #28a745 !important;
+            color: #fff !important;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 15px;
+        }
+
+        /* Estilos para no aprobados */
+        .calendar-container .bg-danger {
+            background-color: #dc3545 !important;
+            color: #fff !important;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 15px;
+        }
+
+        /* Fondo oscuro para el encabezado del calendario */
+        .calendar-container .fc-toolbar {
+            background-color: #343a40;
+            /* Fondo oscuro */
+            color: #ffffff;
+            /* Texto blanco */
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        /* Estilo para los botones del encabezado del calendario */
+        .calendar-container .fc-toolbar button .fc-corner-left {
+            background-color: #495057;
+            /* Fondo oscuro del botón */
+            color: #ffffff;
+            /* Texto blanco */
+            border: none;
+            border-radius: 5px;
+            /* Bordes redondeados */
+            padding: 5px 10px;
+            margin: 2px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            /* Sombra */
+            font-size: 14px;
+            /* Tamaño de texto */
+        }
+
+        /* Botón activo del encabezado */
+        .calendar-container .fc-toolbar .fc-button-active {
+            background-color: #28a745 !important;
+            /* Fondo verde para el botón activo */
+            border-color: #28a745 !important;
+            color: #ffffff !important;
+        }
+
+        /* Estilo del texto del título del calendario */
+        .calendar-container .fc-toolbar h2 {
+            font-size: 1.25rem;
+            /* Tamaño del texto */
+            color: #ffffff;
+            /* Color del texto */
+        }

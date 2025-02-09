@@ -7,7 +7,7 @@ use App\Models\Requisito;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log; // Importar Log para registro de errores
+use Illuminate\Support\Facades\Log; 
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class DashboardController extends Controller
@@ -331,7 +331,8 @@ class DashboardController extends Controller
             'Jefa de Cumplimiento',
             'Director de Finanzas',
             'Director de Operación, Mtto y TI',
-            'Invitado'
+            'Invitado',
+            'Administrador del sistema'
         ];
 
         // Determinar si se aplicará el filtro de responsable

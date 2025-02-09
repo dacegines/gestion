@@ -15,7 +15,7 @@ return [
     */
 
     'title' => '',
-    'title_prefix' => 'Notificación TDC |',
+    'title_prefix' => 'Obligaciones TDC |',
     'title_postfix' => '',
 
     /*
@@ -354,14 +354,14 @@ return [
                 ],
 
                 [
-                    'text' => 'Obligaciones',
+                    'text' => 'Obligaciones TDC',
                     'url' => 'obligaciones',
                     'icon' => 'fas fa-fw fa-clipboard',
                     'can' => ['superUsuario', 'obligaciones de concesión'],
                 ], 
                 
                 [
-                    'text' => 'Detalles',
+                    'text' => 'Detalle de Obligaciones TDC',
                     'route' => 'detalles',
                     'icon' => 'fas fa-fw fa-file-invoice',
                     'can' => ['superUsuario', 'obligaciones de concesión'],
@@ -375,7 +375,7 @@ return [
                 ],                
                 
                 [
-                    'text' => 'Dashboard',
+                    'text' => 'Dashboard Obligaciones TDC',
                     'route' => 'dashboard',
                     'icon' => 'fas fa-fw fa-tachometer-alt',
                     'can' => ['superUsuario', 'obligaciones de concesión'],

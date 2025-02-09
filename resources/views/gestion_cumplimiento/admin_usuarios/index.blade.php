@@ -25,7 +25,7 @@
                     Crear nueva autorización
                 </button>
             </div>
-            <hr>
+            <div class="divider"></div>
             @if (session('success'))
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                     {{ session('success') }}
