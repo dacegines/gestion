@@ -20,7 +20,7 @@ class CalendarController extends Controller
     {
         try {
             // Verificar si el usuario tiene los permisos adecuados
-            if (!Auth::user()->can('superUsuario') && !Auth::user()->can('obligaciones de concesión')) {
+            if (!Auth::user()->can('superUsuario') && !Auth::user()->can('obligaciones de concesión')  && !Auth::user()->can('obligaciones de concesión limitado')) {
                 abort(403, 'No tienes permiso para acceder a esta página.');
             }
     

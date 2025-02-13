@@ -357,7 +357,7 @@ return [
                     'text' => 'Obligaciones TDC',
                     'url' => 'obligaciones',
                     'icon' => 'fas fa-fw fa-clipboard',
-                    'can' => ['superUsuario', 'obligaciones de concesión'],
+                    'can' => ['superUsuario', 'obligaciones de concesión', 'obligaciones de concesión limitado'],
                 ], 
                 
                 [
@@ -371,7 +371,7 @@ return [
                     'text' => 'Calendario de Obligaciones',
                     'route' => 'gestion.calendario',
                     'icon' => 'fas fa-fw fa-calendar',
-                    'can' => ['superUsuario', 'obligaciones de concesión'],
+                    'can' => ['superUsuario', 'obligaciones de concesión', 'obligaciones de concesión limitado'],
                 ],                
                 
                 [
