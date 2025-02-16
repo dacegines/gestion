@@ -11,7 +11,7 @@ class ObligacionUsuario extends Model
 
     protected $table = 'obligacion_usuario'; // Nombre exacto de la tabla
 
-    protected $fillable = ['user_id', 'numero_requisito', 'view']; // Campos permitidos para asignación masiva
+    protected $fillable = ['user_id', 'numero_evidencia', 'view']; // Cambiamos numero_requisito a numero_evidencia
 
     // Relación con el usuario
     public function user()

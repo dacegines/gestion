@@ -364,7 +364,7 @@ return [
                     'text' => 'Detalle de Obligaciones TDC',
                     'route' => 'detalles',
                     'icon' => 'fas fa-fw fa-file-invoice',
-                    'can' => ['superUsuario', 'obligaciones de concesión'],
+                    'can' => ['superUsuario', 'obligaciones de concesión','obligaciones de concesión limitado'],
                 ],
                 
                 [

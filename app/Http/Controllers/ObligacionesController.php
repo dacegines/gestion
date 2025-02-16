@@ -63,12 +63,12 @@ class ObligacionesController extends Controller
     
         // Obtener los requisitos que el usuario puede ver según la tabla pivote
         $requisitosIds = ObligacionUsuario::where('user_id', $user->id)
-            ->where('view', 1)
-            ->pluck('numero_requisito')
-            ->toArray();
+        ->where('view', 1)
+        ->pluck('numero_evidencia') // Cambiado de numero_requisito a numero_evidencia
+        ->toArray();
     
         if (!empty($requisitosIds)) {
-            $query->whereIn('numero_requisito', $requisitosIds);
+            $query->whereIn('numero_evidencia', $requisitosIds);
         }
     
         if (!in_array($user->puesto, $puestosExcluidos)) {
@@ -562,14 +562,14 @@ class ObligacionesController extends Controller
         // Obtener los requisitos que el usuario puede ver según la tabla pivote
         $requisitosIds = ObligacionUsuario::where('user_id', $user->id)
             ->where('view', 1)
-            ->pluck('numero_requisito')
+            ->pluck('numero_evidencia')
             ->toArray();
     
         $query = Requisito::porAno($year)
             ->with('archivos');
     
         if (!empty($requisitosIds)) {
-            $query->whereIn('numero_requisito', $requisitosIds);
+            $query->whereIn('numero_evidencia', $requisitosIds);
         }
     
         if (!in_array($user->puesto, $puestosExcluidos)) {
